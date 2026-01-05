@@ -1,0 +1,175 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}"
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to change to qtbridge dir
+
+  - type: EnvironmentVariable
+    variableName: CMAKE_PREFIX_PATH
+    variableValue: "{{.AgentWorkingDir}}/install/"
+
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "{{.AgentWorkingDir}}\\install\\bin;"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "{{.AgentWorkingDir}}/install/bin:"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: EnvironmentVariable
+    variableName: JAVA_HOME
+    variableValue: "/usr/lib/jvm/java-21-openjdk-amd64"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Linux
+
+  - type: EnvironmentVariable
+    variableName: JAVA_HOME
+    variableValue: "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: MacOS
+
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "/opt/homebrew/opt/openjdk@21/bin:"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: MacOS
+  # This should  go into qt5 provisioning
+  - type: ExecuteCommand
+    command: "curl -L https://services.gradle.org/distributions/gradle-8.14.2-bin.zip -o gradle-8.14.2-bin.zip"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to download gradle.
+
+  - type: ExecuteCommand
+    command: "unzip gradle-8.14.2-bin.zip"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install gradle.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: ExecuteCommand
+    command: "7z x gradle-8.14.2-bin.zip"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install gradle.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: ExecuteCommand
+    command: "curl -L https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.exe -o {{.AgentWorkingDir}}\\jdk-21_windows-x64_bin.exe"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to download jdk.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: ExecuteCommand
+    command: "{{.AgentWorkingDir}}\\jdk-21_windows-x64_bin.exe /s SPONSORS=0"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install jdk.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: AppendToEnvironmentVariable
+    variableName: PATH
+    variableValue: :{{.AgentWorkingDir}}/gradle-8.14.2/bin/
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: AppendToEnvironmentVariable
+    variableName: PATH
+    variableValue: ";C:\\{{.AgentWorkingDir}}\\gradle-8.14.2\\bin"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "C:\\Program Files\\Java\\jdk-21\\bin;"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: EnvironmentVariable
+    variableName: JAVA_HOME
+    variableValue: "C:\\Program Files\\Java\\jdk-21"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}/qt/qtbridge-java"
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 120
+    userMessageOnFailure: >
+      Failed to change to qtbridge dir
+
+  - type: ExecuteCommand
+    command: ["gradle","wrapper"]
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to create gradle wrapper.
+
+  - type: ExecuteCommand
+    command: "./gradlew check"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to run test.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: ExecuteCommand
+    command: ["gradle","check"]
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to run test.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: UploadArtifact
+    archiveDirectory: "{{.AgentWorkingDir}}/qt/qtbridge-java/"
+    transferType: UploadModuleBuildArtifact
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
