@@ -1,0 +1,151 @@
+<!--Copyright (C) 2025 The Qt Company Ltd.-->
+<!--SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only-->
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QtBridge Gradle Plugin Configuration Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="description" content="QtBridge Gradle Plugin Configuration Guide">
+    <meta name="generator" content="javadoc">
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+    <link rel="stylesheet" type="text/css" href="script-dir/jquery-ui.min.css" title="Style">
+    <script type="text/javascript" src="script-dir/jquery-3.6.1.min.js"></script>
+    <script type="text/javascript" src="script-dir/jquery-ui.min.js"></script>
+</head>
+<body class="class-declaration-page">
+<script type="text/javascript">var pathtoroot = "./";
+loadScripts(document, 'script');</script>
+<noscript>
+    <div>JavaScript is disabled on your browser.</div>
+</noscript>
+<div class="flex-box">
+    <header role="banner" class="flex-header">
+        <nav role="navigation">
+            <div class="top-nav" id="navbar-top">
+                <ul id="navbar-top-firstrow" class="nav-list" title="Navigation">
+                    <li><a href="index.html">Overview</a></li>
+                    <li>Package</li>
+                    <li>Class</li>
+                    <li>Use</li>
+                    <li>Tree</li>
+                    <li>Index</li>
+                    <li>Help</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="flex-content">
+        <main role="main">
+            <div class="header">
+                <div class="header">
+                    <h1 class="title">QtBridge Gradle Plugin Configuration Guide</h1>
+                </div>
+                <section class="description">
+                    <hr>
+                    <div class="block">
+
+                        <p><a href="index.html">← Back to Main Documentation</a></p>
+
+                        <h2>Overview</h2>
+                        <p>Use the Qt Bridge Gradle plugin to configure and integrate the <strong>Qt Bridge</strong>
+                            environment for Java or Kotlin projects. It ensures that all required Qt and native bridge
+                            resources are properly resolved and downloaded if missing.</p>
+
+                        <p>The Qt Bridge Gradle plugin provides a <code>qtBridge</code> configuration block with three
+                            main sections:</p>
+
+                        <h2>Application configuration</h2>
+                        <p>The <code>application</code> block defines runtime settings for your Qt Bridge application:
+                        </p>
+                        <ul>
+                            <li><strong>name:</strong> Specifies a custom name for the Gradle run task. If set to
+                                "myApp", you can run your application with <code>./gradlew myApp</code>. If not
+                                specified, the default task name is the project's name.
+                            </li>
+                            <li><strong>mainClass:</strong> The fully qualified name of your main application class
+                                (e.g., "com.example.MyQtApplication" if it is in Java and
+                                "com.example.MyQtApplicationKt" if it is in Kotlin). This property is required for the
+                                plugin to generate a run task.
+                            </li>
+                            <li><strong>jvmArgs:</strong> A list of JVM arguments to pass to the application at runtime,
+                                such as memory settings ("-Xmx512m") or system properties.
+                            </li>
+                        </ul>
+
+                        <h2>QML files configuration</h2>
+                        <p>The <code>qml</code> block manages QML source files and import paths:</p>
+                        <ul>
+                            <li><strong>entryPoint:</strong> Specifies the entry point QML file (e.g., "App.qml"). If
+                                not set, the plugin automatically searches for <code>Main.qml</code> or <code>main.qml</code>
+                                in your source directories.
+                            </li>
+                            <li><strong>sourcePath:</strong> Defines qml source directory containing the qml entry
+                                point. The plugin defaults to<code>src/main/qml</code>, but you can specify the
+                                designated directory like <code>src/ui/qml</code>. It could be relative or absolute path.
+                            </li>
+                            <li><strong>importPaths:</strong> Specifies for adding additional QML modules (e.g., <code>/workspace/custom/qml</code>).
+                                Use this for referencing QML components outside your project structure. They could be
+                                relative or absolute path.
+                            </li>
+                        </ul>
+
+                        <h2>Qt Bridge libraries configuration</h2>
+                        <p>These optional properties allow manual override of library paths when automatic resolution is
+                            not suitable:</p>
+                        <ul>
+                            <li><strong>qtLibraryPath:</strong> Specifies the location of Qt framework libraries.</li>
+                            <li><strong>qtBridgeLibraryPath:</strong> Specifies the location of native Qt Bridge library.
+                            </li>
+                        </ul>
+
+                        <h2>Automatic resolution</h2>
+                        <p>The plugin manages the resolution in an automatic manner. Essentially, the plugin
+                            enables:</p>
+                        <ul>
+                            <li>The resolution of Qt and QtBridge libraries by downloading missing libraries
+                                automatically
+                            </li>
+                            <li>The search for QML source files in <code>src/main/qml</code></li>
+                            <li>Auto-discovery of the main QML file: <code>Main.qml</code> or <code>main.qml</code> if
+                                not explicitly specified
+                            </li>
+                            <li>Supports additional import paths for additional QML modules</li>
+                        </ul>
+
+                        <h2>Example usage in <code>build.gradle.kts</code></h2>
+                        <p>// <a href="https://bugreports.qt.io/browse/QTBUG-139181">TODO</a> add link to mavenCentral
+                            to check the latest version</p>
+                        <pre><code>plugins {
+    id("org.qtproject.qt.bridge.qtbridge-plugin") version "0.1.0"
+}
+
+qtBridge {
+    application {
+        name = "myApp"  // optional: creates running task with this name (defaults to project's name)
+        mainClass = "com.example.MyQtApplication" // optional: if set, creates run task
+        jvmArgs.addAll("-Xmx512m") // additional JVM arguments may be passed like this
+    }
+
+    qml {
+        entryPoint = "App.qml"  // optional: auto-discovers Main.qml or main.qml if not set
+        sourcePath = "src/ui/qml"  // default: "src/main/qml"
+        importPaths.from(file("/workspace/custom/qml"))  // optional: for adding additional QML modules
+    }
+
+    // optional configuration
+    qtLibraryPath = "/path/to/Qt/libs"
+    qtBridgeLibraryPath = "/path/to/bridge/native/lib"
+}</code></pre>
+                        <p><strong>Note:</strong> Run tasks are only created when <code>mainClass</code> is configured.
+                        </p>
+                        <p><a href="index.html">← Back to Main Documentation</a></p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

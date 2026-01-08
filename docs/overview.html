@@ -1,0 +1,108 @@
+Copyright (C) 2025 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+Any content inside the body element below is copied to generated index.html
+
+<body>
+<h1>QtBridge for Java (Technology Preview)</h1>
+<p>Bridge Java/Kotlin ↔ Qt QML. Expose JVM objects to QML and consume QML models from Java.
+    The Bridge is current in Technology Preview status. This means that it's under heavy
+    development and current APIs may change or even be removed completely.
+</p>
+
+<h2>Environment Setup</h2>
+
+<p>Before generating or running a QtBridge project, ensure the following tools are installed:</p>
+<ul>
+    <li><strong>Java Development Kit:</strong> JDK 21 or newer (i.e. Oracle JDK)</li>
+    <li><strong>Gradle:</strong> Gradle 8.x or newer</li>
+</ul>
+
+<p>Validate your environment:</p>
+<pre><code>java --version
+gradle --version
+</code></pre>
+
+<h2>Quick Start</h2>
+<p>Use the starter script to quickly generate a new QtBridge project with all required files and directory structure.</p>
+
+<h3>Installation</h3>
+<p>Download the starter script to your local machine:</p>
+<pre><code># Download the init script alongside the settings.gradle
+# TODO QTBUG-142220: Replace with actual release URL when available
+curl -O url/to/qtbridge.starter.gradle.kts -O url/to/settings.gradle.kts
+</code></pre>
+
+<h4>Check usage or help</h4>
+<pre><code>gradle --init-script qtbridge.starter.gradle.kts usage</code></pre>
+
+<h4>Generate a project</h4>
+<p>Run the initialization script using Gradle. This will create a new project in your current directory.</p>
+
+<p><strong>Default generation (Java):</strong></p>
+<pre><code>gradle --init-script qtbridge.starter.gradle.kts</code></pre>
+
+<p><strong>Custom generation (Kotlin):</strong></p>
+<pre><code>gradle --init-script qtbridge.starter.gradle.kts \
+  -PprojectName=MyAwesomeApp \
+  -PpackageName=com.company.app \
+  -Planguage=kotlin</code></pre>
+
+<h3>Generation Parameters</h3>
+<p>The project generator accepts the following Gradle properties (<code>-P</code> flags):</p>
+
+<ul>
+    <li><strong><code>projectName</code></strong>: Application name (default: <code>MyApp</code>)</li>
+    <li><strong><code>packageName</code></strong>: Java/Kotlin base package (default: <code>com.example</code>)</li>
+    <li><strong><code>language</code></strong>: Source language, either <code>java</code> or <code>kotlin</code> (default: <code>java</code>)</li>
+</ul>
+
+<h3>Generation Output</h3>
+<p>The starter script produces a fully configured QtBridge project with a recommended folder structure:</p>
+<pre><code>MyAwesomeApp/
+├── src/
+│   └── main/
+│       ├── kotlin/           (or java/)
+│       │   └── com/
+│       │       └── company/
+│       │           └── app/
+│       │               ├── Main.kt            (or Main.java)
+│       │               └── Controller.kt      (or Controller.java)
+│       └── qml/
+│           └── main.qml
+├── build.gradle.kts
+└── settings.gradle.kts
+</code></pre>
+
+<h3>Running your project</h3>
+<p>After generating the project, navigate into the new directory and run it:
+</p><pre><code>cd MyAwesomeApp
+gradle MyAwesomeApp</code></pre>
+
+<h2>Documentation</h2>
+<ul>
+    <li><a href="./qtbridge-gradle-plugin.html">Gradle Plugin Configuration Guide</a></li>
+    <li><a href="org/qtproject/qt/bridge/docs/OverviewSnippets.html">Application Example</a></li>
+</ul>
+
+<h2>Key Classes</h2>
+<ul>
+    <li><a href="org/qtproject/qt/bridge/core/QtListModel.html">QtListModel</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtProperty.html">QtProperty</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtPropertyObserver.html">QtPropertyObserver</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtListModelObserver.html">QtListModelObserver</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtAbstractApplication.html">QtAbstractApplication</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtQuickApplication.html">QtQuickApplication</a></li>
+    <li><a href="org/qtproject/qt/bridge/core/QtQmlChildren.html">QtQmlChildren</a></li>
+</ul>
+
+<h2>Key Annotations</h2>
+<ul>
+    <li><a href="org/qtproject/qt/bridge/annotations/QMLSignals.html">QMLSignals</a></li>
+    <li><a href="org/qtproject/qt/bridge/annotations/QMLRegistrable.html">QMLRegistrable</a></li>
+    <li><a href="org/qtproject/qt/bridge/annotations/QMLComplete.html">QMLComplete</a></li>
+</ul>
+</body>
+
+<h2>Limitations and known issues</h2>
+<p>TODO before releasing</p>

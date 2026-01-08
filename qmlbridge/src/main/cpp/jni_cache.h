@@ -1,0 +1,81 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+#ifndef JNI_CACHE_H
+#define JNI_CACHE_H
+
+#include <QtCore/qhash.h>
+
+#include <jni.h>
+
+class JNICache
+{
+public:
+    struct JMethodEntry {
+        jmethodID method;
+        bool retIsPrimitive;
+        // Indicates whether a parameter is primitive or boxed.
+        // Important when type is eg. 'int' vs. 'Integer'
+        QList<bool> parmIsPrimitive;
+    };
+
+    struct JSignalEntry {
+        int signalIndex;
+        // Stores the metatype id of each parameter to support
+        // faster type conversions when signals are emitted.
+        QList<int> parmMetaTypeIds;
+    };
+
+    struct JFieldEntry {
+        jfieldID field;
+    };
+
+    struct JClassEntry {
+        jclass globalClassRef;
+        QHash<int, JMethodEntry> methods;
+        QHash<int, JFieldEntry> fields;
+        // Key is UTF-8 encoded signal Java signature, eg. "my€uroSignal(java.lang.Boolean)"
+        QHash<QByteArray, JSignalEntry> signalz;
+        // Key is UTF-8 encoded name:jniSignature, eg. "get:(I)Ljava/lang/Object;"
+        QHash<QByteArray, JMethodEntry> methodsByName;
+    };
+
+    /*** TYPE-BASED API (for globally registered classes like JNIObject<Tag>)  ***/
+    static bool registerGlobalClass(const QByteArray &className, jclass classRef);
+    static jclass getGlobalClass(const QByteArray &className);
+    static bool unregisterGlobalClass(const QByteArray &className);
+    static bool isGlobalClassRegistered(const QByteArray &className);
+    static JMethodEntry registerGlobalMethod(const QByteArray &className, const QByteArray &methodName,
+                                     const QByteArray &signature, bool isStatic);
+    static JMethodEntry getGlobalMethod(const QByteArray &className, const QByteArray &methodName,
+                                        const QByteArray &signature, bool isStatic = false,
+                                        bool autoRegister = true);
+
+    /*** KEY-BASED API (for dynamically registered proxy classes) ***/
+    static qint64 ensureProxyClass(jclass userProxyClass);
+    static void registerProxyMethod(qint64 proxyKey, int methodKey, const QString &javaSignature,
+                                    const QString &returnType, bool retIsPrimitive,
+                                    const QList<bool> &parmIsPrimitive);
+    static void registerProxySignal(qint64 proxyKey, int signalIndex, const QString &javaSignature,
+                                    const QList<QByteArray> paramCppType);
+    static void registerProxyField(qint64 proxyKey, int fieldKey, const QString &name,
+                                   const QString &signature);
+
+    static std::optional<JMethodEntry> getProxyMethod(qint64 proxyKey, int methodKey);
+    static std::optional<JSignalEntry> getProxySignal(qint64 proxyKey, const QByteArray &javaSignature);
+    static JFieldEntry getProxyField(qint64 proxyKey, int fieldKey);
+
+    static void registerQmlCompletionHandler(jstring methodName, jclass userClass);
+    static std::optional<JMethodEntry> qmlCompletionHandler(qint64 proxyKey);
+
+    static void clear();
+
+private:
+    // helper fucntions
+    static jclass createGlobalRef(jclass localRef);
+    static QByteArray makeMethodKey(const QByteArray &methodName, const QByteArray &signature);
+    static jmethodID findMethod(jclass clazz, const QByteArray &name, const QByteArray &signature,
+                                bool isStatic);
+};
+
+#endif

@@ -1,0 +1,83 @@
+/*
+ * Copyright (C) 2025 The Qt Company Ltd.
+ * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+ */
+
+package org.qtproject.qt.bridge.generator
+
+import org.qtproject.qt.bridge.utils.JvmType
+
+// Source location data for MOC output
+internal data class SourceLocation(
+    val fileName: String,
+    val filePath: String?,
+    val lineNumber: Int?, // 1-based
+)
+
+// Annotation data provided by @QMLRegistrable annotation itself
+internal data class RegistrableInfo(
+    val typeName: String,
+    val moduleName: String,
+    val isSingleton: Boolean,
+)
+
+// Models @QMLRegistrable
+internal data class RegistrableClass(
+    val cppType: String,
+    val packageName: String,
+    val simpleName: String,
+    val qualifiedName: String,
+    val registrableInfo: RegistrableInfo? = null,
+    val sourceLocation: SourceLocation? = null,
+    val invokables: List<Invokable> = emptyList(),
+    val properties: List<Property> = emptyList(),
+    // @QMLSignals field
+    val signalField: SignalField? = null,
+    // @QMLComplete handler (just name, signature is known)
+    val qmlCompleteHandlerName: String? = null,
+)
+
+// Models public methods within a @QMLRegistrable
+internal data class Invokable(
+    val name: String,
+    val javaSignature: String, // "foo(java.lang.Integer,java.lang.String)"
+    val cppSignature: String, // "foo(int,QString)"
+    val cppParams: List<Pair<String, String>>, // 'name, type' pairs
+    val javaReturnType: String, // "void", "int", "java.lang.String"
+    val cppReturnType: String, // "void", "int", "QString"
+    val retIsPrimitive: Boolean,
+    val paramIsPrimitive: BooleanArray,
+    val sourceLocation: SourceLocation? = null,
+)
+
+// Models a signal within a @QMLSignals field
+internal data class Signal(
+    val javaSignature: String,
+    val cppSignature: String,
+    val cppParams: List<Pair<String, String>>, // 'name, type' pairs
+    val sourceLocation: SourceLocation? = null,
+)
+
+// @QMLSignals field
+internal data class SignalField(
+    val fieldName: String,
+    val interfaceQualifiedName: String,
+    val signals: List<Signal> = emptyList(),
+)
+
+internal enum class PropertyKind {
+    QT_PROPERTY,
+    QT_LIST_MODEL,
+}
+
+// Models QtProperty<T> or a QtListModel<T> member of a @QMLRegistrable
+internal data class Property(
+    val kind: PropertyKind,
+    val name: String,
+    val notifySignalSignature: String, // e.g. "textChanged()"
+    val constant: Boolean,
+    val writableFromQml: Boolean,
+    val type: JvmType,
+    val declaredTypeQualifiedName: String?,
+    val sourceLocation: SourceLocation?,
+)
