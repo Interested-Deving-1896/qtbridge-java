@@ -1,25 +1,7 @@
-# Qt Bridge - Java
-
 > Copyright (C) 2025 The Qt Company Ltd.
 > SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
->
-> The Qt Bridge for Java is built using the OpenJDK (https://openjdk.org) and Kotlin (https://kotlinlang.org)
->
-> OpenJDK is licensed under the GNU General Public License, version 2, with the Classpath Exception
->
-> Kotlin SDK and runtime are licensed under the Apache License, Version 2.0
->
-> No modifications were made to the OpenJDK source code and Qt Bridge for Java does not require any modifications
->
-> This project is not affiliated with or endorsed by Oracle and/or its affiliates.
->
-> "Java" and "OpenJDK" are trademarks or registered trademarks of Oracle and/or its affiliates.
 
-This is a pre-release implementation of Qt Bridges for Java.  By
-installing this package, you agree to the terms and conditions stated in
-https://www.qt.io/terms-conditions.  These terms and conditions also apply to
-the Qt Framework, which is used as a major dependency in this package.
-
+# Qt Bridge - Java
 
 - Contents:
     1. Introduction
@@ -37,6 +19,7 @@ the Qt Framework, which is used as a major dependency in this package.
     4. Java Bridge API Overview
        1. Classes and Annotations
        2. Example Code
+    5. Licenses, Terms, and Conditions
 
 ## Introduction
 
@@ -402,3 +385,22 @@ public class FruitBasket {
     }
 }
 ```
+
+## Licenses, Terms, and Conditions
+
+> The Qt Bridge for Java is built using the OpenJDK (https://openjdk.org) and Kotlin (https://kotlinlang.org)
+>
+> OpenJDK is licensed under the GNU General Public License, version 2, with the Classpath Exception
+>
+> Kotlin SDK and runtime are licensed under the Apache License, Version 2.0
+>
+> No modifications were made to the OpenJDK source code and Qt Bridge for Java does not require any modifications
+>
+> This project is not affiliated with or endorsed by Oracle and/or its affiliates.
+>
+> "Java" and "OpenJDK" are trademarks or registered trademarks of Oracle and/or its affiliates.
+
+This is a pre-release implementation of Qt Bridges for Java.  By
+installing this package, you agree to the terms and conditions stated in
+https://www.qt.io/terms-conditions.  These terms and conditions also apply to
+the Qt Framework, which is used as a major dependency in this package.
