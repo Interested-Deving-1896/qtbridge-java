@@ -1,14 +1,13 @@
-## QtBridge Project Starter
+## QtBridge Application Quick Start
 
-Quick and easy way to create a new QtBridge application with all the necessary files and structure.
+How to use an init script to create a new QtBridge application with all the necessary files and structure.
 
-### Installation
-Download the starter script to your local machine:
-
+### Initialization Script
+Get the starter script to your local machine:
+<!-- TODO QTBUG-142220: Replace CURL url with actual release URL when available -->
 ```
 # Download the init script alongside the settings.gradle
-# todo QTBUG-142220: Replace with actual release URL when available
-curl -O url/to/qtbridge.starter.gradle.kts -O url/to/settings.gradle.kts
+curl -O 'https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/qtbridge.starter.gradle.kts?h=dev' -O 'https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/settings.gradle.kts?h=dev'
 ```
 ### Check usage or help
 ```
