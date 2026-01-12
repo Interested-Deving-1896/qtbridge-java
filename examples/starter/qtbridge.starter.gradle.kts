@@ -15,7 +15,7 @@ data class ProjectConfig(
     val projectName: String,
     val packageName: String,
     val language: String,
-    val qtBridgeVersion: String = "0.1.0"
+    val qtBridgeVersion: String = "0.1"
 )
 
 object TemplateProvider {

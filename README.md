@@ -74,7 +74,7 @@ pluginManagement {
 ###### build.gradle.kts
 ```kotlin
 plugins {
-    id("org.qtproject.qt.bridge.qtbridge-plugin") version "0.1.0"
+    id("org.qtproject.qt.bridge.qtbridge-plugin") version "0.1"
 }
 
 qtBridge {
@@ -121,14 +121,14 @@ The plugin manages three types of artifacts:
 - **Description:** Core Qt Bridge API classes for Java/Kotlin developers
 - **Host:** Maven Central
 - **Selection:** The latest available Qt Bridge JAR library available.
-- **Version:** 0.1.0
+- **Version:** 0.1
 
 #### 2. Qt Bridge native library
 - **Description:** Platform-specific native bridge implementation
 - **Variants:** Separate artifacts for each platform and architecture combination
 - **Host:** Qt server
 - **Selection:** The plugin automatically selects the correct library based on detected OS and architecture
-- **Version:** 0.1.0 built with Qt **6.10.0**
+- **Version:** 0.1 built with Qt **6.10.0**
 
 #### 3. Qt libraries
 - **Description:** The Qt framework libraries required by Qt Bridge

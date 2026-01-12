@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "org.qtproject.qt.bridge"
-version = "0.1.0"
+version = "0.1"
 
 val generateVersionFile by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/version")
