@@ -36,7 +36,7 @@ internal class QtPlatformUrlBuilder private constructor(private val baseUrl: Str
     }
 
     companion object {
-        private const val DEFAULT_BASE_URL = "https://master.qt.io/snapshots/ci/qt"
+        private const val DEFAULT_BASE_URL = "https://download.qt.io/snapshots/ci/qt"
         private const val QT_MINIMAL_NAME= "qt_minimal"
         private const val QT_BRIDGE_NATIVE_NAME = "java_qtBridge"
         fun default(): QtPlatformUrlBuilder = QtPlatformUrlBuilder(DEFAULT_BASE_URL)
