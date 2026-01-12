@@ -60,11 +60,8 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
         target.repositories.apply {
             mavenCentral()
-            // It will be removed later when QtBridge is in stable release in MavenCentral
+            // TODO:QTBUG-139181 It will be removed later when QtBridge is in stable release in MavenCentral
             maven { url = URI("https://android.qt.io/maven/releases") }
-            //this is added to support snapshots version such as 0.1.1-SNAPSHOT
-            // It will be removed later when QtBridge is in stable release
-            maven { url = URI("https://android.qt.io/maven/snapshots") }
         }
         configureDependencies(target)
 
