@@ -26,7 +26,6 @@ QtBridgeNativeBuild {
     sourceDir = "src/main/cpp"
 }
 
-// TODO: QTBUG:142220
 qtBridgePublishing {
     moduleName = "QtBridge QML"
     moduleDescription = """

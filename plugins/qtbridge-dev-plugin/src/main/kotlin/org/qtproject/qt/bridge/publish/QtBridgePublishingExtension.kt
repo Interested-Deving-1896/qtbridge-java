@@ -16,10 +16,9 @@ open class QtBridgePublishingExtension(project: Project) {
     val organization = project.objects.property(String::class.java).convention("Qt Group")
     val developerUrl = project.objects.property(String::class.java).convention("https://www.qt.io")
     val developerEmail = project.objects.property(String::class.java).convention("qtbridges@qt.io")
-    // TODO: QTBUG:142220 check urls when are available
-    val repositoryUrl = project.objects.property(String::class.java).convention("https://code.qt.io/cgit/qt-labs/qtbridge-java")
-    val gitUrl = project.objects.property(String::class.java).convention("git://code.qt.io/qt-labs/qtbridge-java")
-    val codeReviewUrl = project.objects.property(String::class.java).convention("https://codereview.qt-project.org/qt-labs/qtbridge-java")
+    val repositoryUrl = project.objects.property(String::class.java).convention("https://code.qt.io/cgit/qt/qtbridge-java.git")
+    val gitUrl = project.objects.property(String::class.java).convention("git://code.qt.io/cgit/qt/qtbridge-java.git")
+    val codeReviewUrl = project.objects.property(String::class.java).convention("https://codereview.qt-project.org/q/project:qt/qtbridge-java")
     val licenses = project.objects.domainObjectContainer(LicenseSpec::class.java) { LicenseSpec(it, project.objects) }
 
     open class LicenseSpec(val licenseSpecName: String, objects: ObjectFactory) : Named {

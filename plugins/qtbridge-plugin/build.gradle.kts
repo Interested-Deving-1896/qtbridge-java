@@ -71,7 +71,7 @@ repositories {
 kotlin {
     jvmToolchain(21)
 }
-// TODO: QTBUG:142220
+
 qtBridgePublishing {
     moduleName = "QtBridge Plugin"
     moduleDescription = """
