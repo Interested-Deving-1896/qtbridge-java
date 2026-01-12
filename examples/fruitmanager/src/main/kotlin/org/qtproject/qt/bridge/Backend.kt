@@ -16,9 +16,9 @@ class Backend(fruitsProvider: FruitsProvider = FruitsProvider()) {
     private var backendCallback: BackendCallback? = null
 
     // Accessed in QML
-    public val colorOptions = QtProperty(FruitColor.entries.map { it.name }.toList())
-    public val categoryOptions = QtProperty(FruitCategory.entries.map { it.name }.toList())
-    public val fruitList = QtListModel(fruitsProvider.fetchAll());
+    val colorOptions = QtProperty(FruitColor.entries.map { it.name }.toList())
+    val categoryOptions = QtProperty(FruitCategory.entries.map { it.name }.toList())
+    val fruitList = QtListModel(fruitsProvider.fetchAll());
 
     fun addFruitWithValidation(
         fruitName: String,
