@@ -39,6 +39,6 @@ private:
     std::vector<char*> m_argv;
     std::vector<std::string> m_arguments;
 
-    bool m_qmlLoaded;
+    bool m_qmlLoaded = false;
 };
 #endif // JNI_QML_APPLICATION_H
