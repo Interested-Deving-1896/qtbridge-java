@@ -222,7 +222,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             val sourceSets = project.extensions.getByType<SourceSetContainer>()
             val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 
-            val runTask = project.tasks.register(taskName, JavaExec::class.java) {
+            project.tasks.register(taskName, JavaExec::class.java) {
                 group = "application"
                 description = "Run the Qt Bridge ${project.name} name"
                 classpath = mainSourceSet.runtimeClasspath
@@ -547,7 +547,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
     // development and debugging purposes, as it prints the necessary command to run
     // (but other than that, running qmlls on command line is not all that useful)
     private fun registerQmllsTask(project: Project, extension: QtBridgeExtension) {
-        val qmllsTask = project.tasks.register("qtbridgeQmlls") {
+        project.tasks.register("qtbridgeQmlls") {
             group = "verification"
             description = "Shows how to run qmlls against this build (requires Qt 6.10+)."
             dependsOn("qtbridgeGenerateQmllsBuildIni")
@@ -570,10 +570,8 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
     // Task for testing the qmllinting, runs the qmllint for a given project. For instance:
     // ./gradlew :examples:manualtest:qtbridgeQmllint
     private fun registerQmllintTask(project: Project, extension: QtBridgeExtension) {
-       val sourceSetName = MAIN_SOURCE_SET_NAME
-
         val qmlSourceDir = project.projectDir
-        val task = project.tasks.register("qtbridgeQmllint") {
+        project.tasks.register("qtbridgeQmllint") {
             group = "verification"
             description = "Runs qmllint on QML sources using Qt Bridge generated import tree."
 
