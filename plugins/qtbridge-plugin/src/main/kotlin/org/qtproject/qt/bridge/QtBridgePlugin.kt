@@ -263,7 +263,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
             // Single out this error scenario as it can be obscure to pinpoint
             if (!qmllintExecutable.canExecute()) {
-                project.logger.lifecycle("Resolved $qmllintExecutable tool but it's not executable");
+                project.logger.info("Resolved $qmllintExecutable tool but it's not executable");
                 return false
             }
             return true
@@ -275,7 +275,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             ?.let { java.io.File(it).canonicalFile }
 
         if (qtdir != null && isProperQtDir(qtdir)) {
-            project.logger.lifecycle("Resolved Qt dir from QTBRIDGE_QTDIR env variable: ${qtdir.absolutePath}")
+            project.logger.info("Resolved Qt dir from QTBRIDGE_QTDIR env variable: ${qtdir.absolutePath}")
             return qtdir
         }
 
@@ -288,7 +288,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             // Assume qtDir to be the parent of 'lib'
             val qtDir = libDir.parentFile?.canonicalFile
             if (qtDir != null && isProperQtDir(qtDir)) {
-                project.logger.lifecycle("Resolved Qt dir with QtPathResolver: ${qtDir.absolutePath}")
+                project.logger.info("Resolved Qt dir with QtPathResolver: ${qtDir.absolutePath}")
                 return qtDir
             }
         } catch (_: Exception) {
@@ -303,7 +303,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         val executable = qtDir.resolve("bin").resolve(executableName)
 
         return executable.takeIf { it.exists() && it.canExecute() }
-            ?.also { project.logger.lifecycle("Using qmlls: ${it.absolutePath}") }
+            ?.also { project.logger.info("Using qmlls: ${it.absolutePath}") }
             ?.absolutePath
     }
 
@@ -313,7 +313,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         val executable = qtDir.resolve("bin").resolve(executableName)
 
         return executable.takeIf { it.exists() && it.canExecute() }
-            ?.also { project.logger.lifecycle("Using qmllint: ${it.absolutePath}") }
+            ?.also { project.logger.info("Using qmllint: ${it.absolutePath}") }
             ?.absolutePath
     }
 
@@ -323,7 +323,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         val executable = if (Platform.isWindows()) qtDir.resolve("bin").resolve(executableName) else qtDir.resolve("libexec").resolve(executableName)
 
         return executable.takeIf { it.exists() && it.canExecute() }?.also {
-            project.logger.lifecycle("Using qmltyperegistrar: ${it.absolutePath}")
+            project.logger.info("Using qmltyperegistrar: ${it.absolutePath}")
         }?.absolutePath
     }
 
@@ -334,7 +334,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         val globalDir = qtDocDir.resolve("global")
 
         return qtDocDir.takeIf { it.exists() && globalDir.isDirectory }
-            ?.also { project.logger.lifecycle("Using Qt doc directory: ${it.absolutePath}") }
+            ?.also { project.logger.info("Using Qt doc directory: ${it.absolutePath}") }
             ?.absolutePath
     }
 
@@ -394,12 +394,10 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             doLast {
                 val registrarExe = resolveQmlTypeRegistrarExecutable(project, extension)
                 if (registrarExe == null) {
-                        project.logger.lifecycle(
-                            "qmltyperegistrar not found. " +
-                            "Set -Pqtbridge.qmltyperegistrar=/abs/path/to/qmltyperegistrar, " +
-                            "configure qtBridge.qtLibraryPath so we can derive the Qt bin dir, or " +
-                            "have qmltyperegistrar executable on PATH. Lack of qmltyperegistrar " +
-                            "impacts QML tooling support, but not the application run itself."
+                        project.logger.info(
+                            "qmltyperegistrar not found. Set QTBRIDGE_QTDIR or configure " +
+                            "qtBridge.qtLibraryPath to point to Qt installation. Lack of qmltyperegistrar " +
+                            "impacts QML tooling support, but not the application compilation or run."
                         )
                     return@doLast // skip qmltyperegistar run since not found
                 }
@@ -407,7 +405,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 // Get all <module>_moc.json files
                 val mocFiles = project.fileTree(mocJsonDirProvider(project).get().asFile) { include("**/*_moc.json") }.files
                 if (mocFiles.isEmpty()) {
-                        project.logger.lifecycle("No *_moc.json files found under " +
+                        project.logger.info("No *_moc.json files found under " +
                                                  "${mocJsonDirProvider(project).get().asFile.absolutePath} " +
                                                  "for sourceSet $sourceSetName.")
                     return@doLast
@@ -532,7 +530,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 }
                 iniFile.writeText(text)
 
-                project.logger.lifecycle(
+                project.logger.info(
                     "Wrote ${iniFile.absolutePath}. Run qmlls with: qmlls -b ${project.layout.buildDirectory.get().asFile.absolutePath}"                )
             }
         }
@@ -554,7 +552,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 val buildDir = project.layout.buildDirectory.get().asFile.absolutePath
                 if (qmlls == null) {
                     project.logger.lifecycle(
-                        "qmlls not found. Set -Pqtbridge.qmlls=/abs/path/to/qmlls, or configure qtBridge.qtLibraryPath, or put qmlls on PATH."
+                        "qmllint not found. Set QTBRIDGE_QTDIR or configure qtBridge.qtLibraryPath to point to Qt installation"
                     )
                     return@doLast
                 }
@@ -582,7 +580,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 val qmllint = resolveQmllintExecutable(project, extension)
                 if (qmllint == null) {
                     project.logger.lifecycle(
-                        "qmllint not found. Set -Pqtbridge.qmllint=/abs/path/to/qmllint, or configure qtBridge.qtLibraryPath, or put qmllint on PATH."
+                        "qmllint not found. Set QTBRIDGE_QTDIR or configure qtBridge.qtLibraryPath to point to Qt installation"
                     )
                     return@doLast
                 }
