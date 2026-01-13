@@ -61,6 +61,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         target.repositories.apply {
             mavenCentral()
             // TODO:QTBUG-139181 It will be removed later when QtBridge is in stable release in MavenCentral
+            mavenLocal()
             maven { url = URI("https://android.qt.io/maven/releases") }
         }
         configureDependencies(target)

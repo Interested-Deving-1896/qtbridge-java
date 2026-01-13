@@ -45,7 +45,6 @@ Use the qtBridgePublishing extension to specify publication metadata.
 qtBridgePublishing {
     moduleName = "MyPlugin"
     moduleDescription = "Description of your plugin"
-    repositoryUrl = "https://github.com/myorg/myplugin"
     developerEmail = "me@example.com"
 }
 ```
@@ -85,7 +84,9 @@ production.
 
 ---
 
-### Example: Publishing
+### Complete Example
+
+Here's a full example of a module configured for publishing:
 
 ```kotlin
 plugins {
@@ -94,14 +95,15 @@ plugins {
 }
 
 qtBridgePublishing {
-    moduleName = "My fancy Library"
-    moduleDescription = "Fancy Library to make your project better."
-    repositoryUrl = "" //todo for production
+    moduleName = "Core Library"
+    moduleDescription = "Core functionality for integration"
 }
 ```
 
-Publish with:
+**Publishing commands:**
 
-```
-./gradlew :qmlbridge:publish -Ppublish.env=staging
+```bash
+# Publish multiple modules to maven local
+./gradlew :qmlbridge:publish
+./gradlew :qtbridge-plugin:publish
 ```

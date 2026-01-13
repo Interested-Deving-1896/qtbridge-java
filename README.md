@@ -234,6 +234,20 @@ pluginManagement {
 }
 ```
 
+**Using Maven Local:**
+
+If you're working with a locally published version of the plugin (for development or testing), add `mavenLocal()` to the repositories:
+
+```kotlin
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+    }
+}
+```
+For information about publishing and developing QtBridge modules, see the [Qt dev plugins](plugins/qtbridge-dev-plugin/README.md).
+
 ###### build.gradle.kts
 ```kotlin
 plugins {
@@ -282,7 +296,7 @@ The plugin manages three types of artifacts:
 
 #### 1. Qt Bridge Java/Kotlin Classes (JAR)
 - **Description:** Core Qt Bridge API classes for Java/Kotlin developers
-- **Host:** Maven Central
+- **Host:** Qt server
 - **Selection:** The latest available Qt Bridge JAR library available.
 - **Version:** 0.1
 
