@@ -1,31 +1,38 @@
 > Copyright (C) 2025 The Qt Company Ltd.
 > SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-# Qt Bridge - Java
+# Qt Bridge - Java / Kotlin
 
 - Contents:
     1. Introduction
-    2. End-user workflow
+    2. Get in touch
+    3. Status
+    4. Early Preview Quick Start
+       1. macOS
+       2. Linux
+       3. Windows
+       4. Troubleshooting
+    5. End-user workflow
        1. Description
        2. Quick start
        3. Gradle Plugin and Maven Artifacts
        4. Fallback
        5. QML Syntax Highlighting
-    3. Bridge Building and Development
+    6. Bridge Building and Development
        1. Java Environment
        2. C++ Environment
        3. Qt dependencies
        4. Building and running the Project
-    4. Java Bridge API Overview
+    7. Java Bridge API Overview
        1. Classes and Annotations
        2. Example Code
-    5. Licenses, Terms, and Conditions
+    8. Licenses, Terms, and Conditions
 
 ## Introduction
 
 This documentation outlines the process required to set up the
-development environment for Java Bridge. Java Bridge allows applications
-to bridge Java code to QML. The bridging is based on main two mechanisms:
+development environment for Java/Kotlin Bridge. The Bridge allows applications
+to bridge Java and Kotlin code to QML. The bridging is based on two main mechanisms:
 - Java JNI (C++) native code to do the actual bridging. JNI allows the bridge to translate data and function calls between QML and Java
 - KSP (Kotlin Symbol Processing) for processing the user's classes and annotations at build-time. KSP allows the bridge to introspect user-code and generate all needed bridging code
 
@@ -33,15 +40,171 @@ The main parts of the solution are:
 - User code (application)
 - Java Bridge Java files in a JAR file (.jar)
 - Java Bridge compiled native (C++) plugin (.dylib/.so/.dll)
-- Maven gradle plugin for shipping to end users (not done yet, see End-user workflow)
+- Maven gradle plugin for shipping to end users
 - Qt Libraries
+
+## Status
+
+Bridge for Java/Kotlin is currently in early preview, and in active development.
+It can be compiled, run, and tested out on the major desktop platforms. Notable limitations include:
+- You need to set up Bridge development environment to use it, instead
+  of relying the Bridge Gradle plugin to download necessary components. See
+  [Early Preview Quick Start](#early-preview-quick-start) for setting up the
+  environment
+- APIs may change or even be removed
+- There are many known issues and [missing features](https://qt-project.atlassian.net/browse/QTBUG-134776)
+
+## Get in touch
+
+You can reach us in the Qt Forum, specifically in the [Qt Bridges
+category](https://forum.qt.io/category/78/qt-bridges).
+For Qt bug tracker users there's also the [JavaQt Bridge task](https://qt-project.atlassian.net/browse/QTBUG-134776).
+
+## Early Preview Quick Start
+This chapter provides hands-on instructions for setting up the development environment.
+**This setup is needed only for the time being** - in future the needed components will be
+downloaded automatically by the Qt Bridge Gradle plugin.
+
+The needed components are:
+- This repository i)
+- Qt 6.10+ ii)
+- Gradle 8.14.2+
+- CMake 3.16+
+- C++ Toolchain
+- OpenJDK 21
+
+i) Clone this repository
+```bash
+git clone https://code.qt.io/qt/qtbridge-java.git/
+cd qtbridge-java
+```
+ii) To get Qt please see [Qt Download Page](https://www.qt.io/development/download), or
+[compile it from sources](https://doc.qt.io/qt-6/build-sources.html).
+
+Following are example command line instructions for different platforms, adjust as needed.
+It is also possible to use an IDE for development. For this purpose we've tested [VS Code](https://code.visualstudio.com/download) and [Intellij IDEA](https://www.jetbrains.com/idea/).
+Their setup is not covered here though. In summary you'll open the top level directory
+as a Gradle folder (VS Code) / project (IntelliJ), and make sure you have needed environment
+configured.
+
+### macOS
+
+```bash
+# Ensure Qt is on PATH or Qt6_DIR is set, adjust as needed
+export PATH=~/Qt/6.10.1/macos/bin:$PATH
+# or
+export Qt6_DIR=~/Qt/6.10.1/macos
+
+# Ensure C++ toolchain is installed
+xcode-select --install
+# Verify C++ toolchain installation
+clang++ --version
+
+# Install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install JDK
+brew install openjdk@21
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+# Verify JDK installation
+javac --version
+
+# Install Gradle
+brew install gradle
+# Test Gradle installation
+gradle --version
+
+# Generate Gradle wrapper (can take a long time on first run)
+gradle wrapper
+
+# Run an example application
+./gradlew colorpaletteclient
+```
+
+### Linux
+
+These instructions are on Ubuntu 24.04 arm64.
+
+```bash
+# Ensure Qt is on PATH or Qt6_DIR is set, adjust as needed
+export PATH=~/Qt/6.10.1/gcc_arm64/bin:$PATH
+# or
+export Qt6_DIR=~/Qt/6.10.1/gcc_arm64
+
+# Ensure build tools and other essential packages are installed
+sudo apt install build-essential cmake gradle openjdk-21-jdk
+gcc --version
+gradle --version
+cmake --version
+javac --version
+
+# Generate Gradle wrapper (can take a long time on first run)
+gradle wrapper
+
+# Run an example application
+./gradlew colorpaletteclient
+```
+
+### Windows
+
+```bash
+# Install C++ toolchain:
+https://visualstudio.microsoft.com/downloads/
+# Install Gradle, for example:
+https://gradle.org/install/
+# Install CMake, for example:
+https://cmake.org/download/
+# Install OpenJDK, for example:
+https://learn.microsoft.com/en-us/java/openjdk/download
+
+# Set needed directories on PATH (adjust paths)
+SET PATH=C:\path\to\CMake\bin;%PATH%
+SET JAVA_HOME=C:\path\to\jdk-21
+SET PATH=%JAVA_HOME%\bin;%PATH%
+SET PATH=C:\path\to\gradle-9.2.1\bin;%PATH%
+SET PATH=%USERPROFILE%\Qt\6.10.1\msvc2022_arm64\bin;%PATH%
+
+# Set up C++ environment, for example (adjust path as needed)
+"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" arm64
+# Verify they're accessible
+where cl
+gradle --version
+javac --version
+qmake --version
+
+# Generate Gradle wrapper (can take a long time on first run)
+gradle wrapper
+
+# Run an example application
+gradlew colorpaletteclient
+
+```
+
+### Troubleshooting
+
+Use Gradle clean to remove earlier builds
+```bash
+gradle clean
+```
+
+If Gradle stops finding for example CMake or Qt, sometimes it helps to restart
+the Gradle daemons:
+```bash
+gradle --stop
+```
+
+Bridge plugin may have also downloaded libraries in a cache which may cause confusion
+```bash
+rm -fr ~/.gradle/caches/qt-downloads
+```
 
 ## End-user Workflow
 
-Effortless first development experience for non-Qt developers is important
-for adoption of Quick Bridges. With Java Bridge, the vision is to publish
-a Maven Gradle plugin and related artifacts either on Maven or on Qt
-download site.
+Effortless first development experience for non-Qt developers a priority for
+Qt Bridges. With Java Bridge, the plan is to publish a Maven Gradle plugin
+and related artifacts either on Maven or on Qt download site. *This is currently
+a work in progress and not yet available.*
 
 ### Description
 
@@ -98,7 +261,7 @@ qtBridge {
 
 ### Gradle Plugin and Maven Artifacts
 
-The Qt Bridge Gradle plugin is lightweight and focused. Its core functions are:
+The Qt Bridge plugin core functions are:
 
 - Detecting the host OS and architecture
 - Resolving and downloading the correct Qt and Qt Bridge artifacts if not specified
@@ -153,21 +316,7 @@ without manual environment setup.
 the host machine, compatibility issues may arise. Currently, the native library is built with Qt 6.10.0, so it's recommended
 to ensure the same version is available locally
 - **Platform support limitations:** Not all platforms are currently supported.
-As for now , macOS arm64 is only available in Qt Server to download
-
-### Fallback
-If Maven or Gradle plugin is not possible for any reason, Qt can provide a one
-big fat JAR file that contains the Bridge classes, Qt libraries, and Bridge
-native libraries. Notably such file is then very large (there might be more
-nuanced options, but let's burn that bridge once we get there).
-
-### QML Syntax Highlighting
-
-QML Language Server is not part of the Maven deliverable. To get QML syntax
-highlighting users need to install Jetbrains' QML LSP plugin from Jetbrains
-Marketplace. Installing is easy through standard Intellij IDEA menus, or directly
-from the marketplace website. Starting from Intellij IDEA version 2025.3, whose estimated release
-date is in December 2025, the QML plugin works with free versions of Intellij IDEA.
+As for now, macOS arm64 and Linux x86 (Ubuntu 24.04( are the only ones available for downloading
 
 ## Bridge Building and Development
 
@@ -218,7 +367,7 @@ wrapper (`./gradlew`).
 | `./gradlew wrapper`  | Creates the Gradle wrapper scripts (`gradlew`/`gradlew.bat`).                      |
 | `./gradlew tasks`    | Lists all available tasks within the project.                                      |
 | `./gradlew check`    | Builds all artifacts, compiles the native bridge library, and runs all unit tests. |
-| `./gradlew docs:all` | Builds and generate java documentation                                             |
+| `./gradlew docs:all` | Builds java documentation                                                          |
 
 #### 2. Managing the Native QtBridge Library
 
