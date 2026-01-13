@@ -8,23 +8,23 @@ package org.qtproject.qt.bridge.resolver
 import org.gradle.api.Project
 import org.gradle.internal.extensions.core.serviceOf
 import org.gradle.workers.WorkerExecutor
-import org.qtproject.qt.bridge.provider.QtBridgeLibProvider
-import org.qtproject.qt.bridge.provider.QtLibsProvider
+import org.qtproject.qt.bridge.provider.QtBridgeLibDownloadProvider
+import org.qtproject.qt.bridge.provider.QtLibsDownloadProvider
 import org.qtproject.qt.bridge.provider.QtProvider
 import org.qtproject.qt.bridge.utils.FileDownloader
 import org.qtproject.qt.bridge.utils.FileExtractor
 
 internal class QtPathResolverFactory(
     private val project: Project,
-    private val providers: Map<QtResourceType, QtProvider>
-) {
+    private val providers: Map<QtResourceType, QtProvider>?
+)  {
     private val cache = mutableMapOf<QtResourceType, QtPathResolver>()
 
-    fun get(type: QtResourceType): QtPathResolver {
-        return cache.getOrPut(type) {
-            val provider = providers[type] ?: error("No QtProvider registered for $type")
-            QtPathResolver(project, provider, type)
+    fun get(type: QtResourceType): QtPathResolver = cache.getOrPut(type) {
+        val provider = providers?.let {
+            it[type] ?: error("No QtProvider registered for $type")
         }
+        QtPathResolver(project, type, provider)
     }
 
     val libsResolver get() = get(QtResourceType.LIBS)
@@ -36,10 +36,12 @@ internal class QtPathResolverFactory(
             val downloader = FileDownloader(workerExecutor)
             val extractor = FileExtractor(workerExecutor)
             val providers = mapOf(
-                QtResourceType.LIBS to QtLibsProvider(project, downloader, extractor),
-                QtResourceType.BRIDGE_NATIVE to QtBridgeLibProvider(project, downloader, extractor)
+                QtResourceType.LIBS to QtLibsDownloadProvider(project, downloader, extractor),
+                QtResourceType.BRIDGE_NATIVE to QtBridgeLibDownloadProvider(project, downloader, extractor)
             )
             return QtPathResolverFactory(project, providers)
         }
+
+        fun withoutDownloadProviders(project: Project) = QtPathResolverFactory(project, null)
     }
 }

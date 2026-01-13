@@ -10,8 +10,8 @@ import org.qtproject.qt.bridge.provider.QtProvider
 
 internal class QtPathResolver(
     private val project: Project,
-    private val provider: QtProvider,
-    private val resourceType: QtResourceType
+    private val resourceType: QtResourceType,
+    private val provider: QtProvider?,
 ) {
     fun resolve(extensionValue: String?): String { // this is passed from Plugin extension (qtlibs or qtBridgeNative)
         val desc = resourceType.description
@@ -38,7 +38,12 @@ internal class QtPathResolver(
             }
         }
 
-        logger.lifecycle("$desc not configured. Starting download and setup...")
-        return provider.provide()
+        return if (provider != null) {
+            logger.lifecycle("$desc not configured. Starting download and setup...")
+            provider.provide()
+        } else {
+            logger.info("$desc not configured and no provider available for automatic download")
+            ""
+        }
     }
 }

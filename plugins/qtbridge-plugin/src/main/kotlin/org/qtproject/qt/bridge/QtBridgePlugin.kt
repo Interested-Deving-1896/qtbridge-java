@@ -281,7 +281,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
         // Check if we can use the resolved Qt
         try {
-            val resolver = QtPathResolverFactory.default(project)
+            val resolver = QtPathResolverFactory.withoutDownloadProviders(project)
             val qtLibDirPath = resolver.libsResolver.resolve(extension.qtLibraryPath.orNull)
             val libDir = java.io.File(qtLibDirPath).canonicalFile
 

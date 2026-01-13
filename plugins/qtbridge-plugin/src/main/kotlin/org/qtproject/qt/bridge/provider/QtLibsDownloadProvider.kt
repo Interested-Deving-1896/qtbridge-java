@@ -15,14 +15,14 @@ import org.qtproject.qt.bridge.utility.Platform
 import java.io.File
 import kotlin.io.extension
 
-internal class QtLibsProvider(
+internal class QtLibsDownloadProvider(
     project: Project,
     private val downloader: FileDownloader,
     private val extractor: FileExtractor,
     private val overwrite: Boolean = false,
 ) : QtProvider {
-    val destinationDir = QtResourceType.LIBS.getDestinationDir(project)
-    val logger = project.logger
+    private val destinationDir = QtResourceType.LIBS.getDestinationDir(project)
+    private val logger = project.logger
 
     override fun provide(): String {
         val platformDir = Platform.getLibraryDirectory()

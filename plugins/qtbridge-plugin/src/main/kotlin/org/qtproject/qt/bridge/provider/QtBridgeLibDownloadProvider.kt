@@ -15,7 +15,7 @@ import org.qtproject.qt.bridge.utils.isArchive
 import org.qtproject.qt.bridge.utility.Platform
 import java.io.File
 
-internal class QtBridgeLibProvider(
+internal class QtBridgeLibDownloadProvider(
     project: Project,
     private val downloader: FileDownloader,
     private val extractor: FileExtractor,
