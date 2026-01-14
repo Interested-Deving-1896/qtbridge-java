@@ -183,6 +183,7 @@ gradlew colorpaletteclient
 
 ### Troubleshooting
 
+#### Cleanups
 Use Gradle clean to remove earlier builds
 ```bash
 gradle clean
@@ -197,6 +198,12 @@ gradle --stop
 Bridge plugin may have also downloaded libraries in a cache which may cause confusion
 ```bash
 rm -fr ~/.gradle/caches/qt-downloads
+```
+
+#### Linux: Could NOT find WrapVulkanHeaders
+
+```bash
+sudo apt install libgl1-mesa-dev libvulkan-dev vulkan-tools
 ```
 
 ## End-user Workflow
