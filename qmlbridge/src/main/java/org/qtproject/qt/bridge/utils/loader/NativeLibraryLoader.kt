@@ -109,14 +109,14 @@ internal object NativeLibraryLoader {
 
     private fun loadFromPath(libPath: Path) {
         val absolutePath = libPath.toAbsolutePath().toString()
-        SystemFacade.load(absolutePath)
+        System.load(absolutePath)
     }
 
     private fun loadFromSystem(libName: String, attempts: MutableList<String>) {
         attempts.add("System.loadLibrary($libName)")
 
         try {
-            SystemFacade.loadLibrary(libName)
+            System.loadLibrary(libName)
         } catch (e: UnsatisfiedLinkError) {
             val message = buildErrorMessage(libName, attempts.toList())
             throw NativeLibraryLoadException(libName, message, e)
@@ -158,9 +158,5 @@ internal object NativeLibraryLoader {
             append("\n\nFor more information, please read documentation on how to build Qt Bridge for java.")
             append("\n\n")
         }
-    }
-
-    internal fun resetForTests() {
-        loadedLibraries.clear()
     }
 }

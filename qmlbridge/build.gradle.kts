@@ -39,10 +39,6 @@ qtBridgePublishing {
 dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:2.1.20-1.0.32")
     embed("org.qtproject.qt.bridge:qtbridge-os-utils")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
-    testImplementation("io.mockk:mockk:1.13.11")
-    testImplementation(kotlin("test"))
     implementation("org.json:json:20251224")
 }
 
