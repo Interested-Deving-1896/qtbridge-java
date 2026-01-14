@@ -6,11 +6,11 @@
 package org.qtproject.qt.bridge.utils.url
 
 import org.qtproject.qt.bridge.utility.Platform
-import org.qtproject.qtbridge.PluginVersion
+import org.qtproject.qt.bridge.utils.QtBridgeResolverUtils
 
 internal class QtPlatformUrlBuilder private constructor(private val baseUrl: String) {
     private val suffix = Platform.getLibraryDirectory()
-    private val version = PluginVersion.VERSION
+    private val version = QtBridgeResolverUtils.majorMinorVersion()
     val qtLibsFile: String
         get() = buildFileName(QT_MINIMAL_NAME)
 

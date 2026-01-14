@@ -18,7 +18,7 @@ internal class EnvironmentConfigurator(
 ) {
     fun configure(task: JavaExec) {
         val libDir = File(qtBridgeLibraryPath, Platform.getLibraryDirectory())
-        val libFile = File(libDir, getQtBridgeNativeLibName())
+        val libFile = File(libDir, QtBridgeResolverUtils.nativeLibName())
         //remove RPATHs on macOS to avoid linking issues
         if (Platform.isMacOS() && libFile.exists()) {
             removeRPaths(libFile)

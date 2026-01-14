@@ -29,9 +29,9 @@ import org.qtproject.qt.bridge.resolver.QtPathResolverFactory
 import org.qtproject.qt.bridge.utility.Platform
 import org.qtproject.qt.bridge.utils.EnvironmentConfigurator
 import org.qtproject.qt.bridge.utils.QtPluginMode
+import org.qtproject.qt.bridge.utils.QtBridgeResolverUtils
 import org.qtproject.qt.bridge.utils.exception.QtResourceExceptionHandler
 import org.qtproject.qt.bridge.utils.prop
-import org.qtproject.qtbridge.PluginVersion
 import java.io.OutputStream
 import java.net.URI
 
@@ -204,13 +204,8 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
     }
 
     private fun resolveQmlBridgeDependency(): String {
-        val pluginVersion = PluginVersion.VERSION
-        val resolvedVersion = if (pluginVersion.contains("+") || pluginVersion.count { it == '.' } < 2) {
-            "$pluginVersion.+"
-        } else {
-            pluginVersion
-        }
-        return "org.qtproject.qt.bridge:qmlbridge:$resolvedVersion"
+        val version = QtBridgeResolverUtils.majorMinorVersion()
+        return "org.qtproject.qt.bridge:qmlbridge:$version"
     }
 
     private fun createRunTask(project: Project, appExtension: QtBridgeAppExtension) {

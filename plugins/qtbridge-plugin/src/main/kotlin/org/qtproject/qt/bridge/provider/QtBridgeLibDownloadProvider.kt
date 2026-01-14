@@ -10,9 +10,9 @@ import org.qtproject.qt.bridge.resolver.QtResourceType
 import org.qtproject.qt.bridge.utils.FileDownloader
 import org.qtproject.qt.bridge.utils.FileExtractor
 import org.qtproject.qt.bridge.utils.getDestinationDir
-import org.qtproject.qt.bridge.utils.getQtBridgeNativeLibName
 import org.qtproject.qt.bridge.utils.isArchive
 import org.qtproject.qt.bridge.utility.Platform
+import org.qtproject.qt.bridge.utils.QtBridgeResolverUtils
 import java.io.File
 
 internal class QtBridgeLibDownloadProvider(
@@ -29,7 +29,7 @@ internal class QtBridgeLibDownloadProvider(
         val platformDir = Platform.getLibraryDirectory()
         val nativeLibDir = File(destinationDir, platformDir)
         nativeLibDir.mkdirs()
-        val targetFile = File(nativeLibDir, getQtBridgeNativeLibName())
+        val targetFile = File(nativeLibDir, QtBridgeResolverUtils.nativeLibName())
 
         if (!overwrite && targetFile.exists()) {
             logger.lifecycle("QtBridge library detected at: ${targetFile.absolutePath}")
