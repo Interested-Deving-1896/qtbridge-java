@@ -139,6 +139,10 @@ gradle --version
 cmake --version
 javac --version
 
+# Ensure right Java is used (in case system has multiple)
+readlink -f "$(which javac)" # For checking which Java is on PATH
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-arm64
+
 # Generate Gradle wrapper (can take a long time on first run)
 gradle wrapper
 
@@ -189,8 +193,10 @@ Use Gradle clean to remove earlier builds
 gradle clean
 ```
 
-If Gradle stops finding for example CMake or Qt, sometimes it helps to restart
-the Gradle daemons:
+If Gradle stops finding for example CMake, AWT, or Qt, sometimes it helps to restart
+the Gradle daemons on the terminal which has the right environment variables set. Gradle
+daemon is a long-lived background process and stopping it forces it to restart with the
+right environment:
 ```bash
 gradle --stop
 ```
