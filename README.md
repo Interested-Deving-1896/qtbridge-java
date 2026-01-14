@@ -16,8 +16,6 @@
        1. Description
        2. Quick start
        3. Gradle Plugin and Maven Artifacts
-       4. Fallback
-       5. QML Syntax Highlighting
     6. Bridge Building and Development
        1. Java Environment
        2. C++ Environment
@@ -214,10 +212,9 @@ sudo apt install libgl1-mesa-dev libvulkan-dev vulkan-tools
 
 ## End-user Workflow
 
-Effortless first development experience for non-Qt developers a priority for
+Effortless first development experience for non-Qt developers is a priority for
 Qt Bridges. With Java Bridge, the plan is to publish a Maven Gradle plugin
-and related artifacts either on Maven or on Qt download site. *This is currently
-a work in progress and not yet available.*
+and related artifacts either on Maven or on Qt download site.
 
 ### Description
 
@@ -249,7 +246,7 @@ pluginManagement {
 
 **Using Maven Local:**
 
-If you're working with a locally published version of the plugin (for development or testing), add `mavenLocal()` to the repositories:
+If you are working with a locally published version of the Qt Bridge Gradle plugin and qmlbridge module (for development or testing), add `mavenLocal()` to the repositories:
 
 ```kotlin
 pluginManagement {
@@ -259,7 +256,7 @@ pluginManagement {
     }
 }
 ```
-For information about publishing and developing QtBridge modules, see the [Qt dev plugins](plugins/qtbridge-dev-plugin/README.md).
+For more information about publishing and developing Qt Bridge modules, see the [Qt dev Gradle plugins](plugins/qtbridge-dev-plugin/README.md).
 
 ###### build.gradle.kts
 ```kotlin
@@ -285,6 +282,10 @@ qtBridge {
     qtBridgeLibraryPath = "/path/to/bridge/native/lib"
 }
 ```
+If you provide a `name` and `mainClass` in the configuration above, you can launch your app directly from the terminal:
+```shell
+./gradlew myApp
+```
 
 ### Gradle Plugin and Maven Artifacts
 
@@ -296,54 +297,23 @@ The Qt Bridge plugin core functions are:
 - Managing QML source folder, imports, and automatic main QML discovery
 - Providing optional overrides for Qt and native library paths
 
-A run task is created only when mainClass is set.
-If name is also specified, the task can be executed with:
-```shell
-./gradlew myApp
-```
-If no name is provided, you run it using the project’s name instead.
+#### Under the Hood: Artifacts management
+The plugin manages three critical components to ensure your application runs seamlessly across different environments:
 
-The plugin reduces manual setup by automatically resolving dependencies and locating QML sources.
-
-The plugin manages three types of artifacts:
-
-#### 1. Qt Bridge Java/Kotlin Classes (JAR)
-- **Description:** Core Qt Bridge API classes for Java/Kotlin developers
-- **Host:** Qt server
-- **Selection:** The latest available Qt Bridge JAR library available.
-- **Version:** 0.1
-
-#### 2. Qt Bridge native library
-- **Description:** Platform-specific native bridge implementation
-- **Variants:** Separate artifacts for each platform and architecture combination
-- **Host:** Qt server
-- **Selection:** The plugin automatically selects the correct library based on detected OS and architecture
-- **Version:** 0.1 built with Qt **6.10.0**
-
-#### 3. Qt libraries
-- **Description:** The Qt framework libraries required by Qt Bridge
-- **Variants:** Platform and architecture specific
-- **Host:** Qt server
-- **Selection:** The plugin automatically selects the correct variant based on detected OS and architecture
-- **Version:** Latest available Qt libraries, currently **6.10.0**
-
-To sum up, when Qt Bridge plugin is added, it automatically:
-
-- Detects the operating system and architecture
-- Downloads the required Qt libraries
-- Downloads platform-specific Qt Bridge native library
-- Configures the build environment
-- Sets up all necessary dependencies
-
-This zero-configuration approach means that any developer can start using Qt Bridge immediately
-without manual environment setup.
+| Artifact                     | Description                      | Selection Logic                    |
+|------------------------------|----------------------------------|------------------------------------|
+| **Qt Bridge SDK (JAR)**      | Java/Kotlin API classes          | Latest version (currently 0.1)     |
+| **Qt Bridge native library** | Platform-specific native binary  | Automatically matches host OS/Arch |
+| **Qt Framework libraries**   | Required shared Qt libraries     | Defaults to 6.10.0                 |
 
 #### Known issues
-- **Version mismatch:**  If the Qt Bridge native library is built with a different Qt version than the one available on
-the host machine, compatibility issues may arise. Currently, the native library is built with Qt 6.10.0, so it's recommended
-to ensure the same version is available locally
-- **Platform support limitations:** Not all platforms are currently supported.
-As for now, macOS arm64 and Linux x86 (Ubuntu 24.04( are the only ones available for downloading
+- **Version mismatch:** The plugin ensures stability by downloading synchronized versions of the Qt framework and
+the Bridge native library (currently **Qt 6.10.0**). However, if you manually specify a local path for one (using
+`qtLibraryPath` or `qtBridgeLibraryPath`) while letting the plugin download the other from the server, you risk a version mismatch.
+- **Platform support limitations:** The plugin currently supports the following environments for automatic artifact downloading:
+    - **macOS:** Apple Silicon (arm64)
+    - **Linux:** x86_64 (Tested on Ubuntu 24.04)
+    - **Windows:** Support coming soon.
 
 ## Bridge Building and Development
 
@@ -391,7 +361,7 @@ wrapper (`./gradlew`).
 
 | Command              | Description                                                                        |
 |----------------------|------------------------------------------------------------------------------------|
-| `./gradlew wrapper`  | Creates the Gradle wrapper scripts (`gradlew`/`gradlew.bat`).                      |
+| ` gradle wrapper`    | Creates the Gradle wrapper scripts (`gradlew`/`gradlew.bat`).                      |
 | `./gradlew tasks`    | Lists all available tasks within the project.                                      |
 | `./gradlew check`    | Builds all artifacts, compiles the native bridge library, and runs all unit tests. |
 | `./gradlew docs:all` | Builds java documentation                                                          |
