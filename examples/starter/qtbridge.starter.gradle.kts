@@ -309,11 +309,11 @@ gradle.rootProject {
             println("  -Planguage=<lang>         : 'java' or 'kotlin' (default: java)")
             println("\nEXAMPLES:")
             println("  # Run Generator:")
-            println("  gradle --init-script qtbridge.gradle.kts")
+            println("  gradle --init-script qtbridge.starter.gradle.kts")
             println("\n  # View Help:")
-            println("  gradle --init-script qtbridge.gradle.kts usage")
+            println("  gradle --init-script qtbridge.starter.gradle.kts usage")
             println("\n  # Custom Generation:")
-            println("  gradle --init-script qtbridge.gradle.kts -PprojectName=MyQtApp -Planguage=kotlin")
+            println("  gradle --init-script qtbridge.starter.gradle.kts -PprojectName=MyQtApp -Planguage=kotlin")
             println("\n" + "=".repeat(90) + "\n")
         }
     }
