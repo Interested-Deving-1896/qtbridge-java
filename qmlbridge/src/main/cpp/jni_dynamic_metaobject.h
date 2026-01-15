@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
-#ifndef DYNAMIC_METAOBJECT_H
-#define DYNAMIC_METAOBJECT_H
+#ifndef JNI_DYNAMIC_METAOBJECT_H
+#define JNI_DYNAMIC_METAOBJECT_H
 
 #include <private/qmetaobjectbuilder_p.h>
 
@@ -13,11 +13,11 @@ class QObject;
 class QMetaObject;
 class QtProperty;
 
-class DynamicMetaObject
+class JniDynamicMetaObject
 {
 public:
-    DynamicMetaObject(const char *className, const QMetaObject *metaObject);
-    ~DynamicMetaObject();
+    JniDynamicMetaObject(const char *className, const QMetaObject *metaObject);
+    ~JniDynamicMetaObject();
 
     int addSlot(const QByteArray &signature, const QByteArray &returnType);
     int addSignal(const QByteArray &signature);
@@ -40,4 +40,4 @@ private:
     QMetaObjectBuilder *m_builder = nullptr;
 };
 
-#endif // DYNAMIC_METAOBJECT_H
+#endif // JNI_DYNAMIC_METAOBJECT_H

@@ -6,7 +6,7 @@
 #ifndef QOBJECT_JAVA_PROXY_H
 #define QOBJECT_JAVA_PROXY_H
 
-#include "dynamic_metaobject.h"
+#include "jni_dynamic_metaobject.h"
 #include "jni_utilities.h"
 #include "qt_property.h"
 
@@ -89,7 +89,7 @@ private:
     static void setPropertyDefaultValue(void **args, const QMetaType &mt);
 
 
-    std::unique_ptr<::DynamicMetaObject> m_dynamicMetaObject;
+    std::unique_ptr<JniDynamicMetaObject> m_dynamicMetaObject;
     bool m_ownedByQml = true; // Indicates whether object is owned by QML or Java
     // Ownerhsip of the user object dictates the type of userObject reference:
     //

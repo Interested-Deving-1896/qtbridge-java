@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
-#include "dynamic_metaobject.h"
+#include "jni_dynamic_metaobject.h"
 
 #include "qt_property.h"
 
@@ -24,7 +24,7 @@ static bool checkSignature(const QByteArray &signature)
     return ok;
 }
 
-DynamicMetaObject::DynamicMetaObject(const char *className, const QMetaObject *metaObject)
+JniDynamicMetaObject::JniDynamicMetaObject(const char *className, const QMetaObject *metaObject)
 {
     m_baseObject = metaObject;
     m_builder = new QMetaObjectBuilder();
@@ -32,12 +32,12 @@ DynamicMetaObject::DynamicMetaObject(const char *className, const QMetaObject *m
     m_builder->setSuperClass(metaObject);
 }
 
-DynamicMetaObject::~DynamicMetaObject()
+JniDynamicMetaObject::~JniDynamicMetaObject()
 {
     delete m_builder;
 }
 
-QMetaPropertyBuilder DynamicMetaObject::createProperty(const QByteArray &name,
+QMetaPropertyBuilder JniDynamicMetaObject::createProperty(const QByteArray &name,
                                                        const QtProperty &value)
 {
     int propertyNotifyId = getPropertyNotifyId(value.notifySignature);
@@ -49,7 +49,7 @@ QMetaPropertyBuilder DynamicMetaObject::createProperty(const QByteArray &name,
     return builder->addProperty(name, value.cppType, metaType, propertyNotifyId);
 }
 
-int DynamicMetaObject::indexOfMethod(QMetaMethod::MethodType mtype,
+int JniDynamicMetaObject::indexOfMethod(QMetaMethod::MethodType mtype,
                                      const QByteArray &signature) const
 {
     int result = -1;
@@ -73,7 +73,7 @@ int DynamicMetaObject::indexOfMethod(QMetaMethod::MethodType mtype,
     return result;
 }
 
-int DynamicMetaObject::indexOfProperty(const QByteArray &name) const
+int JniDynamicMetaObject::indexOfProperty(const QByteArray &name) const
 {
     if (m_builder) {
         const int result = m_builder->indexOfProperty(name);
@@ -83,7 +83,7 @@ int DynamicMetaObject::indexOfProperty(const QByteArray &name) const
     return m_baseObject->indexOfProperty(name);
 }
 
-int DynamicMetaObject::getPropertyNotifyId(const QByteArray &signature) const
+int JniDynamicMetaObject::getPropertyNotifyId(const QByteArray &signature) const
 {
     int notifyId = -1;
     if (!signature.isEmpty()) {
@@ -92,7 +92,7 @@ int DynamicMetaObject::getPropertyNotifyId(const QByteArray &signature) const
     return notifyId;
 }
 
-QMetaObjectBuilder *DynamicMetaObject::provideBuilder()
+QMetaObjectBuilder *JniDynamicMetaObject::provideBuilder()
 {
     if (!m_builder) {
         m_builder = new QMetaObjectBuilder();
@@ -102,7 +102,7 @@ QMetaObjectBuilder *DynamicMetaObject::provideBuilder()
     return m_builder;
 }
 
-int DynamicMetaObject::addSlot(const QByteArray &signature, const QByteArray &returnType)
+int JniDynamicMetaObject::addSlot(const QByteArray &signature, const QByteArray &returnType)
 {
     if (!checkSignature(signature))
         return -1;
@@ -112,14 +112,14 @@ int DynamicMetaObject::addSlot(const QByteArray &signature, const QByteArray &re
     return m_baseObject->methodCount() + methodBuilder.index();
 }
 
-int DynamicMetaObject::addSignal(const QByteArray &signature)
+int JniDynamicMetaObject::addSignal(const QByteArray &signature)
 {
     if (!checkSignature(signature))
         return -1;
     return m_baseObject->methodCount() + provideBuilder()->addSignal(signature).index();
 }
 
-int DynamicMetaObject::addProperty(const QByteArray &name, const QtProperty &value)
+int JniDynamicMetaObject::addProperty(const QByteArray &name, const QtProperty &value)
 {
     int index = indexOfProperty(name);
     if (index != -1)
@@ -134,12 +134,12 @@ int DynamicMetaObject::addProperty(const QByteArray &name, const QtProperty &val
     return index;
 }
 
-const QMetaObject *DynamicMetaObject::metaObject() const
+const QMetaObject *JniDynamicMetaObject::metaObject() const
 {
     return m_builder->toMetaObject();
 }
 
-void DynamicMetaObject::dumpQObjectMeta(const QObject *obj)
+void JniDynamicMetaObject::dumpQObjectMeta(const QObject *obj)
 {
     if (!obj) {
         qDebug() << "dumpQObjectMeta: null object";
@@ -160,7 +160,8 @@ void DynamicMetaObject::dumpQObjectMeta(const QObject *obj)
         case QMetaMethod::Method:    kind = "invokable"_L1; break;
         default:                     kind = "method"_L1;    break;
         }
-        qDebug().noquote() << "  [%1] %2 %3"_L1.arg(kind, ret, QString::fromLatin1(sig));
+        qDebug().noquote() << "  [%1] %2 %3"_L1
+                                  .arg(kind, QString::fromLatin1(ret), QString::fromLatin1(sig));
     };
 
     // Walk the inheritance chain: this class, then its superclasses
@@ -182,8 +183,9 @@ void DynamicMetaObject::dumpQObjectMeta(const QObject *obj)
                 if (p.isStored())     flags += "T"_L1;
                 if (p.isUser())       flags += "U"_L1;
 
-                QString line = "  %1 %2  [%3]"_L1.arg(p.typeName(), p.name())
-                                   .arg(flags.isEmpty() ? "-"_L1 : flags);
+                QString line = "  %1 %2  [%3]"_L1.arg(QString::fromLatin1(p.typeName()),
+                                                      QString::fromLatin1(p.name()))
+                                                 .arg(flags.isEmpty() ? "-"_L1 : flags);
 
                 if (p.hasNotifySignal()) {
                     const QMetaMethod n = p.notifySignal();

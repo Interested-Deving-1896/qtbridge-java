@@ -71,7 +71,7 @@ Supported platforms:
 
 The needed components are:
 - This repository i)
-- Qt 6.10+ ii)
+- Qt 6.10+ (Qt 6.8, Qt 6.5) ii)
 - Gradle 8.14.2+
 - CMake 3.16+
 - C++ Toolchain
@@ -83,7 +83,9 @@ git clone https://code.qt.io/qt/qtbridge-java.git/
 cd qtbridge-java
 ```
 ii) To get Qt please see [Qt Download Page](https://www.qt.io/development/download), or
-[compile it from sources](https://doc.qt.io/qt-6/build-sources.html).
+[compile it from sources](https://doc.qt.io/qt-6/build-sources.html). Qt 6.10 is the
+required minimum and tested version, but for early experimentation purposes
+Qt 6.8 and Qt 6.5 should work too
 
 Following are example command line instructions for different platforms, adjust as needed.
 It is also possible to use an IDE for development. For this purpose we've tested [VS Code](https://code.visualstudio.com/download) and [Intellij IDEA](https://www.jetbrains.com/idea/).

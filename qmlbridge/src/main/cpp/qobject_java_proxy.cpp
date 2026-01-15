@@ -20,7 +20,7 @@ using namespace Utility::JNI;
 QObjectJavaProxy::QObjectJavaProxy(qint64 cacheKey, QObject *parent)
     : QtProxyBase(parent), m_cacheKey(cacheKey)
 {
-    m_dynamicMetaObject = std::make_unique<::DynamicMetaObject>("QObjectJavaProxy", &staticMetaObject);
+    m_dynamicMetaObject = std::make_unique<JniDynamicMetaObject>("QObjectJavaProxy", &staticMetaObject);
 }
 
 QObjectJavaProxy::~QObjectJavaProxy()

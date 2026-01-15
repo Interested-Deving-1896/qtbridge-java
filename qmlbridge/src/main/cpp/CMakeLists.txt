@@ -8,7 +8,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core CorePrivate Gui Qml QuickTest)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml QuickTest)
+
+if (Qt6_VERSION VERSION_GREATER_EQUAL 6.9)
+     # CorePrivate has its own CMake module since 6.9
+     find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
+endif()
+
 find_package(JNI REQUIRED)
 
 qt_standard_project_setup()
@@ -17,7 +23,7 @@ add_library(QtBridgeNative SHARED
     jni_object.h java_object.h jni_type.h
     jni_type_signature.h
     converter.cpp converter.h
-    dynamic_metaobject.cpp dynamic_metaobject.h
+    jni_dynamic_metaobject.cpp jni_dynamic_metaobject.h
     jni_context.h jni_context.cpp
     jni_qtlistmodel.cpp jni_qtlistmodel.h
     jni_qml_application.cpp jni_qml_application.h

@@ -57,7 +57,7 @@ namespace Utility::JNI {
             const auto methodId = env->GetMethodID(clazz, methodName, signature.toUtf8().constData());
             Q_ASSERT_X(methodId, "Method lookup",
                        qUtf8Printable(QStringLiteral("Method %1 with signature %2 not found")
-                               .arg(methodName).arg(signature)));
+                               .arg(QString::fromLatin1(methodName)).arg(signature)));
             return JNIMethodInvoker::invokeMethod<ReturnType>(env, javaObject, methodId, args...);
         }
 
@@ -74,7 +74,7 @@ namespace Utility::JNI {
 
             const auto globalMethod = JNICache::getGlobalMethod(classNameBytes, methodNameBytes, signatureBytes);
             const QString assertMessage = QStringLiteral("Method not found: %1 with signature %2 in class %3")
-                            .arg(methodName, signature, className);
+                            .arg(QString::fromLatin1(methodName), signature, QString::fromLatin1(className));
             Q_ASSERT_X(globalMethod.method, "JNI method lookup", assertMessage.toUtf8().constData());
             return JNIMethodInvoker::invokeMethod<ReturnType>(env, javaObject, globalMethod.method, args...);
         }
@@ -87,7 +87,7 @@ namespace Utility::JNI {
             const auto methodId = env->GetStaticMethodID(javaClass, methodName, signature.toUtf8().constData());
             Q_ASSERT_X(methodId, "Static method lookup",
                        qUtf8Printable(QStringLiteral("Static method %1 with signature %2 not found")
-                               .arg(methodName).arg(signature)));
+                               .arg(QString::fromLatin1(methodName)).arg(signature)));
             return JNIMethodInvoker::invokeStaticMethod<ReturnType>(env, javaClass, methodId, args...);
         }
 
@@ -106,7 +106,7 @@ namespace Utility::JNI {
                                                                 signatureBytes, true);
 
             const QString assertMessage = QStringLiteral("Static Method not found: %1 with signature %2 in class %3")
-                            .arg(methodName, signature, className);
+                            .arg(QString::fromLatin1(methodName), signature, QString::fromLatin1(className));
             Q_ASSERT_X(globalMethod.method, "JNI method lookup", assertMessage.toUtf8().constData());
             return JNIMethodInvoker::invokeStaticMethod<ReturnType>(env, javaClass, globalMethod.method, args...);
         }
