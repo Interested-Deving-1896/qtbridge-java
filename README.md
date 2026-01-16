@@ -65,9 +65,9 @@ This chapter provides hands-on instructions for setting up the development envir
 downloaded automatically by the Qt Bridge Gradle plugin.
 
 Supported platforms:
-- macOS (`arm64`),
-- Linux (`x86_64`),
-- Windows (`x64`)
+- macOS (`arm64`, `x86_64`),
+- Linux (`arm64`, `x86_64`),
+- Windows (`arm64`, `x64`)
 
 The needed components are:
 - This repository i)
