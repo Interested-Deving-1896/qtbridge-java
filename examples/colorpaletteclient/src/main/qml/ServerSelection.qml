@@ -6,6 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import QtExampleStyle
+import QtBridge
 
 pragma ComponentBehavior: Bound
 

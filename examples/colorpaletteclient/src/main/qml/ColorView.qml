@@ -10,6 +10,7 @@ import QtQuick.Effects
 import QtQuick.Shapes
 
 import QtExampleStyle
+import QtBridge
 
 Rectangle {
     id: root

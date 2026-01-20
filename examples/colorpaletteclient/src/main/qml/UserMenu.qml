@@ -9,6 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 
 import QtExampleStyle
+import QtBridge
 
 Popup {
     id: userMenu
