@@ -35,7 +35,6 @@ void JNICALL nativeCreateQApplication(JNIEnv *env, jclass, jobjectArray argv)
     QMLApplication::initializeApp(arguments);
 }
 
-
 jboolean JNICALL nativeLoadQMLFile(JNIEnv *env, jclass, jstring fileName)
 {
     if (!QMLApplication::instance()->ensureCanLoadQML())
@@ -68,13 +67,23 @@ void JNICALL nativeQuit(JNIEnv *env, jclass)
 
 QMLApplication::QMLApplication(const std::vector<std::string> &arguments)
 {
+    constexpr const char *suppressQmlWarningsOption = "--qtbridge-suppress-qml-warnings";
     m_argc = static_cast<int>(arguments.size());
     m_arguments = arguments;
+    bool suppressQmlWarnings = false;
     m_argv.resize(m_argc);
-    for (int i = 0; i < m_argc; ++i)
+    for (int i = 0; i < m_argc; ++i) {
+        if (m_arguments[i] == suppressQmlWarningsOption) {
+            m_argc--;
+            suppressQmlWarnings = true;
+            continue;
+        }
         m_argv[i] = m_arguments[i].data();
+    }
     m_qapp = new QGuiApplication(m_argc, m_argv.data());
     m_qmlEngine = new QQmlApplicationEngine();
+    if (suppressQmlWarnings)
+        m_qmlEngine->setOutputWarningsToStandardError(false);
 }
 
 int executeTest(std::vector<std::string> arguments)
@@ -149,7 +158,7 @@ void QMLApplication::initializeJNI(JNIEnv *env)
 bool QMLApplication::ensureAppAndThreadThrowIfNot()
 {
     if (!m_qapp) {
-        JNIUtilities::throwIllegalStateException("QtQuickApplication is not initialized or has already been released");
+        JNIUtilities::throwIllegalStateException("QtQuickApplication already released");
         return false;
     }
     if (QThread::currentThread() != m_qapp->thread()) {

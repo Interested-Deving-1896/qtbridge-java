@@ -97,6 +97,8 @@ public class QtQuickApplication extends QtAbstractApplication {
         if (!qmlFile.exists())
             throw new IllegalArgumentException("QML file does not exist");
         m_qmlLoaded = nativeLoadQMLFile(qmlFilePath);
+        if (!m_qmlLoaded)
+            throw new IllegalStateException("Failed to load QML file");
     }
 
     /**
@@ -115,6 +117,8 @@ public class QtQuickApplication extends QtAbstractApplication {
             throw new IllegalArgumentException("QML content cannot be null or empty");
         }
         m_qmlLoaded = nativeLoadQMLContent(qmlContent);
+        if (!m_qmlLoaded)
+            throw new IllegalStateException("Failed to load QML content");
     }
 
     /**
