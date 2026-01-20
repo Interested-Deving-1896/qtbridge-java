@@ -4,7 +4,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-
 import QtBridge
 
 Window {
@@ -12,7 +11,7 @@ Window {
     width: 500
     height: 400
     visible: true
-    title: qsTr("Color Palette Client - Java Edition")
+    title: qsTr("Color Palette Client")
 
     enum DataView {
         UserView = 0,
