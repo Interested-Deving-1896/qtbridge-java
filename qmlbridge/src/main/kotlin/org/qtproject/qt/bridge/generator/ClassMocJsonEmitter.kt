@@ -9,9 +9,7 @@ import com.google.devtools.ksp.processing.Dependencies
 import org.json.JSONArray
 import org.json.JSONObject
 
-internal class ClassMocJsonEmitter(
-    private val codeGenerator: CodeGenerator,
-) {
+internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
     private companion object {
         // MOC's hardcoded revision number
         const val MOC_OUTPUT_REVISION = 69

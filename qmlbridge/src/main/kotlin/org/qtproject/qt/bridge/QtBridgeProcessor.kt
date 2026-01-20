@@ -11,28 +11,26 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import org.qtproject.qt.bridge.generator.*
-import org.qtproject.qt.bridge.generator.GeneratorEnvironment
 import org.qtproject.qt.bridge.annotations.QMLRegistrable
 import org.qtproject.qt.bridge.annotations.QMLSignals
 import org.qtproject.qt.bridge.utils.containingClass
 import kotlin.collections.flatMap
 
 internal class QtBridgeProcessor(
-    private val codeGenerator: CodeGenerator,
+    codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
 
     private lateinit var classModelGenerator: ClassModelGenerator
-    private lateinit var classCreationEmitter: ClassCreationEmitter
-    private lateinit var classMocJsonEmitter: ClassMocJsonEmitter
+    private val classCreationEmitter = ClassCreationEmitter(codeGenerator)
+    private val classMocJsonEmitter = ClassMocJsonEmitter(codeGenerator)
     private val qmlRegistrables = mutableListOf<RegistrableClass>()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val generatorEnv = GeneratorEnvironment(codeGenerator, resolver, logger)
 
         val allAnnotations = listOf(
             QMLSignals::class,
-            QMLRegistrable::class,
+            QMLRegistrable::class
         ).mapNotNull { it.qualifiedName }
 
         val annotatedSymbols = allAnnotations.flatMap { annotation ->
@@ -44,8 +42,6 @@ internal class QtBridgeProcessor(
             .distinct()
 
         classModelGenerator = ClassModelGenerator(resolver, logger)
-        classCreationEmitter = ClassCreationEmitter(generatorEnv.codeGenerator)
-        classMocJsonEmitter = ClassMocJsonEmitter(generatorEnv.codeGenerator)
 
         for (clazz in annotatedClasses) {
             val model = classModelGenerator.generate(clazz)

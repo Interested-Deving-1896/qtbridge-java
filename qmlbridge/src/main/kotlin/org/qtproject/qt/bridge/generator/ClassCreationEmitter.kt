@@ -9,9 +9,7 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import org.qtproject.qt.bridge.generator.*
 
-internal class ClassCreationEmitter(
-    private val codeGenerator: CodeGenerator
-) {
+internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
     fun emitClassFromModel(model: RegistrableClass) {
         val packageName = model.packageName
         val className = model.simpleName
