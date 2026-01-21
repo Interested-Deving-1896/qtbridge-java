@@ -6,7 +6,7 @@
 package org.qtproject.qt.bridge.provider
 
 import org.gradle.api.Project
-import org.qtproject.qt.bridge.resolver.QtResourceType
+import org.qtproject.qt.bridge.resolver.factory.QtResourceType
 import org.qtproject.qt.bridge.utils.FileDownloader
 import org.qtproject.qt.bridge.utils.FileExtractor
 import org.qtproject.qt.bridge.utils.getDestinationDir
@@ -21,7 +21,7 @@ internal class QtLibsDownloadProvider(
     private val extractor: FileExtractor,
     private val overwrite: Boolean = false,
 ) : QtProvider {
-    private val destinationDir = QtResourceType.LIBS.getDestinationDir(project)
+    private val destinationDir = QtResourceType.QT_LIBS.getDestinationDir(project)
     private val logger = project.logger
 
     override fun provide(): String {

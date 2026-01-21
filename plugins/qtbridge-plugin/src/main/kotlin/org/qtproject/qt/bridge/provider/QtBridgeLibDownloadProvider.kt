@@ -6,7 +6,7 @@
 package org.qtproject.qt.bridge.provider
 
 import org.gradle.api.Project
-import org.qtproject.qt.bridge.resolver.QtResourceType
+import org.qtproject.qt.bridge.resolver.factory.QtResourceType
 import org.qtproject.qt.bridge.utils.FileDownloader
 import org.qtproject.qt.bridge.utils.FileExtractor
 import org.qtproject.qt.bridge.utils.getDestinationDir
