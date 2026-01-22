@@ -8,15 +8,14 @@ plugins {
     id("qtbridge.dev-embed")
     id("qtbridge.dev-publish")
 }
-
 group = "org.qtproject.qt.bridge"
 version = "0.1"
 
 val generateVersionFile by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/version")
-    val versionValue = providers.provider { version.toString() }
-    val groupValue = providers.provider { group.toString() }
-    val nameValue = providers.provider { name }
+    val versionValue = providers.provider { project.version }
+    val groupValue = providers.provider { project.group }
+    val nameValue = providers.provider { project.name }
     val packageName = "org.qtproject.qtbridge"
 
     inputs.property("version", versionValue)
