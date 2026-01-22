@@ -4,6 +4,7 @@
  */
 
 package org.qtproject.qt.bridge.generator
+
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import org.json.JSONArray
@@ -173,6 +174,12 @@ internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
             )
         }
 
+        classInfosArray.put(
+            JSONObject()
+                .put("name", "DefaultProperty")
+                .put("value", "children")
+        )
+
         return classInfosArray
     }
 
@@ -204,6 +211,21 @@ internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
 
             propertiesArray.put(propertyObj)
         }
+
+        val childrenPropertyObj = JSONObject()
+            .put("name", "children")
+            .put("constant", true)
+            .put("designable", true)
+            .put("final", false)
+            .put("index", properties.size)
+            .put("read", "children")
+            .put("required", false)
+            .put("scriptable", true)
+            .put("stored", false)
+            .put("type", "QQmlListProperty<QObject>")
+            .put("user", false)
+
+        propertiesArray.put(childrenPropertyObj)
         return propertiesArray
     }
 
@@ -227,9 +249,9 @@ internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
                 .put("name", invokable.name)
                 .put("arguments", methodArgumentsArray)
                 .put("access", "public")
-                // QMetaObject index. This and other similar indexes are possibly not correct
-                // as we always start from 0. However it's uncertain how much it matters for
-                // QML tooling file usage
+                // QMetaObject index used in the tooling file. The exact value is not critical as long as it
+                // is non-negative; these indexes are only relevant to the QML compiler, which is not used
+                // by the Java bridge.
                 .put("index", index)
                 // QTBUG-143296: Kotlin functions may have default arguments. This might imply
                 // we need to generate method with and without the parameter (isCloned true)
