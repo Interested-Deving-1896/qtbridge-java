@@ -127,7 +127,7 @@ instructions:
 
   - type: EnvironmentVariable
     variableName: JAVA_HOME
-    variableValue: "C:\\Program Files\\Java\\jdk-21"
+    variableValue: "C:\\Program Files\\Java\\jdk-21.0.10"
     enable_if:
       condition: property
       property: host.os
