@@ -25,19 +25,29 @@ QObjectJavaProxy::QObjectJavaProxy(qint64 cacheKey, QObject *parent)
 
 QObjectJavaProxy::~QObjectJavaProxy()
 {
+    // Destruction during shutdown may happen after JVM is gone,
+    // in particular with the context creation prototype items.
+    // Return early to avoid unnecessary JVM attach failure warning
+    if (!m_userObject && !m_qtObject)
+        return;
+
+    auto *env = JniContext::getEnv();
+    if (!env)
+        return;
+
     if (m_userObject) {
         JNIProxyUserObjectMap::removeByProxy(this);
 
         if (m_ownedByQml)
-            JniContext::getEnv()->DeleteGlobalRef(m_userObject);
+            env->DeleteGlobalRef(m_userObject);
         else
-            JniContext::getEnv()->DeleteWeakGlobalRef(m_userObject);
+            env->DeleteWeakGlobalRef(m_userObject);
 
         m_userObject = nullptr;
     }
 
     if (m_qtObject) {
-        JniContext::getEnv()->DeleteGlobalRef(m_qtObject);
+        env->DeleteGlobalRef(m_qtObject);
         m_qtObject = nullptr;
     }
 }

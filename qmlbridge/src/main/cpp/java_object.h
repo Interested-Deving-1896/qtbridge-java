@@ -41,6 +41,7 @@ namespace Utility::JNI {
             jobject localRef = weakRef ? env->NewLocalRef(weakRef) : nullptr;
             if (!localRef) {
                 qWarning() << "Object already garbage collected";
+                return;
             }
             jclass clazz = env->GetObjectClass(localRef);
             JavaObject::callMethod<ReturnType>(env, clazz, localRef, method, std::forward<Args>(args)...);

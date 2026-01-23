@@ -99,8 +99,12 @@ int executeTest(std::vector<std::string> arguments)
         argv.push_back(s.data());
 
     const int argc = static_cast<int>(argv.size());
+
     // 'sourceDir' parameter is passed as nullptr because we supply it with "-input" option in argv
-    return quick_test_main(argc, argv.data(), "qtbridge-autotest", nullptr);
+    auto ret = quick_test_main(argc, argv.data(), "qtbridge-autotest", nullptr);
+    QmlRegistrar::clearRegistrations();
+
+    return ret;
 }
 
 jint JNICALL nativeExecuteTest(JNIEnv *env, jclass, jobjectArray argv)
