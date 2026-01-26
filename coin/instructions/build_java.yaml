@@ -27,8 +27,24 @@ instructions:
       equals_value: Windows
 
   - type: EnvironmentVariable
+    variableName: JAVA_ARCH
+    variableValue: "amd64"
+    enable_if:
+      condition: property
+      property: host.arch
+      equals_value: X86_64
+
+  - type: EnvironmentVariable
+    variableName: JAVA_ARCH
+    variableValue: "arm64"
+    enable_if:
+      condition: property
+      property: host.arch
+      equals_value: AARCH64
+
+  - type: EnvironmentVariable
     variableName: JAVA_HOME
-    variableValue: "/usr/lib/jvm/java-21-openjdk-amd64"
+    variableValue: "/usr/lib/jvm/java-21-openjdk-{{.Env.JAVA_ARCH}}"
     enable_if:
       condition: property
       property: host.os
@@ -49,16 +65,35 @@ instructions:
       condition: property
       property: host.os
       equals_value: MacOS
+
+  - type: ExecuteCommand
+    command: "sudo DEBIAN_FRONTEND=noninteractive apt-get -q -y install openjdk-21-jdk"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install openjdk to linux.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Linux
+
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "{{.Env.JAVA_HOME}}\\bin;"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
   # This should  go into qt5 provisioning
   - type: ExecuteCommand
-    command: "curl -L https://services.gradle.org/distributions/gradle-8.14.2-bin.zip -o gradle-8.14.2-bin.zip"
+    command: "curl -L https://services.gradle.org/distributions/gradle-9.2.1-bin.zip -o gradle-bin.zip"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to download gradle.
 
   - type: ExecuteCommand
-    command: "unzip gradle-8.14.2-bin.zip"
+    command: "unzip gradle-bin.zip"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
@@ -69,7 +104,7 @@ instructions:
       equals_value: Windows
 
   - type: ExecuteCommand
-    command: "7z x gradle-8.14.2-bin.zip"
+    command: "7z x gradle-bin.zip"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
@@ -79,31 +114,9 @@ instructions:
       property: host.os
       equals_value: Windows
 
-  - type: ExecuteCommand
-    command: "curl -L https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.exe -o {{.AgentWorkingDir}}\\jdk-21_windows-x64_bin.exe"
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to download jdk.
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-
-  - type: ExecuteCommand
-    command: "{{.AgentWorkingDir}}\\jdk-21_windows-x64_bin.exe /s SPONSORS=0"
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to install jdk.
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-
   - type: AppendToEnvironmentVariable
     variableName: PATH
-    variableValue: :{{.AgentWorkingDir}}/gradle-8.14.2/bin/
+    variableValue: :{{.AgentWorkingDir}}/gradle-9.2.1/bin/
     disable_if:
       condition: property
       property: host.os
@@ -111,23 +124,7 @@ instructions:
 
   - type: AppendToEnvironmentVariable
     variableName: PATH
-    variableValue: ";C:\\{{.AgentWorkingDir}}\\gradle-8.14.2\\bin"
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-
-  - type: PrependToEnvironmentVariable
-    variableName: PATH
-    variableValue: "C:\\Program Files\\Java\\jdk-21\\bin;"
-    enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
-
-  - type: EnvironmentVariable
-    variableName: JAVA_HOME
-    variableValue: "C:\\Program Files\\Java\\jdk-21.0.10"
+    variableValue: ";C:\\{{.AgentWorkingDir}}\\gradle-9.2.1\\bin"
     enable_if:
       condition: property
       property: host.os
