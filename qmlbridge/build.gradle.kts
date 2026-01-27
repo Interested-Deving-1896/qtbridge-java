@@ -27,11 +27,11 @@ QtBridgeNativeBuild {
 }
 
 qtBridgePublishing {
-    moduleName = "QtBridge QML"
+    moduleName = "Qt Bridge for JVM"
     moduleDescription = """
-        Bridge library between Java/Kotlin and Qt QML. Provides a bidirectional binding layer that enables
-        seamless interaction between the native UI layer and Java/Kotlin code. Supports exposing objects,
-        properties, and methods, as well as handling callbacks and some data models. Read documentation on //LINK
+        Bridge library enabling bidirectional communication between Java/Kotlin and Qt QML.
+        Provides a binding layer for exposing objects, properties and methods, supporting callbacks and selected
+        data models to enable seamless interaction between the native UI layer and JVM-based application logic.
     """.trimIndent()
 }
 

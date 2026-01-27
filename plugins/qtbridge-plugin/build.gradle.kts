@@ -72,10 +72,10 @@ kotlin {
 }
 
 qtBridgePublishing {
-    moduleName = "QtBridge Plugin"
+    moduleName = "Qt Bridge for JVM - Gradle Plugin"
     moduleDescription = """
-    A Gradle plugin that configures and integrates the Qt Bridge environment for Kotlin or Java projects.
-    This plugin ensures that all required Qt and native bridge resources are properly resolved, downloaded (if missing).
+        Gradle plugin for configuring and integrating the Qt Bridge environment in Kotlin and Java projects.
+        It automatically resolves, downloads (when necessary), and wires all required Qt runtime and native bridge components.
     """.trimIndent()
 }
 
