@@ -96,6 +96,10 @@ val runQtTests = tasks.register<JavaExec>("runQtTests") {
 
     // Don't pop up a visible window when running a test
     environment("QT_QPA_PLATFORM" to "offscreen")
+    // Use software rendering to avoid any graphics driver issues on CI
+    environment("QSG_RHI_BACKEND", "software")
+    environment("QT_QUICK_BACKEND", "software")
+
     val projectPathForLog = project.path
 
     doFirst {
