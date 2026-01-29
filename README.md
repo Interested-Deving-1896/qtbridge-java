@@ -429,6 +429,7 @@ Example applications (e.g., `colorpaletteclient`) support automatic library mana
 | `QTBRIDGE_NATIVE_DIR=<path>`   | Environment Variable | `check` task and example applications                      | Specifies the directory containing the compiled native library.                |
 | `-Pbenchmark`                  | Project Property     | `check` task                                               | Enables benchmark tests during execution.                                      |
 | `-Pqt.plugin.mode`             | Project Property     | Examples tasks or any project that applies qtbridge-plugin | Allows downloading qt bridge and qt libraries if missing in the caller project |
+| `-Pqtbridge.native.buildtype`  | Project Property     | QtBridge native library build itself                       | Specifies the build type. Allowed values: release|debug. Default: release      |
 
 ## Java Bridge API Overview
 

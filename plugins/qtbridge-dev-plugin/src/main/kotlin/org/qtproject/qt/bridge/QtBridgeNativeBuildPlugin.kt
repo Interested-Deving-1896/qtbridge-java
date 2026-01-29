@@ -86,35 +86,61 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
         val sharedLibSuffix = Platform.getSharedLibrarySuffix()
         val cmakeBuildDir = project.layout.buildDirectory.dir("cmake")
 
-        val cmakeBuildTask = registerCMakeBuildTasks(project, osPrefix, cmakeBuildDir, extension)
-        val moveTask = registerMoveLibTask(project, osPrefix, sharedLibSuffix, cmakeBuildDir, extension)
+        // Build 'Release' unless told otherwise
+        val buildType = when ((project.findProperty("qtbridge.native.buildtype") as? String)
+            ?.trim()
+            ?.lowercase()
+            ?.ifEmpty { null }
+        ) {
+            null, "release", "rel" -> "Release"
+            "debug", "dbg" -> "Debug"
+            else -> throw IllegalArgumentException(
+                "Invalid -Pqtbridge.native.buildtype. Supported values: release/rel, debug/dbg"
+            )
+        }
+        project.logger.lifecycle("QtBridgeNativeBuildPlugin: buildtype = $buildType")
+
+        val cmakeBuildTask = registerCMakeBuildTasks(project, osPrefix, cmakeBuildDir, extension, buildType)
+        val moveTask = registerMoveLibTask(project, osPrefix, sharedLibSuffix, cmakeBuildDir, extension, buildType)
         registerGenerateLibsTasks(project, cmakeBuildTask, moveTask)
-        registerJarTask(project, osPrefix, sharedLibSuffix, cmakeBuildDir, extension.outputDir.get(), cmakeBuildTask)
+        registerJarTask(project, osPrefix, sharedLibSuffix, cmakeBuildDir, extension.outputDir.get(), cmakeBuildTask, buildType)
     }
 
     private fun registerCMakeBuildTasks(
         project: Project,
         platform: String,
         cmakeBuildDir: Provider<Directory>,
-        extension: QtBridgeNativePluginExtension
+        extension: QtBridgeNativePluginExtension,
+        buildType: String
     ): TaskProvider<Exec> {
         val cmakeCommand = if (Platform.isWindows()) "cmake.exe" else "cmake"
         val cmakePlatformBuildDir = cmakeBuildDir.map { it.dir(platform) }
         val platformCapitalized = platform.replaceFirstChar { it.uppercaseChar() }
 
         val configure = project.tasks.register("configureCMake$platformCapitalized", Exec::class.java) {
-            commandLine(
-                cmakeCommand,
-                "-S", project.file(extension.sourceDir.get()),
-                "-B", cmakePlatformBuildDir.get().asFile,
-                "-DCMAKE_BUILD_TYPE=Release",
+            val srcDir = project.file(extension.sourceDir.get())
+            val buildDir = cmakePlatformBuildDir.get().asFile
+            val args = mutableListOf(
+                "-S", srcDir.absolutePath,
+                "-B", buildDir.absolutePath
             )
+            // On Windows CMAKE_BUILD_TYPE is ignored (supports multiple build types).
+            // There the build type is defined at build time instead of configuration time
+            if (!Platform.isWindows())
+                args += "-DCMAKE_BUILD_TYPE=$buildType"
+            commandLine(listOf(cmakeCommand) + args)
         }
 
         return project.tasks.register("buildCMake$platformCapitalized", Exec::class.java) {
             dependsOn(configure)
             workingDir(cmakePlatformBuildDir.get().asFile)
-            commandLine(cmakeCommand, "--build", ".")
+
+            // On Windows the build type is selected at build time,
+            // and on other platforms at configuration time
+            if (Platform.isWindows())
+                commandLine(cmakeCommand, "--build", ".", "--config", buildType)
+            else
+                commandLine(cmakeCommand, "--build", ".")
         }
     }
 
@@ -123,7 +149,8 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
         platform: String,
         sharedLibSuffix: String,
         cmakeBuildDir: Provider<Directory>,
-        extension: QtBridgeNativePluginExtension
+        extension: QtBridgeNativePluginExtension,
+        buildType: String
     ): TaskProvider<Copy> {
         return project.tasks.register("moveLib", Copy::class.java) {
             val platformBuildDir = cmakeBuildDir.map { it.dir(platform) }
@@ -132,9 +159,9 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
                 include("*$sharedLibSuffix")
             }
 
-            // on Windows, check Debug subdirectory
+            // On Windows, use the Release/Debug subdirectory
             if (Platform.isWindows()) {
-                from(platformBuildDir.map { it.dir("Debug") }) {
+                from(platformBuildDir.map { it.dir(buildType) }) {
                     include("*$sharedLibSuffix")
                 }
             }
@@ -148,17 +175,17 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
                 }?.toList() ?: emptyList()
 
                 if (libs.isEmpty() && Platform.isWindows()) {
-                    val debugDir = buildDir.resolve("Debug")
-                    val debugLibs = debugDir.listFiles { file ->
+                    val buildTypeDir = buildDir.resolve(buildType)
+                    val buildTypeLibs = buildTypeDir.listFiles { file ->
                         file.name.endsWith(sharedLibSuffix)
                     }?.toList() ?: emptyList()
 
                     when {
-                        debugLibs.isNotEmpty() -> {
-                            project.logger.lifecycle("Found libraries in Debug folder: ${debugLibs.map { it.name }}")
+                        buildTypeLibs.isNotEmpty() -> {
+                            project.logger.lifecycle("Found libraries in $buildType folder: ${buildTypeLibs.map { it.name }}")
                         }
                         else -> {
-                            project.logger.warn("No libraries found in build or Debug folders")
+                            project.logger.warn("No libraries found in build or $buildType folders")
                         }
                     }
                 } else if (libs.isNotEmpty()) {
@@ -189,14 +216,20 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
         sharedLibSuffix: String,
         cmakeBuildDir: Provider<Directory>,
         outputDir: String,
-        cmakeBuild: TaskProvider<Exec>
+        cmakeBuild: TaskProvider<Exec>,
+        buildType: String
     ) {
         project.tasks.register("generateJarFile", Jar::class.java) {
             dependsOn(cmakeBuild)
             val javaExtension = project.extensions.getByType(JavaPluginExtension::class.java)
             val mainOutput = javaExtension.sourceSets.getByName("main").output
             from(mainOutput)
-            from(cmakeBuildDir.map { it.dir(platform) }) {
+            val nativeOut = if (Platform.isWindows())
+                cmakeBuildDir.map { it.dir(platform).dir(buildType) }
+            else
+                cmakeBuildDir.map { it.dir(platform) }
+
+            from(nativeOut) {
                 include("*$sharedLibSuffix")
                 into(outputDir)
             }
