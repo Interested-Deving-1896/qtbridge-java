@@ -49,23 +49,21 @@ internal class QtResolverFactory(
     val qmlImportDirResolver by lazy { QtSubdirResolver(qtRootResolver, "qml") }
 
     companion object {
-        fun create(
+        fun createDefault(
             project: Project,
             qtLibsExtension: String?,
             bridgeNativeExtension: String?,
-            autoDownload: Boolean
         ): QtResolverFactory {
-            return if (autoDownload) {
-                createWithProviders(project, qtLibsExtension, bridgeNativeExtension)
-            } else {
-                QtResolverFactory(project.logger, qtLibsExtension, bridgeNativeExtension)
-            }
+            return QtResolverFactory(
+                logger = project.logger,
+                qtLibsExtension = qtLibsExtension,
+                bridgeNativeExtension = bridgeNativeExtension,
+            )
         }
-
-        private fun createWithProviders(
+        fun createWithDownloadProviders(
             project: Project,
             qtLibsExtension: String?,
-            bridgeNativeExtension: String?
+            bridgeNativeExtension: String?,
         ): QtResolverFactory {
             val workerExecutor: WorkerExecutor = project.serviceOf()
             val downloader = FileDownloader(workerExecutor)

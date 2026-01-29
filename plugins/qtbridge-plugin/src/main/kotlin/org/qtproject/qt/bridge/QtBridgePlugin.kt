@@ -47,7 +47,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             val appExtension = (extension as ExtensionAware).extensions.getByType(QtBridgeAppExtension::class.java)
             val mode = getCurrentPluginMode(target, appExtension.name.orNull)
 
-            val qtBridgeContext = QtBridgeContext(target, extension,  mode != QtPluginMode.DEV)
+            val qtBridgeContext = QtBridgeContext(target, extension, mode)
             configureQtBridge(qtBridgeContext)
             registerTasks(qtBridgeContext)
             createRunTask(qtBridgeContext)
@@ -76,10 +76,9 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
     private fun configureQtBridge(qtBridgeContext: QtBridgeContext) {
         val project = qtBridgeContext.project
-        val includedBridgeBuild = project.gradle.includedBuilds.find { it.name == "qmlbridge" }
 
-        if (!qtBridgeContext.autoDownload && includedBridgeBuild != null) {
-            val buildNativeTask = includedBridgeBuild.task(":generateLibsAndCopy")
+        if (qtBridgeContext.isDevMode) {
+            val buildNativeTask = qtBridgeContext.includedBridgeBuild!!.task(":generateLibsAndCopy")
             project.tasks.withType<JavaExec>().configureEach {
                 dependsOn(buildNativeTask)
             }
