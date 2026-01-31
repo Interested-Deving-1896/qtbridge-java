@@ -8,11 +8,13 @@ package org.qtproject.qt.bridge
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.gradle.process.ExecOperations
@@ -20,7 +22,6 @@ import org.gradle.process.ExecSpec
 import org.qtproject.qt.bridge.extension.QmlExtension
 import org.qtproject.qt.bridge.extension.QtBridgeAppExtension
 import org.qtproject.qt.bridge.extension.QtBridgeExtension
-import org.qtproject.qt.bridge.resolver.QtFileResolver
 import org.qtproject.qt.bridge.resolver.factory.QtResolverFactory
 import org.qtproject.qt.bridge.utility.Platform
 import org.qtproject.qt.bridge.utils.*
@@ -56,15 +57,67 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
     private fun registerTasks(qtBridgeContext: QtBridgeContext) {
         val project = qtBridgeContext.project
-        val qtResolverFactory = qtBridgeContext.qtResolverFactory
+        val qmlExtension = (qtBridgeContext.extension as ExtensionAware).extensions.getByType(QmlExtension::class.java)
 
-        registerQmldirAndQmltypesTasks(project = project, qmlTypeRegistrarResolver = qtResolverFactory.qmlTypeRegistrarResolver)
+        val resolverFactory = qtBridgeContext.qtResolverFactory
+        val toolingInfo = createQmlToolingInfo(project, resolverFactory, qmlExtension)
 
-        registerQmllsBuildIniTask(project = project, qtResolverFactory = qtResolverFactory)
+        val qmlDirAndTypesTask = registerQmldirAndQmltypesTasks(
+            project = project,
+            qmlRegistrar = resolverFactory.qmlTypeRegistrarResolver.resolve()?.absolutePath
+        )
+
+        val qmllsBuildIniTask = registerQmllsBuildIniTask(
+            project = project,
+            generateQmldirAndQmltypesTask = qmlDirAndTypesTask,
+            importPaths = toolingInfo.qmlImportPaths,
+            docDir = resolverFactory.qtDocDirResolver.resolve()?.absolutePath
+        )
+
+        val qmlToolingInfoTask = registerQmlToolingInfoForIDETask(
+            project = project,
+            generateQmldirAndQmltypesTask = qmlDirAndTypesTask,
+            qmllsBuildIniTask = qmllsBuildIniTask,
+            toolingInfo = toolingInfo
+        )
+
         // Try to resolve qmlls
-        registerQmllsTask(project = project, qmllsResolver = qtResolverFactory.qmllsResolver)
+        registerQmllsTask(project = project, toolingInfo = toolingInfo)
         // Try to resolve qmllint
-        registerQmllintTask(project = project, qtResolverFactory = qtResolverFactory)
+        registerQmllintTask(project = project, toolingInfo = toolingInfo)
+
+        // Ensure all tasks run after KSP has been triggered
+        val kspTaskProvider = project.tasks.matching { it.name == "kspKotlin" }
+            .takeIf { !it.isEmpty() }
+            ?.let { project.tasks.named("kspKotlin") }
+
+        kspTaskProvider?.configure {
+            finalizedBy(qmlDirAndTypesTask, qmllsBuildIniTask, qmlToolingInfoTask)
+        }
+
+        // qmllint could be part of 'check' task, but currently example apps have too many warnings
+        // project.tasks.matching { it.name == "check" }.configureEach { dependsOn(qmllintTask.name) }
+    }
+
+    private fun createQmlToolingInfo(
+        project: Project,
+        resolverFactory: QtResolverFactory,
+        qmlExtension: QmlExtension
+    ): QmlToolingInfo {
+
+        val importPaths = buildList {
+            add(project.appQmlImportDir().absolutePath)
+            resolverFactory.qmlImportDirResolver.resolve()?.absolutePath?.let { add(it) }
+            qmlExtension.resolveImportPaths().forEach { add(it.absolutePath) }
+        }
+
+        return QmlToolingInfo(
+            qmllsPath = resolverFactory.qmllsResolver.resolve()?.absolutePath,
+            qmllintPath = resolverFactory.qmllintResolver.resolve()?.absolutePath,
+            qmllsIniFilePath = project.qmllsIniFile().absolutePath,
+            buildDir = project.layout.buildDirectory.get().asFile.absolutePath,
+            qmlImportPaths = importPaths.distinct(),
+        )
     }
 
     private fun createExtensions(project: Project): QtBridgeExtension {
@@ -197,7 +250,8 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
     private fun createRunTask(qtBridgeContext: QtBridgeContext) {
         val project = qtBridgeContext.project
-        val appExtension = (qtBridgeContext.extension as ExtensionAware).extensions.getByType(QtBridgeAppExtension::class.java)
+        val appExtension =
+            (qtBridgeContext.extension as ExtensionAware).extensions.getByType(QtBridgeAppExtension::class.java)
         if (appExtension.mainClass.isPresent) {
             val taskName = appExtension.name.getOrElse(project.name)
 
@@ -214,29 +268,55 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         }
     }
 
-    private fun registerQmldirAndQmltypesTasks(project: Project, qmlTypeRegistrarResolver: QtFileResolver) {
-        val qmldirAndQmltypes = project.tasks.register("qmldirAndQmltypes") {
+    private fun registerQmlToolingInfoForIDETask(
+        project: Project,
+        generateQmldirAndQmltypesTask: TaskProvider<Task>,
+        qmllsBuildIniTask: TaskProvider<Task>,
+        toolingInfo: QmlToolingInfo
+    ): TaskProvider<Task> {
+        return project.tasks.register("writeQmlToolingInfoForIDE") {
             group = "build"
-            description = "Generates qmldir + .qmltypes for Qt Bridge modules."
+            description = "Generates IDE-independent qmltools.json file for QML tooling support in IDEs."
+
+            dependsOn(generateQmldirAndQmltypesTask, qmllsBuildIniTask)
+
+            inputs.dir(project.appQmlImportDir())
+                .withPropertyName("appQmlImportDir")
+                .withPathSensitivity(PathSensitivity.RELATIVE)
+                .optional()
+
+            val outputFile = QmlToolingInfo.getStandardFile(project.projectDir)
+            outputs.file(outputFile)
+                .withPropertyName("qmlToolsJson")
+
+            doLast {
+                toolingInfo.writeToFile(outputFile)
+
+                project.logger.info("Wrote QML tooling info to: ${outputFile.absolutePath}")
+                project.logger.info("IDE plugins should read this file to configure QML tooling support.")
+
+                if (toolingInfo.qmllsPath == null) {
+                    project.logger.warn("qmlls not found - IDE autocomplete may be limited. Install Qt 6.10+ for full support.")
+                }
+                if (toolingInfo.qmllintPath == null) {
+                    project.logger.warn("qmllint not found - QML linting disabled.")
+                }
+            }
         }
+    }
+
+    private fun registerQmldirAndQmltypesTasks(project: Project, qmlRegistrar: String?): TaskProvider<Task> {
         // Only generate QML tooling files for 'main' source set. Generating for 'test' could
         // create a dependency loop: classes -> qmldirAndQmltypes-> ... -> kspTestKotlin -> classes
         // See QTBUG-143098 for processing more source sets.
         val sourceSetName = MAIN_SOURCE_SET_NAME
 
-        // Look for the KSP task. KSP task for 'main' source set is always 'kspKotlin'
-        val kspTaskProvider =
-            project.tasks.matching { it.name == "kspKotlin" }
-                .takeIf { !it.isEmpty() }
-                ?.let { project.tasks.named("kspKotlin") }
-
-        // 'generate' task: run qmltyperegistrar + write qmldir files
-        val generate = project.tasks.register("qtbridgeGenerateQmldirAndQmltypes") {
+        // run qmltyperegistrar + write qmldir files
+        return project.tasks.register("qtbridgeGenerateQmldirAndQmltypes") {
             group = "build"
             description = "Generates qmldir + .qmltypes for sourceSet $sourceSetName."
 
             // Ensure that 'generate' runs whenever moc files change, and that KSP has run
-            if (kspTaskProvider != null) dependsOn(kspTaskProvider)
             inputs.dir(project.mocJsonDir())
                 .withPropertyName("mocJsonDir")
                 .withPathSensitivity(PathSensitivity.RELATIVE)
@@ -244,7 +324,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             // Where we generate QML qmldir + plugins.qmltypes outputs
             outputs.dir(project.appQmlImportDir())
 
-            val qmlTypeRegistrar = qmlTypeRegistrarResolver.resolve()?.absolutePath ?: run{
+            val qmlTypeRegistrar = qmlRegistrar ?: run {
                 project.logger.warn("Unable to resolve qmltyperegistrar. Lack of qmltyperegistrar impacts QML tooling " +
                         "support, but not the application compilation or run.")
                 return@register
@@ -303,31 +383,25 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 }
             }
         }
-
-        // Main task depends on qmldir and .qmltypes generation
-        qmldirAndQmltypes.configure { dependsOn(generate) }
-
-        // Ensure `./gradlew <app>` will run QML tooling
-        project.tasks.matching { it.name == "classes" }.configureEach {
-            dependsOn(qmldirAndQmltypes)
-        }
-        // Ensure `./gradlew check` will generate qmldir and qmltypes files
-        project.tasks.matching { it.name == "check" }.configureEach {
-            dependsOn(qmldirAndQmltypes)
-        }
     }
+
     // Sets up a task for writing .qmlls.build.ini file. qmlls from 6.10.0 reads
     // the .qmlls.build.ini file from the build folder to figure out import paths,
     // documentation paths, etc.
-    private fun registerQmllsBuildIniTask(project: Project, qtResolverFactory: QtResolverFactory) {
+    private fun registerQmllsBuildIniTask(
+        project: Project,
+        generateQmldirAndQmltypesTask: TaskProvider<Task>,
+        importPaths: List<String>,
+        docDir: String?,
+    ): TaskProvider<Task> {
         // QML source files
         val qmlSourceDir = project.projectDir
-        val generateIni = project.tasks.register("qtbridgeGenerateQmllsBuildIni") {
+        return project.tasks.register("qtbridgeGenerateQmllsBuildIni") {
             group = "build"
             description = "Generates build/.qt/.qmlls.build.ini for qmlls (Qt 6.10+)."
 
             // Make sure the import tree / dependencies exists before writing ini
-            dependsOn("qmldirAndQmltypes")
+            dependsOn(generateQmldirAndQmltypesTask)
 
             // Depend on QML module contents
             inputs.dir(project.appQmlImportDir())
@@ -341,16 +415,6 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 val iniFile = project.qmllsIniFile()
                 iniFile.parentFile.mkdirs()
 
-                val sep = if (Platform.isWindows()) ";" else ":"
-
-                // Import paths for qmlls
-                val importPaths = mutableListOf<String>()
-                // 1) Generated application QML modules
-                importPaths += project.appQmlImportDir().absolutePath
-                // 2) Imports for main Qt (QtQuick, QtQuick.Controls, ...)
-                qtResolverFactory.qmlImportDirResolver.resolve()?.let { importPaths += it.absolutePath }
-
-                val docDir = qtResolverFactory.qtDocDirResolver.resolve()?.absolutePath
                 val sectionName = qmlSourceDir.toqmllsSectionName()
 
                 val text = buildString {
@@ -358,32 +422,30 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                     if (docDir != null) appendLine("docDir=$docDir")
                     appendLine()
                     appendLine("[$sectionName]")
-                    appendLine("importPaths=\"${importPaths.distinct().joinToString(sep)}\"")
+                    appendLine("importPaths=\"${importPaths.joinToString(if (Platform.isWindows()) ";" else ":")}\"")
                     appendLine()
                 }
                 iniFile.writeText(text)
                 project.logger.info("Wrote ${iniFile.absolutePath}. Run qmlls with: qmlls -b ${project.layout.buildDirectory.get().asFile.absolutePath}")
             }
         }
-        // Ensure `./gradlew check` creates ini files
-        project.tasks.matching { it.name == "check" }.configureEach { dependsOn(generateIni) }
     }
 
     // Task for printing out the qmlls usage per application. Task is intended for
     // development and debugging purposes, as it prints the necessary command to run
     // (but other than that, running qmlls on command line is not all that useful)
-    private fun registerQmllsTask(project: Project, qmllsResolver: QtFileResolver) {
-        project.tasks.register("qtbridgeQmlls") {
+    private fun registerQmllsTask(project: Project, toolingInfo: QmlToolingInfo): TaskProvider<Task> {
+        return project.tasks.register("qtbridgeQmlls") {
             group = "verification"
             description = "Shows how to run qmlls against this build (requires Qt 6.10+)."
-            val qmlls = qmllsResolver.resolve()?.absolutePath ?: run {
+            val qmlls = toolingInfo.qmllsPath ?: run {
                 project.logger.lifecycle("qmlls not found. `qtbridgeQmlls` cannot run.")
                 return@register
             }
 
             dependsOn("qtbridgeGenerateQmllsBuildIni")
             doLast {
-                val buildDir = project.layout.buildDirectory.get().asFile.absolutePath
+                val buildDir = toolingInfo.buildDir
                 project.logger.lifecycle("qmlls found: $qmlls")
                 project.logger.lifecycle("Run: $qmlls -b $buildDir")
             }
@@ -392,28 +454,22 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
 
     // Task for testing the qmllinting, runs the qmllint for a given project. For instance:
     // ./gradlew :examples:manualtest:qtbridgeQmllint
-    private fun registerQmllintTask(project: Project, qtResolverFactory: QtResolverFactory) {
-        val qmlSourceDir = project.projectDir
-        project.tasks.register("qtbridgeQmllint") {
+    private fun registerQmllintTask(project: Project, toolingInfo: QmlToolingInfo): TaskProvider<Task> {
+        return project.tasks.register("qtbridgeQmllint") {
             group = "verification"
             description = "Runs qmllint on QML sources using Qt Bridge generated import tree."
-            val qmllint = qtResolverFactory.qmllintResolver.resolve()?.absolutePath ?:run {
+            val qmllint = toolingInfo.qmllintPath ?: run {
                 project.logger.lifecycle("qmllint not found. `qtbridgeQmllint` cannot run.")
                 return@register
             }
 
-            dependsOn("qmldirAndQmltypes")
+            dependsOn("qtbridgeGenerateQmldirAndQmltypes")
             inputs.dir(project.appQmlImportDir())
                 .withPropertyName("appQmlImportRoot")
                 .withPathSensitivity(PathSensitivity.RELATIVE)
 
             doLast {
-                val importPaths = mutableListOf<String>()
-                // Add application project QML module(s) to QML import path
-                importPaths += project.appQmlImportDir().absolutePath
-                val qmlDir = qtResolverFactory.qmlImportDirResolver.resolve()
-                qmlDir?.absolutePath?.let { importPaths += it }
-
+                val qmlSourceDir = project.projectDir
                 // Find the *.qml source files to lint
                 val qmlFiles = project.fileTree(qmlSourceDir) { include("**/*.qml") }.files
                 if (qmlFiles.isEmpty()) {
@@ -425,7 +481,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                     val args = ArrayList<String>()
 
                     // -I for each QML import path
-                    importPaths.distinct().forEach { importPath ->
+                    toolingInfo.qmlImportPaths.forEach { importPath ->
                         args += listOf("-I", importPath)
                     }
 
@@ -451,7 +507,5 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 }
             }
         }
-        // qmllint could be part of 'check' task, but currently example apps have too many warnings
-        // project.tasks.matching { it.name == "check" }.configureEach { dependsOn(task) }
     }
 }

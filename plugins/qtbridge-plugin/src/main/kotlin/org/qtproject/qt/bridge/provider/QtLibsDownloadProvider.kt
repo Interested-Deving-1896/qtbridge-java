@@ -31,7 +31,7 @@ internal class QtLibsDownloadProvider(
         val qtLibsFolder = File(qtLibsDir, "qt/lib")
         val qtLibsFolderValid = qtLibsFolder.exists() && qtLibsFolder.isDirectory && hasLibs(qtLibsFolder)
         if (!overwrite && qtLibsFolderValid) {
-            logger.lifecycle("Qt libraries found. Using existing installation at: ${qtLibsFolder.absolutePath}")
+            logger.info("Qt libraries found. Using existing installation at: ${qtLibsFolder.absolutePath}")
             return qtLibsFolder.absolutePath
         }
         val downloadedFile = downloader.qt().libs().to(qtLibsDir)

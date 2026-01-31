@@ -2,6 +2,8 @@
 .kotlin
 .idea
 build/
+.ide_tools
+
 /gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
