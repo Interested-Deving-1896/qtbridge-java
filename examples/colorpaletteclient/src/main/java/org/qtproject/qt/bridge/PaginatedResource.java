@@ -10,7 +10,7 @@ import org.qtproject.qt.bridge.core.QtProperty;
 import java.util.List;
 import java.util.Map;
 
-@QMLRegistrable
+@QMLRegistrable(includeSuper = false)
 public class PaginatedResource extends AbstractResource {
     public QtProperty<List<Map<String, Object>>> data = new QtProperty<>(null);
     public QtProperty<Integer> page = new QtProperty<>(1);

@@ -48,4 +48,12 @@ public @interface QMLRegistrable {
      * @return whether the type is a singleton or not (creatable).
      */
     boolean singleton() default false;
+
+    /**
+     * <p>If {@code true}, processes also parent classes; otherwise only the immediate class
+     * is processed.</p>
+     *
+     * @return whether the type is a singleton or not (creatable).
+     */
+    boolean includeSuper() default true;
 }

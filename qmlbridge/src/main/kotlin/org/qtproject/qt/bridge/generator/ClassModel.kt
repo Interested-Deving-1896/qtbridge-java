@@ -19,6 +19,7 @@ internal data class RegistrableInfo(
     val typeName: String,
     val moduleName: String,
     val isSingleton: Boolean,
+    val includeSuper: Boolean,
 )
 
 // Models @QMLRegistrable

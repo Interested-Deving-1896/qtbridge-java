@@ -9,7 +9,7 @@ import org.qtproject.qt.bridge.annotations.QMLRegistrable;
 import org.qtproject.qt.bridge.core.QtProperty;
 import java.util.Map;
 
-@QMLRegistrable
+@QMLRegistrable(includeSuper = false)
 public class BasicLogin extends AbstractResource {
     public QtProperty<String> user = new QtProperty<>(null);
     public QtProperty<Boolean> loggedIn = new QtProperty<>(false);
