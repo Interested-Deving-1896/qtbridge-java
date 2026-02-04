@@ -52,7 +52,8 @@ val javadocPublicApi by tasks.registering(Javadoc::class) {
     val annotationsFiles = listOf(
         "org/qtproject/qt/bridge/annotations/QMLRegistrable.java",
         "org/qtproject/qt/bridge/annotations/QMLSignals.java",
-        "org/qtproject/qt/bridge/annotations/QMLComplete.java"
+        "org/qtproject/qt/bridge/annotations/QMLComplete.java",
+        "org/qtproject/qt/bridge/annotations/QMLIgnore.java",
     ).map { project.file("../qmlbridge/src/main/java/$it") }
 
     // Add OverviewSnippets from the snippet example so that it can be

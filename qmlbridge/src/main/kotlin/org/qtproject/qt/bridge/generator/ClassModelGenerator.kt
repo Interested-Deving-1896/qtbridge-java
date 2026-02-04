@@ -15,6 +15,7 @@ import com.google.devtools.ksp.symbol.*
 import org.qtproject.qt.bridge.annotations.QMLComplete
 import org.qtproject.qt.bridge.annotations.QMLRegistrable
 import org.qtproject.qt.bridge.annotations.QMLSignals
+import org.qtproject.qt.bridge.annotations.QMLIgnore
 import org.qtproject.qt.bridge.generator.*
 import org.qtproject.qt.bridge.utils.*
 
@@ -59,7 +60,11 @@ internal class ClassModelGenerator(
 
     // Generates intermediate registrable class model, which is then used to
     // yield metaobjectbuilder calls and qmltyperegistrar input
-    fun generate(klass: KSClassDeclaration): RegistrableClass {
+    fun generate(klass: KSClassDeclaration): RegistrableClass? {
+        // Bail out if the whole class is ignored
+        if (klass.isQmlIgnored())
+            return null
+
         val pkg = klass.packageName.asString()
         val simple = klass.simpleName.asString()
         val qualified = klass.qualifiedName?.asString() ?: run {
@@ -159,38 +164,53 @@ internal class ClassModelGenerator(
     private fun buildInvokables(classHierarchy: List<KSClassDeclaration>): List<Invokable> {
         // Use Java-signature as key and for conflict resolution (most-derived class wins)
         val invokables = LinkedHashMap<String, Invokable>()
+        // Keep track of QMLIgnored invokables so that we deal with overloads properly
+        val ignored = HashSet<String>()
 
         classHierarchy.forEach { klass ->
             klass.getDeclaredFunctions()
                 .filter { it.isPublic() && !it.isConstructor() }
-                .forEach { fn ->
-                    val returnJvm = JvmType.fromKSType(fn.returnType?.resolve(), resolver.builtIns, logger, "return: $fn")
-                    val paramJvmTypes = fn.parameters.map { p ->
+                .forEach { invokable ->
+                    val returnJvm = JvmType.fromKSType(invokable.returnType?.resolve(), resolver.builtIns, logger, "return: $invokable")
+                    val paramJvmTypes = invokable.parameters.map { p ->
                         JvmType.fromKSType(p.type.resolve(), resolver.builtIns, logger, "parameter: $p")
                     }
 
                     val javaSignature = buildString {
-                        append(fn.simpleName.asString())
+                        append(invokable.simpleName.asString())
                         append("(")
                         append(paramJvmTypes.joinToString(",") { it.javaType })
                         append(")")
                     }
+
+                    // If invokable is QMLIgnored, add it on the ignored list and remove
+                    // any potential invokable a parent class might have set previously
+                    if (invokable.isQmlIgnored()) {
+                        ignored += javaSignature
+                        invokables.remove(javaSignature)
+                        return@forEach
+                    }
+                    // If invokable was QMLIgnored previously by a base class, keep ignoring
+                    // it (derived classes cannot re-enable it).
+                    if (ignored.contains(javaSignature))
+                        return@forEach
+
                     val cppSignature = buildString {
-                        append(fn.simpleName.asString())
+                        append(invokable.simpleName.asString())
                         append("(")
                         append(paramJvmTypes.joinToString(",") { it.cppType })
                         append(")")
                     }
 
                     // List of 'name, type' arguments for the function
-                    val cppParams: List<Pair<String, String>> = fn.parameters.map { parameter ->
+                    val cppParams: List<Pair<String, String>> = invokable.parameters.map { parameter ->
                         val jvm = JvmType.fromKSType(parameter.type.resolve(), resolver.builtIns, logger, "parameter: $parameter")
                         val name = parameter.name?.asString() ?: "arg"  // fallback to generic 'arg'
                         name to jvm.cppType
                     }
 
                     val invokable = Invokable(
-                        name = fn.simpleName.asString(),
+                        name = invokable.simpleName.asString(),
                         javaSignature = javaSignature,
                         cppSignature = cppSignature,
                         cppParams = cppParams,
@@ -198,7 +218,7 @@ internal class ClassModelGenerator(
                         cppReturnType = returnJvm.cppType,
                         retIsPrimitive = returnJvm.isPrimitive,
                         paramIsPrimitive = paramJvmTypes.map { it.isPrimitive }.toBooleanArray(),
-                        sourceLocation = sourceLocationOf(fn)
+                        sourceLocation = sourceLocationOf(invokable)
                     )
 
                     // Ensure that in case of override / conflict that most-derived entry wins
@@ -212,10 +232,25 @@ internal class ClassModelGenerator(
     private fun buildProperties(classHierarchy: List<KSClassDeclaration>): List<Property> {
         // Use properties' name as key and for conflict resolution (most-derived class wins)
         val properties = LinkedHashMap<String, Property>()
+        // Keep track of QMLIgnored invokables so that we deal with overloads properly
+        val ignored = HashSet<String>()
 
         classHierarchy.forEach { klass ->
             klass.getDeclaredProperties().forEach { prop ->
                 val name = prop.simpleName.asString()
+
+                // If property is QMLIgnored, add it on the ignored list and remove
+                // any potential property a parent class might have set previously
+                if (prop.isQmlIgnored()) {
+                    ignored += name
+                    properties.remove(name)
+                    return@forEach
+                }
+                // If property was QMLIgnored previously by a base class, keep ignoring
+                // it (derived classes cannot re-enable it).
+                if (ignored.contains(name))
+                    return@forEach
+
                 val propType = prop.type.resolve()
 
                 val sourceLocation = sourceLocationOf(prop)
@@ -272,16 +307,10 @@ internal class ClassModelGenerator(
             .asReversed() // child -> base
             .flatMap { it.getDeclaredProperties().filter { p -> p.hasAnnotation(QMLSignals::class) } }
 
-        if (qmlSignalsFields.size > 1) {
-            qmlSignalsFields.drop(1).forEach { extra ->
-                logger.warn(
-                    "Multiple @QMLSignals fields found in class hierarchy. " +
-                    "Using the one in the most derived class.",
-                    extra)
-            }
-        }
-
         val field = qmlSignalsFields.firstOrNull() ?: return null
+        // If the current (leaf) class's QMLSignals field itself is QMLIgnored, ignore all signals
+        if (field.isQmlIgnored())
+            return null
 
         val fieldName = field.simpleName.asString()
         val ifaceDecl = field.type.resolve().declaration as? KSClassDeclaration
@@ -296,25 +325,40 @@ internal class ClassModelGenerator(
         val signalHierarchy = collectSignalInterfaceHierarchy(ifaceDecl)
         // Use Java signature as key and for conflict resolution (most-derived class wins)
         val signals = LinkedHashMap<String, Signal>()
+        // Keep track of QMLIgnored invokables so that we deal with overloads properly
+        val ignored = HashSet<String>()
 
         signalHierarchy.forEach { iDecl ->
-            iDecl.getDeclaredFunctions().forEach { fn ->
-                val paramJvmTypes = fn.parameters.map { p ->
+            iDecl.getDeclaredFunctions().forEach { signal ->
+                val paramJvmTypes = signal.parameters.map { p ->
                     JvmType.fromKSType(p.type.resolve(), resolver.builtIns, logger, "signal-param: $p")
                 }
                 val javaSignature = buildString {
-                    append(fn.simpleName.asString())
+                    append(signal.simpleName.asString())
                     append("(")
                     append(paramJvmTypes.joinToString(",") { it.javaType })
                     append(")")
                 }
+
+                // If signal is QMLIgnored, add it on the ignored list and remove
+                // any potential signal a parent class might have set previously
+                if (signal.isQmlIgnored()) {
+                    ignored += javaSignature
+                    signals.remove(javaSignature)
+                    return@forEach
+                }
+                // If signal was QMLIgnored previously by a base class, keep ignoring
+                // it (derived classes cannot re-enable it).
+                if (signals.contains(javaSignature))
+                    return@forEach
+
                 val cppSignature = buildString {
-                    append(fn.simpleName.asString())
+                    append(signal.simpleName.asString())
                     append("(")
                     append(paramJvmTypes.joinToString(",") { it.cppType })
                     append(")")
                 }
-                val cppParams: List<Pair<String, String>> = fn.parameters.map { parameter ->
+                val cppParams: List<Pair<String, String>> = signal.parameters.map { parameter ->
                     val jvm = JvmType.fromKSType(parameter.type.resolve(), resolver.builtIns, logger, "signal-param: $parameter")
                     val name = parameter.name?.asString() ?: "arg" // fallback to 'arg'
                     name to jvm.cppType
@@ -323,7 +367,7 @@ internal class ClassModelGenerator(
                     javaSignature = javaSignature,
                     cppSignature = cppSignature,
                     cppParams = cppParams,
-                    sourceLocation = sourceLocationOf(fn)
+                    sourceLocation = sourceLocationOf(signal)
                 )
 
                 // Ensure override from more-derived interface wins.

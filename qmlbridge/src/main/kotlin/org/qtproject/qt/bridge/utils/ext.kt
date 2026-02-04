@@ -6,9 +6,11 @@
 package org.qtproject.qt.bridge.utils
 
 import org.qtproject.qt.bridge.annotations.QMLRegistrable
+import org.qtproject.qt.bridge.annotations.QMLIgnore
 
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
@@ -52,6 +54,12 @@ internal fun KSFunctionDeclaration.hasAnnotation(annotation: KClass<*>): Boolean
 internal fun KSPropertyDeclaration.hasAnnotation(annotation: KClass<*>): Boolean {
     return annotations.any { it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.qualifiedName }
 }
+
+internal fun KSAnnotated.hasAnnotation(annotation: KClass<*>): Boolean {
+    return annotations.any { it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.qualifiedName }
+}
+
+internal fun KSAnnotated.isQmlIgnored(): Boolean = hasAnnotation(QMLIgnore::class)
 
 internal fun KSPropertyDeclaration.findAnnotation(annotation: KClass<*>): KSAnnotation? {
     return annotations.firstOrNull { it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.qualifiedName }

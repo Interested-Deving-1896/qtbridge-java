@@ -44,7 +44,7 @@ internal class QtBridgeProcessor(
         classModelGenerator = ClassModelGenerator(resolver, logger)
 
         for (clazz in annotatedClasses) {
-            val model = classModelGenerator.generate(clazz)
+            val model = classModelGenerator.generate(clazz) ?: continue
             qmlRegistrables += model
             classCreationEmitter.emitClassFromModel(model)
         }
