@@ -75,12 +75,23 @@ internal class ClassModelGenerator(
         val invokables = buildInvokables(classHierarchy)
         val properties = buildProperties(classHierarchy)
         val signalField = buildSignals(classHierarchy)
+        // Determine first QMLRegistrable parent, if any. This inheritance
+        // information is needed when generating MOC json tooling data
+        val registrableSuperClass: String? =
+            if (registrableInfo?.includeSuper == false)
+                null
+            else classHierarchy.dropLast(1) // don't consider self/leaf
+                               .asReversed() // start from leaf / bottom
+                               .firstOrNull { it.QMLRegistrableInfo() != null} // first class that is QMLRegistrable (or null)
+                               ?.simpleName
+                               ?.asString()
 
         return RegistrableClass(
             cppType = "QObject", // Fixed atm, may change if we support visual types (QQuickItem)
             packageName = pkg,
             simpleName = simple,
             qualifiedName = qualified,
+            registrableSuperClass = registrableSuperClass,
             registrableInfo = registrableInfo,
             sourceLocation = sourceLocationOf(klass),
             invokables = invokables,

@@ -28,6 +28,7 @@ internal data class RegistrableClass(
     val packageName: String,
     val simpleName: String,
     val qualifiedName: String,
+    val registrableSuperClass: String? = null, // Nearest @QMLRegistrable in hierarchy
     val registrableInfo: RegistrableInfo? = null,
     val sourceLocation: SourceLocation? = null,
     val invokables: List<Invokable> = emptyList(),

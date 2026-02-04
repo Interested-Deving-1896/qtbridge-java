@@ -131,11 +131,13 @@ internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
         classObj.put("enums", JSONArray())
         classObj.put("interfaces", JSONArray())
 
-        // Superclass of the QML element
+        // Superclass of the QML element; either the nearest QMLRegistrable
+        // parent, or one of C++ classes we support (QObject / QAbstractListModel)
+        val superClassName = model.registrableSuperClass ?: model.cppType
         val superClasses = JSONArray().put(
             JSONObject()
                 .put("access", "public")
-                .put("name", model.cppType) // Currently in practice 'QObject'
+                .put("name", superClassName)
         )
         classObj.put("superClasses", superClasses)
 

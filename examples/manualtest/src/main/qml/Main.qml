@@ -10,6 +10,8 @@ import Animals // Cat, Dog
 import Two.Wheels // Bike
 import Four.Wheels.Vehicle // Car
 
+import InheritingTypes
+
 ApplicationWindow {
     id: root
     height: 400
@@ -33,18 +35,34 @@ ApplicationWindow {
         onRoared: midText.text += "roared\n"
     }
 
+    Circle { id: circle }
+
+    Triangle { id: triangle }
+
+    RoundedTriangle { id: roundedTriangle }
+
     Row {
         anchors.fill: parent
         Column {
             width: root.width / 3
             height: root.height
             Button {
-                text: "Test"
+                text: "Test basics"
                 onClicked: {
+                    midText.text += "\n"
                     cat.meow()
                     dog.bark()
                     bike.pedal()
                     car.roar()
+                }
+            }
+            Button {
+                text: "Test inheritance"
+                onClicked: {
+                    midText.text += "\n"
+                    midText.text += circle.area() + " "
+                    midText.text += triangle.area() + " "
+                    midText.text += roundedTriangle.area() + " "
                 }
             }
         }
