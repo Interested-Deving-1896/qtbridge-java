@@ -128,6 +128,12 @@ class QtBridgeNativeBuildPlugin : Plugin<Project> {
             // There the build type is defined at build time instead of configuration time
             if (!Platform.isWindows())
                 args += "-DCMAKE_BUILD_TYPE=$buildType"
+
+            // On macOS, build as a universal fat library to match Qt build (universal too). In
+            // future we may want to distinguish between arm64 and x86 to reduce the download sizes
+            if (Platform.isMacOS())
+                args += "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+
             commandLine(listOf(cmakeCommand) + args)
         }
 
