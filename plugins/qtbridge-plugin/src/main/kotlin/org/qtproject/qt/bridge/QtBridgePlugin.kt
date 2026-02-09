@@ -187,8 +187,45 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
                 jvmArgs("-XstartOnFirstThread")
             }
         }
+        configureLogging(project)
         configureQmlFiles(project, qmlExtension)
         configureApplication(project, appExtension)
+    }
+
+    private fun configureLogging(project: Project) {
+        // By default log "warning" category and above
+        val logLevel = project.prop("qtbridge.log.level")
+            ?.trim()?.lowercase()
+            ?.takeIf{ it.isNotEmpty() }?: "warning"
+
+        project.tasks.withType<JavaExec>().configureEach {
+            // Map the log level to Qt logging categories. Qt logging category severities
+            // are not hierarchical and hence we must enable/disable them individually
+            val qtLoggingRules = when (logLevel) {
+                // Disable all
+                "off" -> "qtproject.qt.bridge*=false"
+                // Enable critical
+                "error", "severe", "critical" -> "qtproject.qt.bridge.critical=true;" +
+                                                 "qtproject.qt.bridge.warning=false;" +
+                                                 "qtproject.qt.bridge.debug=false"
+                // Enable warning and critical
+                "warn", "warning" -> "qtproject.qt.bridge.critical=true;" +
+                                     "qtproject.qt.bridge.warning=true;" +
+                                     "qtproject.qt.bridge.debug=false"
+                // Enable debug, warning, and critical
+                "debug", "info" -> "qtproject.qt.bridge.critical=true;" +
+                                   "qtproject.qt.bridge.warning=true;" +
+                                   "qtproject.qt.bridge.debug=true"
+                // By default enable warning and critical
+                else -> "qtproject.qt.bridge.critical=true;" +
+                        "qtproject.qt.bridge.warning=true;" +
+                        "qtproject.qt.bridge.debug=false"
+            }
+            // Qt logging categies use this environment variable
+            environment("QT_LOGGING_RULES", qtLoggingRules)
+            // Expose as system property for our Java logger initialization code
+            systemProperty("qtbridge.log.level", logLevel)
+        }
     }
 
     private fun configureApplication(project: Project, appExtension: QtBridgeAppExtension) {

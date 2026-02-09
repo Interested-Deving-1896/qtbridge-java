@@ -420,6 +420,7 @@ Example applications (e.g., `colorpaletteclient`) support automatic library mana
 | Run benchmarks                        | Enables benchmark tests using the -Pbenchmark property.              | `./gradlew check -Pbenchmark`                                   |
 | Benchmarks with Path                  | Uses a manually specified qt bridge native library path.             | `./gradlew check -Pbenchmark -Dqtbridge.native.dir=path/to/lib` |
 | Example in dev mode but force non-dev | Forces the plugin to download qt and qt bridge libraries if missing. | `./gradlew colorpaletteclient -Pqt.plugin.mode="non-dev"`       |
+| Log level (critical,warning,info,off) | Defines log level to use at runtime, defaults to critical & warning  | `./gradlew colorpaletteclient -Pqtbridge.log.level=info`        |
 
 #### Summary of configurations
 
