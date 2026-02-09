@@ -13,6 +13,10 @@
 #include "jni_qmlchildren.h"
 #include "qml_registrar.h"
 
+#include <QtCore/qloggingcategory.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
+
 void registerJavaTypes(JNIEnv *env)
 {
     JNIObject<JavaLangClass>::registerClass(env);
@@ -130,14 +134,14 @@ JNINativeMethod JNIUtilities::createJNIMethod(const char *name, const char *sig,
 jlong JNIUtilities::getNativeHandleFromObject(jobject object)
 {
     if (!object) {
-        qDebug() << "qtObject is null";
+        qCWarning(QT_BRIDGE, "qtObject is null, unable to get native handle");
         return 0;
     }
     const auto env = JniContext::getEnv();
     const auto _class = env->GetObjectClass(object);
     const auto nativePtrFieldID = env->GetFieldID(_class, "nativeHandle", "J");
     if (nativePtrFieldID == nullptr) {
-        qDebug() << "nativeHandle field not found!";
+        qCWarning(QT_BRIDGE, "nativeHandle field not found on a qtObject");
         return 0;
     }
     return env->GetLongField(object, nativePtrFieldID);

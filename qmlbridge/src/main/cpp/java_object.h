@@ -10,7 +10,11 @@
 #include "jni_method_invoker.h"
 #include "signature_helper.h"
 
+#include <QtCore/qloggingcategory.h>
+
 #include <jni.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 namespace Utility::JNI {
     class JavaObject
@@ -22,7 +26,7 @@ namespace Utility::JNI {
         {
             const auto ctor = env->GetMethodID(clazz, "<init>", signature);
             if (!ctor) {
-                qDebug() << "Constructor for class with signature" << signature << "not found";
+                qCWarning(QT_BRIDGE) << "Constructor for class with signature" << signature << "not found";
                 return {};
             }
 
@@ -40,7 +44,7 @@ namespace Utility::JNI {
             JNIEnv* env = JniContext::getEnv();
             jobject localRef = weakRef ? env->NewLocalRef(weakRef) : nullptr;
             if (!localRef) {
-                qWarning() << "Object already garbage collected";
+                qCWarning(QT_BRIDGE, "Object already garbage collected");
                 return;
             }
             jclass clazz = env->GetObjectClass(localRef);

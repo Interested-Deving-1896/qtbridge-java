@@ -14,8 +14,11 @@
 
 #include <QtQuickTest/quicktest.h>
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 void JNICALL nativeCreateQApplication(JNIEnv *env, jclass, jobjectArray argv)
 {
@@ -229,7 +232,7 @@ bool QMLApplication::loadQml(const QString &qmlPath)
     m_qmlEngine->load(QUrl::fromLocalFile(qmlPath));
     if (m_qmlEngine->rootObjects().isEmpty()) {
         m_qmlLoaded = false;
-        qCritical() << "Failed to load QML file at path:" << qmlPath;
+        qCCritical(QT_BRIDGE) << "Failed to load QML file at path:" << qmlPath;
     } else {
         m_qmlLoaded = true;
     }
@@ -241,7 +244,7 @@ bool QMLApplication::loadQmlContent(const QString &qmlContent)
     m_qmlEngine->loadData(qmlContent.toUtf8());
     if (m_qmlEngine->rootObjects().isEmpty()) {
         m_qmlLoaded = false;
-        qCritical() << "Failed to load QML content";
+        qCCritical(QT_BRIDGE) << "Failed to load QML content";
     } else {
         m_qmlLoaded = true;
     }

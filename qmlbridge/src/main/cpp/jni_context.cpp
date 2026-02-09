@@ -6,6 +6,9 @@
 #include "jni_context.h"
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 JavaVM *JniContext::javaVM = nullptr;
 
@@ -16,7 +19,7 @@ JavaVM *JniContext::getJavaVM() { return javaVM; }
 JNIEnv *JniContext::getEnv()
 {
     if (!javaVM) {
-        qDebug() << "JavaVM is not set!";
+        qCCritical(QT_BRIDGE, "JavaVM is not set");
         return nullptr;
     }
 
@@ -24,11 +27,11 @@ JNIEnv *JniContext::getEnv()
     jint result = javaVM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
     if (result == JNI_EDETACHED) {
         if (javaVM->AttachCurrentThread(reinterpret_cast<void **>(&env), nullptr) != 0) {
-            qDebug() << "Failed to attach current thread to JVM.";
+            qCCritical(QT_BRIDGE, "Failed to attach current thread to JVM");
             return nullptr;
         }
     } else if (result != JNI_OK) {
-        qDebug() << "Failed to get JNIEnv from JavaVM.";
+        qCCritical(QT_BRIDGE, "Failed to get JNIEnv from JavaVM.");
         return nullptr;
     }
 

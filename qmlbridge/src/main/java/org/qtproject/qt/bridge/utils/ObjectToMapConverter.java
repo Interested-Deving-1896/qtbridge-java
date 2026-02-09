@@ -17,10 +17,11 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-
+import java.util.logging.Logger;
 
 // Utility class for converting arbitrary Objects into Map<String, Object> representations.
 public class ObjectToMapConverter {
+    private static final Logger logger = Logger.getLogger("org.qtproject.qt.bridge");
 
     // Makes a Map<String, Object> of the provided item's properties.
     // 'includeNonPublic' is used to control whether non-public fields should be converted too.
@@ -137,7 +138,7 @@ public class ObjectToMapConverter {
                     if (!result.containsKey(field.getName()))
                         result.put(field.getName(), mapValue(field.get(obj), visited, includeNonPublic));
                 } catch (Exception e) {
-                    System.out.println("Failed to get value of " + field.getName() + ": " + e.getMessage());
+                    logger.warning("Failed to get value of " + field.getName() + ": " + e.getMessage());
                 }
             }
             clazz = clazz.getSuperclass();
@@ -220,7 +221,7 @@ public class ObjectToMapConverter {
                 if (isAlias != null && !result.containsKey(isAlias))
                     result.put(isAlias, mapped);
             } catch (Exception e) {
-                System.out.println("Failed to invoke getter " + method.getName() + ": " + e.getMessage());
+                logger.warning("Failed to invoke getter " + method.getName() + ": " + e.getMessage());
             }
         }
     }

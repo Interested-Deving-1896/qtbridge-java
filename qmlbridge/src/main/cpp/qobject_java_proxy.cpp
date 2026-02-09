@@ -12,10 +12,13 @@
 #include "jni_proxy_userobject_map.h"
 #include "jni_type.h"
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qurl.h>
 
 using namespace Utility::JNI;
+
+Q_LOGGING_CATEGORY(QT_BRIDGE, "qtproject.qt.bridge")
 
 QObjectJavaProxy::QObjectJavaProxy(qint64 cacheKey, QObject *parent)
     : QtProxyBase(parent), m_cacheKey(cacheKey)
@@ -63,7 +66,7 @@ void QObjectJavaProxy::componentComplete()
 
     const auto localRef = userObjectLocalRef();
     if (!localRef) {
-        qWarning("QML completion handler target object is missing");
+        qCWarning(QT_BRIDGE, "QML completion handler target object is missing");
         return;
     }
     JNIEnv *env = JniContext::getEnv();
@@ -117,7 +120,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
 {
     const auto mp = metaObject()->property(propertyIndex);
     if (!mp.isReadable()) {
-        qDebug() << "Property is not readable:" << mp.name();
+        qCDebug(QT_BRIDGE, "Property is not readable: %s",  mp.name());
         return;
     }
     if (mp.userType() == qMetaTypeId<QAbstractItemModel*>()) {
@@ -141,7 +144,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
     if (entry.field) {
         holderLocal = env->GetObjectField(javaObject, entry.field);
         if (!holderLocal) {
-            qWarning("Property read failed, field %s is null", mp.name());
+            qCWarning(QT_BRIDGE, "Property read failed, field %s is null", mp.name());
             setPropertyDefaultValue(args, mp.metaType());
             return;
         }
@@ -218,7 +221,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         readQmlRegistrableProperty(javaObject, mp, args);
         break;
     default:
-        qWarning("Property read: unsupported type %s %s", mp.name(), mp.typeName());
+        qCWarning(QT_BRIDGE, "Property read: unsupported type %s %s", mp.name(), mp.typeName());
         break;
     }
 }
@@ -231,7 +234,7 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
 {
     const auto mp = metaObject()->property(propertyIndex);
     if (!mp.isWritable()) {
-        qDebug() << "Property is not writable:" << mp.name();
+        qCDebug(QT_BRIDGE, "Property is not writable: %s", mp.name());
         return;
     }
 
@@ -293,12 +296,12 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         writeQmlRegistrableProperty(javaObject, mp, args);
         return;
     default:
-        qWarning("Property write: unsupported type %s %s", mp.name(), mp.typeName());
+        qCWarning(QT_BRIDGE, "Property write: unsupported type %s %s", mp.name(), mp.typeName());
         return;
     };
 
     if (!valueObj) {
-        qWarning("Property write failed, value object creation failed for %s", mp.name());
+        qCWarning(QT_BRIDGE, "Property write failed, value object creation failed for %s", mp.name());
         return;
     }
     const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
@@ -314,7 +317,7 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         if (fieldObject)
             env->DeleteLocalRef(fieldObject);
     }
-    qWarning("Property write failed for: %s", mp.name());
+    qCWarning(QT_BRIDGE, "Property write failed for: %s", mp.name());
 }
 
 void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int methodIndex,
@@ -329,7 +332,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
 
     const auto methodCacheEntry = JNICache::getProxyMethod(cacheKey(), methodIndex);
     if (!methodCacheEntry) {
-        qWarning("Invokable method %s not found", method.name().constData());
+        qCWarning(QT_BRIDGE, "Invokable method %s not found", method.name().constData());
         return;
     }
 
@@ -490,7 +493,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         break;
     }
     default:
-        qWarning("Unsupported return type %s for invokable: %s ",
+        qCWarning(QT_BRIDGE, "Unsupported return type %s for invokable: %s ",
                  method.returnMetaType().name(), method.name().constData());
     }
 }
@@ -503,13 +506,13 @@ void QObjectJavaProxy::readItemModelProperty(const jobject javaObject,
     *static_cast<QAbstractItemModel **>(args[0]) = nullptr;
 
     if (!entry.field) {
-        qWarning() << "No cached field entry for property" << mp.name();
+        qCWarning(QT_BRIDGE) << "No cached field entry for property" << mp.name();
         return;
     }
 
     const auto fieldObject = env->GetObjectField(javaObject, entry.field);
     if (!fieldObject) {
-        qWarning() << "Field" << mp.name() << "is null";
+        qCWarning(QT_BRIDGE) << "Field" << mp.name() << "is null";
         return;
     }
 
@@ -518,7 +521,7 @@ void QObjectJavaProxy::readItemModelProperty(const jobject javaObject,
 
     env->DeleteLocalRef(fieldObject);
     if (!nativeQObject) {
-        qWarning() << "Failed to map Java object to QObject for property:" << mp.name();
+        qCWarning(QT_BRIDGE) << "Failed to map Java object to QObject for property:" << mp.name();
         return;
     }
     *static_cast<QAbstractItemModel **>(args[0]) = nativeQObject;
@@ -537,7 +540,7 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
                               : JavaObject::getProperty<jobject>(env, javaObject, mp.name());
 
     if (!holderLocal) {
-        qWarning("Unable to find holding field for property %s", mp.name());
+        qCWarning(QT_BRIDGE, "Unable to find holding field for property %s", mp.name());
         return;
     }
 
@@ -620,7 +623,7 @@ void QObjectJavaProxy::setPropertyDefaultValue(void **args, const QMetaType &mt)
     case QMetaType::QUrl:          *static_cast<QUrl*>(args[0]) = QUrl{}; return;
     case QMetaType::QObjectStar:   *static_cast<QObject**>(args[0]) = nullptr; return;
     default:
-        qWarning("Unsupported property type for default value: %s",  mt.name());
+        qCWarning(QT_BRIDGE, "Unsupported property type for default value: %s",  mt.name());
         return;
     }
 }
@@ -649,7 +652,7 @@ int QObjectJavaProxy::qt_metacall(QMetaObject::Call call, int index, void **args
 {
     int ret = 0;
     if (!m_userObject) {
-        qWarning() << "qt_metacall: UserObject referred by QtObjectJavaProxy is null";
+        qCWarning(QT_BRIDGE, "qt_metacall: UserObject referred by QtObjectJavaProxy is null");
         return ret;
     }
 
@@ -673,7 +676,7 @@ int QObjectJavaProxy::qt_metacall(QMetaObject::Call call, int index, void **args
         env = JniContext::getEnv();
         javaObjectRef = env->NewLocalRef(m_userObject);
         if (!javaObjectRef) {
-            qWarning() << "qt_metacall: UserObject already garbage collected!";
+            qCWarning(QT_BRIDGE) << "qt_metacall: UserObject already garbage collected!";
             m_userObject = nullptr;
             return ret;
         }

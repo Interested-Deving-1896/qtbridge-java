@@ -3,16 +3,19 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
-#include "jni_qtobject.h"
-
 #include "converter.h"
 #include "jni_cache.h"
 #include "jni_object.h"
+#include "jni_qtobject.h"
 #include "jni_type.h"
 #include "jni_utilities.h"
 #include "qobject_java_proxy.h"
 
+#include <QtCore/qloggingcategory.h>
+
 using namespace Utility;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 void JNICALL nativeDisposeQObjectJavaProxy(JNIEnv, jclass, jlong handle)
 {
@@ -58,7 +61,7 @@ void JNICALL nativeAddSignal(JNIEnv *env, jobject, jlong handle, jstring javaSig
     const auto cSignature = JNI::toQString(cppSignature).toUtf8();
     const auto *obj = QObjectJavaProxy::fromHandle(handle);
     if (!obj) {
-        qWarning("No object found for signal %s", qPrintable(jSignature));
+        qCWarning(QT_BRIDGE, "No object found for signal %s", qPrintable(jSignature));
         return;
     }
 
@@ -85,12 +88,12 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
     auto *qtObject = QObjectJavaProxy::fromHandle(handle);
     const auto jSignature = JNI::toQString(javaSignature).toUtf8();
     if (!qtObject) {
-        qWarning("Proxy object not found for signal: %s", jSignature.constData());
+        qCWarning(QT_BRIDGE, "Proxy object not found for signal: %s", jSignature.constData());
         return;
     }
     const auto signalCacheEntry = JNICache::getProxySignal(qtObject->cacheKey(), jSignature);
     if (!signalCacheEntry) {
-        qWarning("Cache entry not found for signal: %s", jSignature.constData());
+        qCWarning(QT_BRIDGE, "Cache entry not found for signal: %s", jSignature.constData());
         return;
     }
 
@@ -99,7 +102,7 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
     const auto &metaIds = signalCacheEntry->parmMetaTypeIds;
 
     if (argCount != metaIds.size()) {
-        qWarning("Signal argument count mismatch for %s", jSignature.constData());
+        qCWarning(QT_BRIDGE, "Signal argument count mismatch for %s", jSignature.constData());
         return;
     }
 
@@ -149,13 +152,13 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
         // 1. Default-construct currently processed signal argument
         void *p = mt.create();
         if (!p) {
-            qWarning("Failed to allocate signal arg %s", jSignature.constData());
+            qCWarning(QT_BRIDGE, "Failed to allocate signal arg %s", jSignature.constData());
             return;
         }
 
         // 2. Assign it with a proper value
         if (!JNI::Converter::javaParameterToCppParameter(metaId, env, arg, p)) {
-            qWarning("Failed to convert signal arg %s", jSignature.constData());
+            qCWarning(QT_BRIDGE, "Failed to convert signal arg %s", jSignature.constData());
             return;
         }
 
@@ -179,7 +182,7 @@ void JNICALL nativeAddProperty(JNIEnv, jobject, jlong handle, jstring name,
 {
     auto *proxy = QObjectJavaProxy::fromHandle(handle);
     if (!proxy) {
-        qWarning() << "Proxy not found for property:" << name;
+        qCWarning(QT_BRIDGE) << "Proxy not found for property:" << name;
         return;
     }
 
@@ -189,7 +192,7 @@ void JNICALL nativeAddProperty(JNIEnv, jobject, jlong handle, jstring name,
     const auto notifySig = JNI::toQString(signalSignature);
 
     if (propertyCppType.isEmpty()) {
-        qWarning("Property cppType is empty %s", qPrintable(propertyName));
+        qCWarning(QT_BRIDGE, "Property cppType is empty %s", qPrintable(propertyName));
         return;
     }
     const auto fieldId = proxy->addProperty(propertyName.toUtf8(),

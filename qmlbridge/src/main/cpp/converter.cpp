@@ -9,6 +9,7 @@
 #include "jni_proxy_userobject_map.h"
 #include "jni_type.h"
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qstring.h>
@@ -19,6 +20,8 @@
 #include <QtQml/qjsvalue.h>
 
 using namespace Qt::StringLiterals;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 namespace Utility::JNI {
 
@@ -112,8 +115,10 @@ namespace Utility::JNI {
             // corresponding user-side Java object
             QObject *qobj = *static_cast<QObject * const *>(cppParameter);
             auto *proxy = qobject_cast<QtProxyBase*>(qobj);
-            if (!proxy)
-                qWarning("A non-proxy QObject* as parameter to %s", metaMethod.name().constData());
+            if (!proxy) {
+                qCWarning(QT_BRIDGE, "A non-proxy QObject* as parameter to %s",
+                          metaMethod.name().constData());
+            }
             ret.l = proxy ? proxy->userObjectLocalRef() : nullptr;
             break;
         }
@@ -143,7 +148,7 @@ namespace Utility::JNI {
             break;
         }
         default:
-            qWarning("Unsupported invokable parameter metatype %i in %s",
+            qCWarning(QT_BRIDGE, "Unsupported invokable parameter metatype %i in %s",
                      paramMetaTypeId, metaMethod.methodSignature().constData());
             break;
         };
@@ -241,7 +246,8 @@ namespace Utility::JNI {
                 // Enum -> QVariantMap
                 map = convertEnumToQVariantMap(valueObj);
             } else {
-                qWarning("convertJavaToMetaType: expected Map or Enum for QVariantMap param");
+                qCWarning(QT_BRIDGE, "convertJavaToMetaType: expected Map or Enum "
+                                     "for QVariantMap param");
                 *static_cast<QVariantMap *>(outPtr) = QVariantMap{};
                 return false;
             }
@@ -249,7 +255,7 @@ namespace Utility::JNI {
             return true;
         }
         default:
-            qWarning("Unsupported signal parameter metaId: %i", cppMetaTypeId);
+            qCWarning(QT_BRIDGE, "Unsupported signal parameter metaId: %i", cppMetaTypeId);
         }
 
         return false;
@@ -345,7 +351,7 @@ namespace Utility::JNI {
             return QVariant::fromValue(proxy);
         }
 
-        qWarning("Unsupported Java type for QVariant conversion");
+        qCWarning(QT_BRIDGE, "Unsupported Java type for QVariant conversion");
         return {};
     }
 
@@ -413,7 +419,7 @@ namespace Utility::JNI {
             case QMetaType::QObjectStar: {
                 QtProxyBase *proxy = qobject_cast<QtProxyBase*>(var.value<QObject*>());
                 if (!proxy) {
-                    qWarning("Invalid proxy object in QVariant");
+                    qCWarning(QT_BRIDGE, "Invalid proxy object in QVariant");
                     return nullptr;
                 }
                 return proxy->userObjectLocalRef();
@@ -439,7 +445,7 @@ namespace Utility::JNI {
                         return javaMap;
                     }
                 }
-                qWarning() << "Unsupported QVariant type:" << var.typeName();
+                qCWarning(QT_BRIDGE) << "Unsupported QVariant type:" << var.typeName();
                 return {};
         }
     }

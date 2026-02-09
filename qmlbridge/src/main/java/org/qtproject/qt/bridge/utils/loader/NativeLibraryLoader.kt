@@ -15,6 +15,7 @@ import org.qtproject.qt.bridge.utils.loader.strategy.LoadResult
 import org.qtproject.qt.bridge.utils.loader.strategy.LoadingStrategy
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Logger;
 
 /**
  * Native library loader with pluggable loading strategies.
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap
 internal object NativeLibraryLoader {
     private val loadedLibraries = ConcurrentHashMap.newKeySet<String>()
     private const val LEGACY_DIR = "qmlbridge"
+    private val logger: Logger = Logger.getLogger("org.qtproject.qt.bridge")
 
     private val strategies: List<LoadingStrategy> = listOf(
         ExplicitOverrideStrategy(),
@@ -138,8 +140,8 @@ internal object NativeLibraryLoader {
             append(errorTypeLabel)
             errorMessage?.let { append(": $it") }
         }
-        println("Trying next location...")
-        println("   Reason : $crashMessage")
+        logger.warning("Trying next location...")
+        logger.warning("   Reason : $crashMessage")
         return crashMessage
     }
 

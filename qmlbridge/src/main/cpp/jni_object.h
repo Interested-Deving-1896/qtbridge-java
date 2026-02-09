@@ -9,9 +9,11 @@
 #include "java_object.h"
 #include "jni_cache.h"
 
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <jni.h>
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 template<typename Tag>
 class JNIObject
@@ -19,7 +21,7 @@ class JNIObject
     static bool checkClassRegistered()
     {
         if (!JNICache::isGlobalClassRegistered(Tag::className())) {
-            qDebug() << "Class " << Tag::className()
+            qCDebug(QT_BRIDGE) << "Class " << Tag::className()
                      << " not registered. Call registerClass() first.";
             return false;
         }

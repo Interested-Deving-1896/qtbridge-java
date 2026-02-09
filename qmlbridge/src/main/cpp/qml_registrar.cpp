@@ -9,6 +9,7 @@
 #include "jni_type.h"
 #include "qobject_java_proxy.h"
 
+#include <QtCore/qloggingcategory.h>
 #include <QtQml/qqml.h>
 #include <QtQml/qqmlengine.h>
 #include <QtQml/qqmlprivate.h>
@@ -16,6 +17,8 @@
 #include <map>
 
 using namespace Utility::JNI;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 // Creation context are used when QML asks to instantiate a type;
 // it stores necessary data to instantiate the user class and Qt Object.
@@ -83,7 +86,7 @@ static void nativeRegisterQmlType(
     const auto key = std::string(module ? module : "") + "::" + std::string(name ? name : "");
     const auto it = s_creationContexts->find(key);
     if (it != s_creationContexts->end()) {
-        qWarning() << "Type" << key << "already registered";
+        qCWarning(QT_BRIDGE) << "Type" << key << "already registered";
         return;
     }
 
@@ -101,7 +104,7 @@ static void nativeRegisterQmlType(
         env->GetMethodID(qtObjectClass, "<init>", "(Ljava/lang/Object;JZ)V");
 
     if (!ctx->qtObjectConstructor || !ctx->userObjectConstructor || env->ExceptionCheck()) {
-        qWarning() << "Failed to resolve object constructors";
+        qCWarning(QT_BRIDGE) << "Failed to resolve object constructors";
         env->ExceptionDescribe();
         env->ExceptionClear();
         return;
@@ -135,7 +138,7 @@ static void creationHelper(QObjectJavaProxy *proxy, CreationContext *ctx, bool p
     // 1) New user-side object
     jobject userObjectLocal = env->NewObject(ctx->userClassGlobalRef, ctx->userObjectConstructor);
     if (!userObjectLocal || env->ExceptionCheck()) {
-        qWarning() << "User object creation failed" << ctx->name;
+        qCWarning(QT_BRIDGE) << "User object creation failed" << ctx->name;
         checkAndClearException(env);
     }
 
@@ -145,7 +148,7 @@ static void creationHelper(QObjectJavaProxy *proxy, CreationContext *ctx, bool p
                                            jlong(proxy),
                                            true); // Owned by QML
     if (!qtObjectLocal || env->ExceptionCheck()) {
-        qWarning() << "QtObject creation failed" << ctx->name;
+        qCWarning(QT_BRIDGE) << "QtObject creation failed" << ctx->name;
         checkAndClearException(env);
     }
 

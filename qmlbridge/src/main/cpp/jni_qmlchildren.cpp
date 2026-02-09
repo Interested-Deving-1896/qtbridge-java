@@ -11,9 +11,12 @@
 #include "jni_proxy_userobject_map.h"
 #include "jni_type.h"
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qobject.h>
 
 using namespace Utility::JNI;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 jobject JNICALL nativeQmlChildren(JNIEnv *env, jclass,
                                   jobject userObject /* parent */, jclass filter)
@@ -23,7 +26,7 @@ jobject JNICALL nativeQmlChildren(JNIEnv *env, jclass,
     // Get the proxy for the user object
     auto *proxy = JNIProxyUserObjectMap::getProxy(userObject);
     if (!proxy) {
-        qWarning() << "No proxy found for parent, cannot look up children";
+        qCWarning(QT_BRIDGE, "No proxy found for parent, cannot look up children");
         return result;
     }
 

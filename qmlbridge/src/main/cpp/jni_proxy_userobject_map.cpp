@@ -9,6 +9,7 @@
 #include "jni_type.h"
 
 #include <QtCore/qhash.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmutex.h>
 
 using namespace Utility::JNI;
@@ -148,7 +149,7 @@ struct UserProxyRegistry {
         jmethodID ctor = env->GetMethodID(qtObjClass, "<init>", "(Ljava/lang/Object;JZ)V");
         checkAndClearException(env);
         if (!ctor) {
-            qWarning("ensureProxy(): Unable to find proxy constructor");
+            qCWarning(QT_BRIDGE, "ensureProxy(): Unable to find proxy constructor");
             return nullptr;
         }
 
@@ -156,7 +157,7 @@ struct UserProxyRegistry {
         userClassLocalRef = env->GetObjectClass(userObject);
         checkAndClearException(env);
         if (!userClassLocalRef) {
-            qWarning("ensureProxy(): Failed to get user class");
+            qCWarning(QT_BRIDGE, "ensureProxy(): Failed to get user class");
             return nullptr;
         }
         proxy = new QObjectJavaProxy(JNICache::ensureProxyClass(userClassLocalRef));
@@ -164,7 +165,7 @@ struct UserProxyRegistry {
                                        jlong(proxy), jboolean(ownedByQML));
         checkAndClearException(env);
         if (!qtObjectLocal) {
-            qWarning("ensureProxy(): Creating a proxy for property failed");
+            qCWarning(QT_BRIDGE, "ensureProxy(): Creating a proxy for property failed");
             delete proxy;
             return nullptr;
         }

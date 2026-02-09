@@ -8,8 +8,11 @@
 #include "qt_property.h"
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qloggingcategory.h>
 
 using namespace Qt::StringLiterals;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 static bool checkSignature(const QByteArray &signature)
 {
@@ -17,8 +20,8 @@ static bool checkSignature(const QByteArray &signature)
     const auto closingParen = signature.lastIndexOf(')');
     const bool ok = openParen != -1 && closingParen != -1 && openParen < closingParen;
     if (!ok) {
-        qDebug() << "MetaObjectBuilder::addMethod: Invalid method signature provided for " +
-                            signature;
+        qCWarning(QT_BRIDGE) << "MetaObjectBuilder::addMethod: Invalid method signature "
+                                "provided for " + signature;
         return false;
     }
     return ok;

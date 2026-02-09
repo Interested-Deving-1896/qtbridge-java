@@ -6,8 +6,11 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qloggingcategory.h>
 
 using namespace Qt::StringLiterals;
+
+Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 // Map javaType name to a JNI descriptor
 static QString toJniType(QStringView javaType)
@@ -55,14 +58,14 @@ static QByteArray toJniSignature(const QString &methodDecl,
     const auto parenClose = methodDecl.lastIndexOf(')'_L1);
 
     if (parenOpen < 0 || parenClose < 0 || parenClose <= parenOpen) {
-        qWarning() << "Invalid method declaration format:" << methodDecl;
+        qCWarning(QT_BRIDGE) << "Invalid method declaration format:" << methodDecl;
         methodNameOut.clear();
         return {};
     }
 
     methodNameOut = methodDecl.left(parenOpen).trimmed();
     if (methodNameOut.isEmpty()) {
-        qWarning() << "Empty method name in declaration:" << methodDecl;
+        qCWarning(QT_BRIDGE) << "Empty method name in declaration:" << methodDecl;
         return {};
     }
 
@@ -73,16 +76,15 @@ static QByteArray toJniSignature(const QString &methodDecl,
 
         for (QString &param : params) {
             param = stripGenerics(param);
-            if (param.isEmpty()) {
-                qWarning() << "Empty parameter type in declaration:" << methodDecl;
-            }
+            if (param.isEmpty())
+                qCWarning(QT_BRIDGE) << "Empty parameter type in declaration:" << methodDecl;
         }
     }
     QString jniParams;
     for (const auto &param : std::as_const(params)) {
         auto jniType = toJniType(param);
         if (jniType.isEmpty()) {
-            qWarning() << "Failed to convert parameter type:" << param << "in" << methodDecl;
+            qCWarning(QT_BRIDGE) << "Failed to convert parameter type:" << param << "in" << methodDecl;
             return {};
         }
         jniParams += jniType;
@@ -90,7 +92,7 @@ static QByteArray toJniSignature(const QString &methodDecl,
     const auto cleanReturnType = stripGenerics(returnType);
     auto jniReturn = toJniType(cleanReturnType);
     if (jniReturn.isEmpty()) {
-        qWarning() << "Failed to convert return type:" << returnType << "in" << methodDecl;
+        qCWarning(QT_BRIDGE) << "Failed to convert return type:" << returnType << "in" << methodDecl;
         return {};
     }
     return "(%1)%2"_L1.arg(jniParams, jniReturn).toLatin1();
@@ -109,7 +111,7 @@ Q_GLOBAL_STATIC(ClassCache, s_classCache)
 bool JNICache::registerGlobalClass(const QByteArray &className, jclass classRef)
 {
     if (className.isEmpty()) {
-        qWarning() << "JNICache::registerGlobalClass: Invalid parameters";
+        qCWarning(QT_BRIDGE) << "JNICache::registerGlobalClass: Invalid parameters";
         return false;
     }
     QMutexLocker locker(&s_classCache->mutex);
@@ -163,14 +165,14 @@ JNICache::JMethodEntry JNICache::registerGlobalMethod(const QByteArray &classNam
                                                       const QByteArray &signature, bool isStatic)
 {
     if (className.isEmpty() || methodName.isEmpty() || signature.isEmpty()) {
-        qWarning() << "JNICache::registerGlobalMethod: Invalid parameters";
+        qCWarning(QT_BRIDGE) << "JNICache::registerGlobalMethod: Invalid parameters";
         return{};
     }
 
     QMutexLocker locker(&s_classCache->mutex);
     const auto it = s_classCache->globalClasses.find(className);
     if (it == s_classCache->globalClasses.end()) {
-        qWarning() << "JNICache::registerGlobalMethod: Class not registered:" << className;
+        qCWarning(QT_BRIDGE) << "JNICache::registerGlobalMethod: Class not registered:" << className;
         return {};
     }
 
@@ -239,13 +241,13 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
     if (classIt == s_classCache->proxyClasses.end()) {
-        qWarning() << "registerProxyMethod: proxyKey not found in cache:" << proxyKey;
+        qCWarning(QT_BRIDGE) << "registerProxyMethod: proxyKey not found in cache:" << proxyKey;
         return;
     }
 
     auto &classEntry = classIt.value();
     if (!classEntry.globalClassRef) {
-        qWarning() << "registerProxyMethod: class for proxyKey" << proxyKey
+        qCWarning(QT_BRIDGE) << "registerProxyMethod: class for proxyKey" << proxyKey
                    << "has null globalClazzRef";
         return;
     }
@@ -254,7 +256,7 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
     const auto jniSignature = toJniSignature(javaSignature, returnType, methodName);
 
     if (jniSignature.isEmpty() || methodName.isEmpty()) {
-        qWarning() << "Failed to parse method declaration:" << javaSignature;
+        qCWarning(QT_BRIDGE) << "Failed to parse method declaration:" << javaSignature;
         return;
     }
     const auto env = JniContext::getEnv();
@@ -262,7 +264,7 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
             env->GetMethodID(classEntry.globalClassRef, methodName.toUtf8().constData(),
                              jniSignature.constData());
     if (!methodId) {
-        qWarning() << " Failed to find method:" << methodName
+        qCWarning(QT_BRIDGE) << " Failed to find method:" << methodName
                    << " with signature: " << jniSignature;
         return;
     }
@@ -276,13 +278,13 @@ void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
     if (classIt == s_classCache->proxyClasses.end()) {
-        qWarning() << "registerProxyMethod: proxyKey not found in cache:" << proxyKey;
+        qCWarning(QT_BRIDGE) << "registerProxyMethod: proxyKey not found in cache:" << proxyKey;
         return;
     }
 
     auto &classEntry = classIt.value();
     if (!classEntry.globalClassRef) {
-        qWarning() << "registerProxyMethod: class for proxyKey" << proxyKey
+        qCWarning(QT_BRIDGE) << "registerProxyMethod: class for proxyKey" << proxyKey
                    << "has null globalClazzRef";
         return;
     }
@@ -298,7 +300,7 @@ void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
         if (mt.isValid())
             parmMetaTypeIds.push_back(mt.id());
         else
-            qWarning("Unsupported parameter type %s in %s ",
+            qCWarning(QT_BRIDGE, "Unsupported parameter type %s in %s ",
                      param.constData(), qPrintable(javaSignature));
     }
     classEntry.signalz.insert(javaSignature.toUtf8(),
@@ -311,26 +313,27 @@ void JNICache::registerProxyField(const qint64 proxyKey, const int fieldKey,
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
     if (classIt == s_classCache->proxyClasses.end()) {
-        qWarning() << "registerProxyField: proxyKey not found in cache:" << proxyKey;
+        qCWarning(QT_BRIDGE) << "registerProxyField: proxyKey not found in cache:" << proxyKey;
         return;
     }
     auto &classEntry = classIt.value();
     if (!classEntry.globalClassRef) {
-        qWarning() << "registerProxyField: class for proxyKey" << proxyKey
+        qCWarning(QT_BRIDGE) << "registerProxyField: class for proxyKey" << proxyKey
                    << "has null globalClassRef";
         return;
     }
 
     const auto jniSignature = toJniType(signature);
     if (fieldName.isEmpty() || jniSignature.isEmpty()) {
-        qWarning() << "Invalid field name or signature:" << fieldName << signature;
+        qCWarning(QT_BRIDGE) << "Invalid field name or signature:" << fieldName << signature;
         return;
     }
     const auto env = JniContext::getEnv();
     const auto fieldId = env->GetFieldID(classEntry.globalClassRef, fieldName.toUtf8().constData(),
                                          jniSignature.toUtf8().constData());
     if (!fieldId) {
-        qWarning() << "Failed to find field:" << fieldName << "with signature:" << jniSignature;
+        qCWarning(QT_BRIDGE) << "Failed to find field:" << fieldName
+                             << "with signature:" << jniSignature;
         return;
     }
     classEntry.fields.insert(fieldKey, JFieldEntry{fieldId});
@@ -388,7 +391,7 @@ void JNICache::registerQmlCompletionHandler(jstring methodName, jclass userClass
         return;
 
     if (!methodName || ! userClass) {
-        qWarning() << "QML Completion handler name or class missing";
+        qCWarning(QT_BRIDGE, "QML Completion handler name or class missing");
         return;
     }
 
@@ -400,7 +403,7 @@ void JNICache::registerQmlCompletionHandler(jstring methodName, jclass userClass
 
     const jmethodID methodID = env->GetMethodID(userClass, name, "()V");
     if (!methodID) {
-        qWarning() << "QML Completion method not found:" << name;
+        qCWarning(QT_BRIDGE) << "QML Completion method not found:" << name;
         return;
     }
 
@@ -443,7 +446,7 @@ jclass JNICache::createGlobalRef(const jclass localRef)
 
     const auto globalRef = reinterpret_cast<jclass>(JniContext::getEnv()->NewGlobalRef(localRef));
     if (!globalRef) {
-        qWarning() << "JNICache: Failed to create global reference";
+        qCWarning(QT_BRIDGE, "JNICache: Failed to create global reference");
         return nullptr;
     }
     return globalRef;
@@ -468,7 +471,7 @@ jmethodID JNICache::findMethod(jclass clazz, const QByteArray &name,
     if (!method) {
         if (JniContext::getEnv()->ExceptionCheck())
             JniContext::getEnv()->ExceptionClear();
-        qWarning() << "JNICache: Method not found:" << name << signature;
+        qCWarning(QT_BRIDGE) << "JNICache: Method not found:" << name << signature;
     }
     return method;
 }
