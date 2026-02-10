@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.+")
+    implementation("org.apache.httpcomponents.core5:httpcore5:5.3.+")
 }
 
 qtBridge {

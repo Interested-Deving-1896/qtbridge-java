@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hc.core5.net.URIBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -22,6 +24,8 @@ import com.sun.net.httpserver.HttpServer;
 public class ColorServer {
 
     private final HttpServer m_server;
+    private final ObjectMapper m_jsonMapper;
+    private final int ITEMS_PER_PAGE = 6;
     // Resource (users and colors) containers
     private final List<Map<String, Object>> m_users = new ArrayList<>();
     private final List<Map<String, Object>> m_colors = new ArrayList<>();
@@ -31,7 +35,8 @@ public class ColorServer {
 
     public ColorServer() throws IOException {
         m_server = HttpServer.create(new InetSocketAddress("127.0.0.1", 49426), 0);
-        m_server.createContext("/api/unknown", this::handleUnknown);
+        m_jsonMapper = new ObjectMapper();
+        m_server.createContext("/api/colors", this::handleColors);
         m_server.createContext("/api/users", this::handleUsers);
         m_server.createContext("/api/login", this::handleLogin);
         m_server.createContext("/api/logout", this::handleLogout);
@@ -47,15 +52,57 @@ public class ColorServer {
         m_server.stop(0);
     }
 
-    private void handleUnknown(HttpExchange exchange) throws IOException {
-        System.out.println("TODO handleUnknown()");
-        exchange.sendResponseHeaders(501, 0);
-        exchange.close();
+    private void handleColors(HttpExchange exchange) throws IOException {
+        System.out.println("handleColors(): " + exchange.getRequestMethod());
+        if (exchange.getRequestMethod().equals("GET")) {
+            handlePagedGet(exchange, m_colors);
+            return;
+        }
+        respondError(exchange, 405); // Method not allowed
     }
 
     private void handleUsers(HttpExchange exchange) throws IOException {
-        System.out.println("TODO handleUsers()");
-        exchange.sendResponseHeaders(501, 0);
+        System.out.println("handleUsers(): " + exchange.getRequestMethod());
+        if (exchange.getRequestMethod().equals("GET")) {
+            handlePagedGet(exchange, m_users);
+            return;
+        }
+        respondError(exchange, 405); // Method not allowed
+        return;
+    }
+
+    // Handle GET requests for users and colors
+    private void handlePagedGet(HttpExchange exchange, List<Map<String, Object>> resource) throws IOException {
+        // Get requested 'page' from URI query parameters
+        URIBuilder requestUri = new URIBuilder(exchange.getRequestURI());
+        int requestedPage = requestUri.getFirstQueryParam("page") != null
+                            ? Integer.parseInt(requestUri.getFirstQueryParam("page").getValue()) : 1;
+
+        // Take the requested page as a sublist
+        int fromItem = Math.max(0, (requestedPage - 1) * ITEMS_PER_PAGE);
+        int toItem = Math.min(fromItem + ITEMS_PER_PAGE, resource.size());
+        List<Map<String, Object>> responseData = resource.subList(fromItem, toItem);
+
+        // Create the response data
+        Map<String, Object> response = new HashMap<>();
+        response.put("page", requestedPage);
+        response.put("per_page", ITEMS_PER_PAGE);
+        response.put("total", resource.size());
+        // Total pages is at minimum '1' even when no items
+        response.put("total_pages",
+                          Math.max(1, (resource.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE));
+        response.put("data", responseData);
+
+        // Convert response data to JSON
+        byte[] responseJson = m_jsonMapper.writeValueAsBytes(response);
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.sendResponseHeaders(200, responseJson.length);
+        exchange.getResponseBody().write(responseJson);
+        exchange.close();
+    }
+
+    private void respondError(HttpExchange exchange, int httpStatus) throws IOException {
+        exchange.sendResponseHeaders(httpStatus, -1); // 405: Method Not Allowed
         exchange.close();
     }
 

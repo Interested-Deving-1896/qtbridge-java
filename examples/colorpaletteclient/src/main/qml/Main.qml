@@ -46,7 +46,7 @@ Window {
 
         PaginatedResource {
             id: colors
-            path: "unknown"
+            path: "colors"
         }
 
         BasicLogin {
