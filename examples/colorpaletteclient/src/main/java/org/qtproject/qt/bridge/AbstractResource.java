@@ -134,8 +134,7 @@ public abstract class AbstractResource {
     private HttpRequest.Builder request(String path) {
         URI resolved = resolve(path);
         HttpRequest.Builder builder = HttpRequest.newBuilder(resolved)
-                .timeout(Duration.ofSeconds(5))
-                .header("x-api-key", "reqres-free-v1");
+                .timeout(Duration.ofSeconds(5));
         if (m_authorizationContext.getAuthorizationToken() != null)
             builder.header("token", m_authorizationContext.getAuthorizationToken());
         return builder;
