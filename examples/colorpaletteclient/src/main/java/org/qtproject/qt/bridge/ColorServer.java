@@ -58,12 +58,47 @@ public class ColorServer {
         String requestHttpMethod = exchange.getRequestMethod();
         System.out.println("handleColors(): " + requestHttpMethod);
         if (requestHttpMethod.equals("GET")) {
+            // Get a pageful of colors
             handlePagedGet(exchange, m_colors);
             return;
         } else if (requestHttpMethod.equals("DELETE")) {
+            // Delete a color
             handleColorDelete(exchange);
+        } else if (requestHttpMethod.equals("POST")) {
+            // Add a new color
+            handleColorAdd(exchange);
         }
         respondError(exchange, 405); // Method not allowed
+    }
+
+    private void handleColorAdd(HttpExchange exchange) throws IOException {
+        if (!m_loggedIn) {
+            respondError(exchange, 401);
+            return;
+        }
+        Map<String, Object> requestColor =
+            m_jsonMapper.readValue(exchange.getRequestBody(), Map.class);
+
+        String name = (String) requestColor.get("name");
+        String color = (String) requestColor.get("color");
+        String pantone = (String) requestColor.get("pantone_value");
+
+        if (name == null || color == null || pantone == null) {
+            respondError(exchange, 400); // Bad request
+            return;
+        }
+
+        // Add the new color to colorlist
+        Map<String, Object> newColor = new HashMap<>();
+        newColor.put("id", generateColourId());
+        newColor.put("name", name);
+        newColor.put("pantone_value", pantone);
+        newColor.put("color", color);
+        m_colors.add(newColor);
+
+        // Color addition OK. The client does not parse response data -> don't send either
+        exchange.sendResponseHeaders(200, -1);
+        exchange.close();
     }
 
     private void handleColorDelete(HttpExchange exchange) throws IOException {
