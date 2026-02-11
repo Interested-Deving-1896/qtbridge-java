@@ -22,10 +22,10 @@ import com.sun.net.httpserver.HttpServer;
 // There are no long or I/O bound operations and this should suffice for
 // the example's purposes (hence no particular concurrency protection either).
 public class ColorServer {
-
     private final HttpServer m_server;
     private final ObjectMapper m_jsonMapper;
     private final int ITEMS_PER_PAGE = 6;
+    private boolean m_loggedIn = false;
     // Resource (users and colors) containers
     private final List<Map<String, Object>> m_users = new ArrayList<>();
     private final List<Map<String, Object>> m_colors = new ArrayList<>();
@@ -107,15 +107,38 @@ public class ColorServer {
     }
 
     private void handleLogin(HttpExchange exchange) throws IOException {
-        System.out.println("TODO handleLogin()");
-        exchange.sendResponseHeaders(501, 0);
-        exchange.close();
+        System.out.println("handleLogin(): " + exchange.getRequestMethod());
+        if (exchange.getRequestMethod().equals("POST")) {
+            // Record whether or not someone is currently logged in or not.
+            // Needless to say this is not real login handling, but something
+            // that suffices for what the colorpalette app actually demonstrates
+            // (Qt Java Bridging).
+            m_loggedIn = true;
+            byte[] responseJson = m_jsonMapper.writeValueAsBytes(Map.of("token", "secret_token"));
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, responseJson.length);
+            exchange.getResponseBody().write(responseJson);
+            exchange.close();
+            return;
+        }
+        respondError(exchange, 405); // Method not allowed
+        return;
     }
 
     private void handleLogout(HttpExchange exchange) throws IOException {
-        System.out.println("TODO handleLogout()");
-        exchange.sendResponseHeaders(501, 0);
-        exchange.close();
+        System.out.println("handleLogout(): " + exchange.getRequestMethod());
+        if (exchange.getRequestMethod().equals("POST")) {
+            // Record whether or not someone is currently logged in or not.
+            // Needless to say this is not real login handling, but something
+            // that suffices for what the colorpalette app actually demonstrates
+            // (Qt Java Bridging).
+            m_loggedIn = false;
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            return;
+        }
+        respondError(exchange, 405); // Method not allowed
+        return;
     }
 
     private int generateColourId() {
