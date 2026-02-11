@@ -46,7 +46,6 @@ public class ColorServer {
     }
 
     public void start() throws IOException {
-        System.out.println("Starting Bundled Java Server at :" + m_server.getAddress());
         m_server.start();
     }
 
@@ -56,7 +55,6 @@ public class ColorServer {
 
     private void handleColors(HttpExchange exchange) throws IOException {
         String requestHttpMethod = exchange.getRequestMethod();
-        System.out.println("handleColors(): " + requestHttpMethod);
         if (requestHttpMethod.equals("GET")) {
             // Get a pageful of colors
             handlePagedGet(exchange, m_colors);
@@ -67,13 +65,51 @@ public class ColorServer {
         } else if (requestHttpMethod.equals("POST")) {
             // Add a new color
             handleColorAdd(exchange);
+        } else if (requestHttpMethod.equals("PUT")) {
+            // Update an existing color
+            handleColorUpdate(exchange);
         }
         respondError(exchange, 405); // Method not allowed
     }
 
-    private void handleColorAdd(HttpExchange exchange) throws IOException {
+    private void handleColorUpdate(HttpExchange exchange) throws IOException {
         if (!m_loggedIn) {
             respondError(exchange, 401);
+            return;
+        }
+        Map<String, Object> requestColor =
+            m_jsonMapper.readValue(exchange.getRequestBody(), Map.class);
+
+        // Get the color 'id' from path
+        Integer id = null;
+        String[] components = exchange.getRequestURI().getPath().split("/");
+        boolean success = false;
+        if (components.length == 4) // "", "api", "colors", "<id>"
+            id = Integer.parseInt(components[3]);
+
+        if (id == null) {
+            respondError(exchange, 404); // Not found
+            return;
+        }
+
+        // Find and update the requested color
+        for (Map<String, Object> color : m_colors) {
+            if (!id.equals(color.get("id")))
+                continue;
+            color.put("name", (String) requestColor.getOrDefault("name", "<empty>"));
+            color.put("color", (String) requestColor.getOrDefault("color", "<empty>"));
+            color.put("pantone_value", (String) requestColor.getOrDefault("pantone_value", "<empty>"));
+            // Color update OK. The client does not parse response data -> don't send either
+            exchange.sendResponseHeaders(200, -1);
+            exchange.close();
+            return;
+        }
+        respondError(exchange, 404); // Not found
+    }
+
+    private void handleColorAdd(HttpExchange exchange) throws IOException {
+        if (!m_loggedIn) {
+            respondError(exchange, 401); // Not authorized
             return;
         }
         Map<String, Object> requestColor =
@@ -106,6 +142,8 @@ public class ColorServer {
             respondError(exchange, 401); // Not authorized
             return;
         }
+
+        // Get the color id from path and remove corresponding color
         String[] components = exchange.getRequestURI().getPath().split("/");
         boolean success = false;
         if (components.length == 4) { // "", "api", "colors", "<id>"
@@ -122,7 +160,6 @@ public class ColorServer {
     }
 
     private void handleUsers(HttpExchange exchange) throws IOException {
-        System.out.println("handleUsers(): " + exchange.getRequestMethod());
         if (exchange.getRequestMethod().equals("GET")) {
             handlePagedGet(exchange, m_users);
             return;
@@ -167,7 +204,6 @@ public class ColorServer {
     }
 
     private void handleLogin(HttpExchange exchange) throws IOException {
-        System.out.println("handleLogin(): " + exchange.getRequestMethod());
         if (exchange.getRequestMethod().equals("POST")) {
             // Record whether or not someone is currently logged in or not.
             // Needless to say this is not real login handling, but something
@@ -186,7 +222,6 @@ public class ColorServer {
     }
 
     private void handleLogout(HttpExchange exchange) throws IOException {
-        System.out.println("handleLogout(): " + exchange.getRequestMethod());
         if (exchange.getRequestMethod().equals("POST")) {
             // Record whether or not someone is currently logged in or not.
             // Needless to say this is not real login handling, but something
