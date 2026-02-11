@@ -175,19 +175,25 @@ public class ColorServer {
         int requestedPage = requestUri.getFirstQueryParam("page") != null
                             ? Integer.parseInt(requestUri.getFirstQueryParam("page").getValue()) : 1;
 
+        final int totalItems = resource.size();
+        // Number of pages we're able to serve in total
+        final int totalPages = Math.max(1, (totalItems + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE);
+
+        // If the requested page is too high (not enough items), return highest possible
+        requestedPage = Math.min(Math.max(1, requestedPage), totalPages);
+
         // Take the requested page as a sublist
         int fromItem = Math.max(0, (requestedPage - 1) * ITEMS_PER_PAGE);
-        int toItem = Math.min(fromItem + ITEMS_PER_PAGE, resource.size());
+        int toItem = Math.min(fromItem + ITEMS_PER_PAGE, totalItems);
         List<Map<String, Object>> responseData = resource.subList(fromItem, toItem);
 
         // Create the response data
         Map<String, Object> response = new HashMap<>();
         response.put("page", requestedPage);
         response.put("per_page", ITEMS_PER_PAGE);
-        response.put("total", resource.size());
+        response.put("total", totalItems);
         // Total pages is at minimum '1' even when no items
-        response.put("total_pages",
-                          Math.max(1, (resource.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE));
+        response.put("total_pages", totalPages);
         response.put("data", responseData);
 
         // Convert response data to JSON
