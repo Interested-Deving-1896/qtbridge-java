@@ -20,7 +20,9 @@ import com.sun.net.httpserver.HttpServer;
 
 // Simple single-threaded HTTP server for colorpaletteclient.
 // There are no long or I/O bound operations and this should suffice for
-// the example's purposes (hence no particular concurrency protection either).
+// the example's purposes (hence no concurrency protection either). Furthermore
+// the server implementation assumes well-behaving client (this same app) and
+// does not do much in terms of validating the requests.
 public class ColorServer {
     private final HttpServer m_server;
     private final ObjectMapper m_jsonMapper;
@@ -53,12 +55,35 @@ public class ColorServer {
     }
 
     private void handleColors(HttpExchange exchange) throws IOException {
-        System.out.println("handleColors(): " + exchange.getRequestMethod());
-        if (exchange.getRequestMethod().equals("GET")) {
+        String requestHttpMethod = exchange.getRequestMethod();
+        System.out.println("handleColors(): " + requestHttpMethod);
+        if (requestHttpMethod.equals("GET")) {
             handlePagedGet(exchange, m_colors);
             return;
+        } else if (requestHttpMethod.equals("DELETE")) {
+            handleColorDelete(exchange);
         }
         respondError(exchange, 405); // Method not allowed
+    }
+
+    private void handleColorDelete(HttpExchange exchange) throws IOException {
+        if (!m_loggedIn) {
+            respondError(exchange, 401); // Not authorized
+            return;
+        }
+        String[] components = exchange.getRequestURI().getPath().split("/");
+        boolean success = false;
+        if (components.length == 4) { // "", "api", "colors", "<id>"
+            int id = Integer.parseInt(components[3]);
+            // Remove the color with matching ID
+            success = m_colors.removeIf(color -> id == (Integer)color.get("id"));
+        }
+        if (success) {
+            exchange.sendResponseHeaders(204, -1); // No content (success)
+            exchange.close();
+            return;
+        }
+        respondError(exchange, 404); // Not found
     }
 
     private void handleUsers(HttpExchange exchange) throws IOException {
