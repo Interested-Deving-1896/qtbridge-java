@@ -33,22 +33,29 @@ internal data class JvmType(val javaType: String, val cppType: String, val isPri
             "kotlin.Float" to Mapping("java.lang.Float", "float"),
             "kotlin.Double" to Mapping("java.lang.Double", "double"),
 
-            "kotlin.collections.List" to Mapping("java.util.List", "QVariantList"),
-            "kotlin.collections.MutableList" to Mapping("java.util.List", "QVariantList"),
+            "kotlin.IntArray" to Mapping("int[]", "QVariantList"),
+            "kotlin.LongArray" to Mapping("long[]", "QVariantList"),
+            "kotlin.ShortArray" to Mapping("short[]", "QVariantList"),
+            "kotlin.FloatArray" to Mapping("float[]", "QVariantList"),
+            "kotlin.DoubleArray" to Mapping("double[]", "QVariantList"),
+            "kotlin.ByteArray" to Mapping("byte[]", "QVariantList"),
+            "kotlin.CharArray" to Mapping("char[]", "QVariantList"),
+            "kotlin.BooleanArray" to Mapping("boolean[]", "QVariantList"),
+
             "kotlin.collections.Map" to Mapping("java.util.Map", "QVariantMap"),
             "kotlin.collections.MutableMap" to Mapping("java.util.Map", "QVariantMap"),
             QtListModel::class.qualifiedName!! to Mapping(QtListModel::class.qualifiedName!!, "QAbstractItemModel*"),
             "java.net.URI" to Mapping("java.net.URI", "QUrl"),
         )
 
-        private fun mapKotlinTypeToJavaAndCppType(
-            rawName: String,  type: KSType,  builtIns: KSBuiltIns): Mapping? {
-            // Check if we can map the list to QStringList. This is an optimization as QML
-            // has direct support for QStringList; strings would work as QVariantList too
-            if (rawName == "kotlin.collections.List"
-                || rawName == "kotlin.collections.MutableList"
-                || rawName == "java.util.List") {
+        private fun mapKotlinTypeToJavaAndCppType(rawName: String,  type: KSType,  builtIns: KSBuiltIns): Mapping?
+        {
+            // Check if a collections List (handled here instead of the mapping table so
+            // we can handle List<String> as a special case
+            if (rawName == "kotlin.collections.List" || rawName == "kotlin.collections.MutableList" || rawName == "java.util.List") {
                 val argType = type.arguments.singleOrNull()?.type?.resolve()
+                // Check if we can map the list to QStringList. This is an optimization as QML
+                // has direct support for QStringList; strings would work as QVariantList too
                 val isStringArg = argType != null && (
                     argType.makeNotNullable() == builtIns.stringType
                          || argType.declaration.qualifiedName?.asString() in setOf("kotlin.String", "java.lang.String"))
@@ -58,6 +65,36 @@ internal data class JvmType(val javaType: String, val cppType: String, val isPri
                     Mapping("java.util.List", "QVariantList")
                 }
             }
+
+            // Check if a plain/raw array and verify it's one of the supported types
+            if (rawName == "kotlin.Array") {
+                val argType = type.arguments.singleOrNull()?.type?.resolve()?.makeNotNullable()
+                if (argType != null) {
+                    // String[] => QStringList (similar optimization as with collection Lists)
+                    val isStringArg = (argType == builtIns.stringType
+                        || argType.declaration.qualifiedName?.asString() in setOf("kotlin.String", "java.lang.String"))
+                    if (isStringArg)
+                        return Mapping("java.lang.String[]", "QStringList")
+
+                    // Boxed primitive arrays => QVariantList
+                    val qualifiedName = argType.declaration.qualifiedName?.asString()
+                    return when (qualifiedName) {
+                        "kotlin.Int", "java.lang.Integer" -> Mapping("java.lang.Integer[]", "QVariantList")
+                        "kotlin.Long", "java.lang.Long" -> Mapping("java.lang.Long[]", "QVariantList")
+                        "kotlin.Short", "java.lang.Short" -> Mapping("java.lang.Short[]", "QVariantList")
+                        "kotlin.Byte", "java.lang.Byte" -> Mapping("java.lang.Byte[]", "QVariantList")
+                        "kotlin.Char", "java.lang.Character" -> Mapping("java.lang.Character[]", "QVariantList")
+                        "kotlin.Boolean", "java.lang.Boolean" -> Mapping("java.lang.Boolean[]", "QVariantList")
+                        "kotlin.Float", "java.lang.Float" -> Mapping("java.lang.Float[]", "QVariantList")
+                        "kotlin.Double", "java.lang.Double" -> Mapping("java.lang.Double[]", "QVariantList")
+                        else -> null
+                    }
+                }
+                return null
+            }
+
+            // Kotlin type is neither a Collection or an array containing boxed primitives,
+            // use the mapping table
             return kotlinTypeToJavaAndCppTypeMap[rawName]
         }
 

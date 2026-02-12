@@ -42,6 +42,10 @@ public class ValueTypesTestBackend {
     @QMLSignals
     QmlCallback qmlCallback;
 
+    // Plain/raw arrays
+    public QtProperty<int[]> intArrayProp = new QtProperty<>(new int[] {1, 2, 3});
+    public QtProperty<String[]> stringArrayProp = new QtProperty<>(new String[] {"aa", "bb", "cc"});
+
     // Map
     public QtProperty<Map<String,Object>> mapProp =
             new QtProperty<>(Map.of("k1", 1, "k2", 2));

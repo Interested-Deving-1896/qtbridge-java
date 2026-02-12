@@ -9,11 +9,14 @@ import org.jetbrains.annotations.NotNull;
 import org.qtproject.qt.bridge.utils.ObjectToMapConverter;
 import org.qtproject.qt.bridge.annotations.QMLRegistrable;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 /**
  * A Java-side property that bridges a single value to Qt/QML.
@@ -66,6 +69,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class QtProperty<T> {
     private final AtomicReference<T> valueRef = new AtomicReference<>();
+    private static final Logger logger = Logger.getLogger("org.qtproject.qt.bridge");
+
     // Use CoW list to deal with concurrency. With this list it's acceptable to iterate
     // the list while modifying it. Using regular synchronized(observers) might be a bit
     // risky because we'd call user-code (observer.accept()) inside the synchronized block,
@@ -113,7 +118,7 @@ public class QtProperty<T> {
         final T nextValue = normalizeValue(newValue);
         // Make atomic update and notify if value changed
         final T previousValue = valueRef.getAndSet(nextValue);
-        if (!Objects.equals(previousValue, nextValue))
+        if (!valuesAreEqual(nextValue, previousValue))
             notifyValueChanged();
     }
 
@@ -158,15 +163,98 @@ public class QtProperty<T> {
             return (T) java.util.Collections.unmodifiableMap(tmp);
         }
 
-        if (value.getClass().isArray()) {
-            // QTBUG-140227
-            throw new IllegalArgumentException("Plain arrays (e.g. String[]) are not supported at the moment");
+        final Class<?> valueClass = value.getClass();
+        if (valueClass.isArray()) {
+            // Check if arrays component type (eg. 'int' if int[]) is supported,
+            // and make a defensive copy if it is.
+            final Class<?> component = valueClass.getComponentType();
+            if (component.isPrimitive()
+                || component == Integer.class || component == Double.class
+                || component == Float.class || component == Byte.class
+                || component == String.class || component == Character.class
+                || component == Short.class || component == Long.class
+                || component == Boolean.class)
+            {
+                int length = Array.getLength(value);
+                Object copy = Array.newInstance(component, length);
+                System.arraycopy(value, 0, copy, 0, length);
+                return (T) copy;
+            }
+            throw new IllegalArgumentException("Unsupported array type " + valueClass + " " + component);
         }
+
         if (ObjectToMapConverter.isSimpleType(value))
             return value;
 
         // Type is currently not supported
         throw new IllegalArgumentException("Unsupported value type " + value.getClass().getName());
+    }
+
+    // Returns true if values are considered equal, and false otherwise
+    private static boolean valuesAreEqual(Object x, Object y) {
+        if (x == y)
+            return true;
+        // If only one of them is null they are not equal (if both are null, 'x == y' is true)
+        if (x == null || y == null)
+            return false;
+
+        final Class<?> xClass = x.getClass();
+        final Class<?> yClass = y.getClass();
+        final boolean xIsArray = xClass.isArray();
+        final boolean yIsArray = yClass.isArray();
+
+        // Check if (only) one of them is array
+        if (xIsArray != yIsArray)
+            return false;
+
+        // If values are not arrays -> do a more generic equality comparison
+        if (!xIsArray)
+            return Objects.equals(x, y);
+
+        // Values are arrays, check if array types match
+        if (xClass != yClass)
+            return false;
+
+        // Array types match -> cast and compare per element
+        if (x instanceof int[] xx)
+            return Arrays.equals(xx, (int[]) y);
+        if (x instanceof long[] xx)
+            return Arrays.equals(xx, (long[]) y);
+        if (x instanceof short[] xx)
+            return Arrays.equals(xx, (short[]) y);
+        if (x instanceof byte[] xx)
+            return Arrays.equals(xx, (byte[]) y);
+        if (x instanceof char[] xx)
+            return Arrays.equals(xx, (char[]) y);
+        if (x instanceof boolean[] xx)
+            return Arrays.equals(xx, (boolean[]) y);
+        if (x instanceof float[] xx)
+            return Arrays.equals(xx, (float[]) y);
+        if (x instanceof double[] xx)
+            return Arrays.equals(xx, (double[]) y);
+
+        if (x instanceof Integer[] xx)
+            return Arrays.equals(xx, (Integer[]) y);
+        if (x instanceof Long[] xx)
+            return Arrays.equals(xx, (Long[]) y);
+        if (x instanceof Short[] xx)
+            return Arrays.equals(xx, (Short[]) y);
+        if (x instanceof Byte[] xx)
+            return Arrays.equals(xx, (Byte[]) y);
+        if (x instanceof Character[] xx)
+            return Arrays.equals(xx, (Character[]) y);
+        if (x instanceof Boolean[] xx)
+            return Arrays.equals(xx, (Boolean[]) y);
+        if (x instanceof Float[] xx)
+            return Arrays.equals(xx, (Float[]) y);
+        if (x instanceof Double[] xx)
+            return Arrays.equals(xx, (Double[]) y);
+        if (x instanceof String[] xx)
+            return Arrays.equals(xx, (String[]) y);
+
+        // This shouldn't happen as we check the component types in normalizeValue()
+        logger.severe("QtProperty: Unsupported array type: " + xClass);
+        return false;
     }
 
     /**
