@@ -27,8 +27,10 @@ void JNICALL nativeDisposeQObjectJavaProxy(JNIEnv, jclass, jlong handle)
 
 void JNICALL nativeAddInvokable(JNIEnv *env, jobject, jlong handle, jstring javaSignature,
                                 jstring javaReturnType, jstring cppSignature,
-                                jstring cppReturnType, jboolean retIsPrimitive,
-                                jbooleanArray paramIsPrimitive)
+                                jstring cppReturnType,
+                                jboolean retIsPrimitive, jbyte retShape, jbyte retType,
+                                jbooleanArray paramIsPrimitive, jbyteArray paramShape,
+                                jbyteArray paramType)
 {
     auto *obj = QObjectJavaProxy::fromHandle(handle);
     if (!obj)
@@ -40,6 +42,7 @@ void JNICALL nativeAddInvokable(JNIEnv *env, jobject, jlong handle, jstring java
     const auto cSignature = JNI::toQString(cppSignature);
     const auto cReturnType = JNI::toQString(cppReturnType);
 
+    // Is a parameter boxed or unboxed (Integer vs int)?
     QList<bool> jParamIsPrimitive;
     if (paramIsPrimitive) {
         jsize count = env->GetArrayLength(paramIsPrimitive);
@@ -49,9 +52,36 @@ void JNICALL nativeAddInvokable(JNIEnv *env, jobject, jlong handle, jstring java
         env->ReleaseBooleanArrayElements(paramIsPrimitive, primElems, 0);
     }
 
+    // Is a parameter an Array or List?
+    QList<qint8> jParamShape;
+    if (paramShape) {
+        jsize count = env->GetArrayLength(paramShape);
+        jbyte *elems = env->GetByteArrayElements(paramShape, nullptr);
+        jParamShape.reserve(count);
+        for (jsize i = 0; i < count; ++i)
+            jParamShape.push_back(static_cast<qint8>(elems[i]));
+        env->ReleaseByteArrayElements(paramShape, elems, 0);
+    }
+
+    // The expected datatype of the parameter
+    QList<qint8> jParamType;
+    if (paramType) {
+        jsize count = env->GetArrayLength(paramType);
+        jbyte *elems = env->GetByteArrayElements(paramType, nullptr);
+        jParamType.reserve(count);
+        for (jsize i = 0; i < count; ++i)
+            jParamType.push_back(static_cast<qint8>(elems[i]));
+        env->ReleaseByteArrayElements(paramType, elems, 0);
+    }
+
+    const bool jRetIsPrimitive = static_cast<bool>(retIsPrimitive);
+    const qint8 jRetShape = static_cast<qint8>(retShape);
+    const qint8 jRetType = static_cast<qint8>(retType);
+
     const auto slotId = obj->addSlot(cSignature.toUtf8(), cReturnType.toUtf8());
+    // TODO register the new data to cache
     JNICache::registerProxyMethod(obj->cacheKey(), slotId, jSignature,
-                                  jReturnType, bool(retIsPrimitive), jParamIsPrimitive);
+                                  jReturnType, jRetIsPrimitive, jParamIsPrimitive);
 }
 
 void JNICALL nativeAddSignal(JNIEnv *env, jobject, jlong handle, jstring javaSignature,
@@ -177,8 +207,8 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
 
 void JNICALL nativeAddProperty(JNIEnv, jobject, jlong handle, jstring name,
                                jstring javaType, jstring cppType, jboolean writable,
-                               jboolean readable,jstring signalSignature,
-                               jboolean isConstant)
+                               jboolean readable,jstring signalSignature, jboolean isConstant,
+                               jboolean isPrimitive, jbyte shape, jbyte type)
 {
     auto *proxy = QObjectJavaProxy::fromHandle(handle);
     if (!proxy) {
@@ -210,13 +240,13 @@ void JNIQtObject::initializeJNI(JNIEnv *env)
         JNIUtilities::createJNIMethod("nativeDispose", "(J)V",
                                       (void *)&nativeDisposeQObjectJavaProxy),
         JNIUtilities::createJNIMethod("nativeAddInvokable",
-                                      "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z[Z)V",
+                                      "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZBB[Z[B[B)V",
                                       (void *)&nativeAddInvokable),
         JNIUtilities::createJNIMethod("nativeAddSignal", "(JLjava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V",
                                       (void *)&nativeAddSignal),
         JNIUtilities::createJNIMethod("nativeAddProperty",
-                                   "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/lang/String;Z)V",
-                                   (void *)&nativeAddProperty),
+                                      "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/lang/String;ZZBB)V",
+                                      (void *)&nativeAddProperty),
         JNIUtilities::createJNIMethod("nativeEmitSignal",
                                       "(JLjava/lang/String;[Ljava/lang/Object;)V",
                                       (void *)&nativeEmitSignal),

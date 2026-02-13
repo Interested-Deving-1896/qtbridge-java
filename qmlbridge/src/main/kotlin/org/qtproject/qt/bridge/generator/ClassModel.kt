@@ -7,6 +7,42 @@ package org.qtproject.qt.bridge.generator
 
 import org.qtproject.qt.bridge.utils.JvmType
 
+internal enum class PropertyKind {
+    QT_PROPERTY,
+    QT_LIST_MODEL,
+}
+
+internal enum class VariableShape {
+    VALUE,
+    LIST,
+    ARRAY,
+    MAP,
+}
+
+internal enum class VariableType {
+    VOID,
+    BOOLEAN,
+    BYTE,
+    CHAR,
+    SHORT,
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    STRING,
+    QML_REGISTRABLE,
+    ITEM_MODEL,
+}
+
+// Stores information of function parameters, return values and property types.
+// This information is needed for JNI to know which type Java/Kotlin expects
+// (consider for example QML writing a QVariantList to a property).
+internal data class VariableInfo(
+   val shape: VariableShape,
+   val type: VariableType,
+   val isPrimitive: Boolean
+)
+
 // Source location data for MOC output
 internal data class SourceLocation(
     val fileName: String,
@@ -47,8 +83,8 @@ internal data class Invokable(
     val cppParams: List<Pair<String, String>>, // 'name, type' pairs
     val javaReturnType: String, // "void", "int", "java.lang.String"
     val cppReturnType: String, // "void", "int", "QString"
-    val retIsPrimitive: Boolean,
-    val paramIsPrimitive: BooleanArray,
+    val retInfo: VariableInfo,
+    val paramListInfo: List<VariableInfo>,
     val sourceLocation: SourceLocation? = null,
 )
 
@@ -67,11 +103,6 @@ internal data class SignalField(
     val signals: List<Signal> = emptyList(),
 )
 
-internal enum class PropertyKind {
-    QT_PROPERTY,
-    QT_LIST_MODEL,
-}
-
 // Models QtProperty<T> or a QtListModel<T> member of a @QMLRegistrable
 internal data class Property(
     val kind: PropertyKind,
@@ -80,6 +111,7 @@ internal data class Property(
     val constant: Boolean,
     val writableFromQml: Boolean,
     val type: JvmType,
+    val typeInfo: VariableInfo,
     val declaredTypeQualifiedName: String?,
     val sourceLocation: SourceLocation?,
 )

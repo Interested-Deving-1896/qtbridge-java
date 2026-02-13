@@ -10,6 +10,36 @@ import com.google.devtools.ksp.processing.Dependencies
 import org.qtproject.qt.bridge.generator.*
 
 internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
+
+    // Functions for mapping variable types and shapes into bytes.
+    // Use byte encoding (instead of Java/Kotlin side structs) so that
+    // we can easily pass them to JNI, without JNI needing to invoke
+    // Java/Kotlin functions to determine these shapes / types. Also
+    // we want to avoid runtime-heavy parsing of method and parameter
+    // signatures, and do the heavylifthing at build-time (at the expense
+    // of few extra bytes of memory).
+    private fun VariableShape.code(): Byte = when (this) {
+        VariableShape.VALUE -> 0
+        VariableShape.LIST -> 1
+        VariableShape.ARRAY -> 2
+        VariableShape.MAP -> 3
+    }.toByte();
+
+    private fun VariableType.code(): Byte = when (this) {
+        VariableType.VOID -> 0
+        VariableType.BOOLEAN -> 1
+        VariableType.BYTE -> 2
+        VariableType.CHAR -> 3
+        VariableType.SHORT -> 4
+        VariableType.INT -> 5
+        VariableType.LONG -> 6
+        VariableType.FLOAT -> 7
+        VariableType.DOUBLE -> 8
+        VariableType.STRING -> 9
+        VariableType.QML_REGISTRABLE -> 10
+        VariableType.ITEM_MODEL -> 11
+    }.toByte();
+
     fun emitClassFromModel(model: RegistrableClass) {
         val packageName = model.packageName
         val className = model.simpleName
@@ -59,16 +89,24 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
             w.appendLine("        @JvmStatic")
             w.appendLine("        fun registerInvokables(qtObject : QtObject) {")
             model.invokables.forEach { m ->
-                val paramIsPrim = if (m.paramIsPrimitive.isEmpty()) {
-                    "booleanArrayOf()"
-                } else {
-                    "booleanArrayOf(" + m.paramIsPrimitive.joinToString(", ") { it.toString() } + ")"
-                }
+
+                val paramIsPrim = if (m.paramListInfo.isEmpty()) "booleanArrayOf()" else
+                    "booleanArrayOf(" + m.paramListInfo.joinToString(", ") { it.isPrimitive.toString() } + ")"
+
+                val paramShape = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
+                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.shape.code().toString() } + ")"
+
+                val paramType = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
+                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.type.code().toString() } + ")"
+
                 w.appendLine(
                     "            qtObject.addInvokable(" +
                         "\"${m.javaSignature}\", \"${m.javaReturnType}\", " +
                         "\"${m.cppSignature}\", \"${m.cppReturnType}\", " +
-                        "${m.retIsPrimitive}, $paramIsPrim)"
+                        "${m.retInfo.isPrimitive}, " +
+                        "${m.retInfo.shape.code().toString()}, " +
+                        "${m.retInfo.type.code().toString()}, " +
+                        "$paramIsPrim, $paramShape, $paramType)"
                 )
             }
             w.appendLine("        }")
@@ -80,12 +118,16 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
             model.properties.forEach { p ->
                 val type = p.type
                 val declared = p.declaredTypeQualifiedName
+                val typeInfo = p.typeInfo
                 w.appendLine(
-                    "            qtObject.addProperty(QProperty(" +
-                        "\"${p.name}\", \"$declared\", " +
-                        "\"${type.cppType}\", ${p.writableFromQml}, true, " +
-                        "${p.constant}, \"${p.notifySignalSignature}\"))"
-                )
+                    "            qtObject.addProperty(QProperty(\n" +
+                    "                \"${p.name}\", \"$declared\",\n" +
+                    "                \"${type.cppType}\", ${p.writableFromQml}, true,\n" +
+                    "                ${p.constant}, \"${p.notifySignalSignature}\",\n" +
+                    "                ${typeInfo.isPrimitive},\n" +
+                    "                ${typeInfo.shape.code()},\n" +
+                    "                ${typeInfo.type.code()}\n" +
+                    "            ))")
             }
 
             // connectPropertyNotifyToSignalEmission for QtProperty members

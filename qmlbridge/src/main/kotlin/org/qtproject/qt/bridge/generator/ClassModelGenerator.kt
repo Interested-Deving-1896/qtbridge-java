@@ -42,6 +42,36 @@ internal class ClassModelGenerator(
         )
     }
 
+    // Builds VariableInfo from a JvmType
+    private fun JvmType.toVariableInfo(): VariableInfo {
+        val shape = when {
+            javaType.endsWith("[]") -> VariableShape.ARRAY
+            javaType == "java.util.List" -> VariableShape.LIST
+            javaType == "java.util.Map" -> VariableShape.MAP
+            else -> VariableShape.VALUE
+        }
+
+        // Determine element/value type from mapped Java type / C++ type
+        val type = when (javaType) {
+            "boolean", "java.lang.Boolean", "boolean[]", "java.lang.Boolean[]" -> VariableType.BOOLEAN
+            "byte", "java.lang.Byte", "byte[]", "java.lang.Byte[]" -> VariableType.BYTE
+            "char", "java.lang.Character", "char[]", "java.lang.Character[]" -> VariableType.CHAR
+            "short", "java.lang.Short", "short[]", "java.lang.Short[]" -> VariableType.SHORT
+            "int", "java.lang.Integer", "int[]", "java.lang.Integer[]" -> VariableType.INT
+            "long", "java.lang.Long", "long[]", "java.lang.Long[]" -> VariableType.LONG
+            "float", "java.lang.Float", "float[]", "java.lang.Float[]" -> VariableType.FLOAT
+            "double", "java.lang.Double", "double[]", "java.lang.Double[]" -> VariableType.DOUBLE
+            "java.lang.String", "java.lang.String[]" -> VariableType.STRING
+            "void" -> VariableType.VOID
+            else -> if (cppType == "QObject*") VariableType.QML_REGISTRABLE
+                    else if (cppType == "QAbstractItemModel*") VariableType.ITEM_MODEL
+                    else VariableType.STRING // Not sure of the default, can this happen?
+        }
+
+        return VariableInfo(shape, type, isPrimitive)
+    }
+
+
     private fun KSClassDeclaration.QMLRegistrableInfo(): RegistrableInfo? {
         val qmlRegistrableQn = QMLRegistrable::class.qualifiedName ?: return null
         val ann = annotations.firstOrNull {
@@ -216,8 +246,8 @@ internal class ClassModelGenerator(
                         cppParams = cppParams,
                         javaReturnType = returnJvm.javaType,
                         cppReturnType = returnJvm.cppType,
-                        retIsPrimitive = returnJvm.isPrimitive,
-                        paramIsPrimitive = paramJvmTypes.map { it.isPrimitive }.toBooleanArray(),
+                        retInfo = returnJvm.toVariableInfo(),
+                        paramListInfo = paramJvmTypes.map { it.toVariableInfo() },
                         sourceLocation = sourceLocationOf(invokable)
                     )
 
@@ -289,6 +319,7 @@ internal class ClassModelGenerator(
                         constant = constant,
                         writableFromQml = writable,
                         type = mapped,
+                        typeInfo = mapped.toVariableInfo(),
                         declaredTypeQualifiedName = declaredFq,
                         sourceLocation = sourceLocation
                     )

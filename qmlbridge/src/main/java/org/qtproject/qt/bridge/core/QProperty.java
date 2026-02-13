@@ -12,6 +12,7 @@ record QProperty(
         boolean writeable,
         boolean readable,
         boolean constant,
-        String notificationSignal
-) {
-}
+        String notificationSignal,
+        boolean isPrimitive,
+        byte shape,
+        byte type) {}
