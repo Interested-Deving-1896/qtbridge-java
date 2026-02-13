@@ -79,9 +79,9 @@ void JNICALL nativeAddInvokable(JNIEnv *env, jobject, jlong handle, jstring java
     const qint8 jRetType = static_cast<qint8>(retType);
 
     const auto slotId = obj->addSlot(cSignature.toUtf8(), cReturnType.toUtf8());
-    // TODO register the new data to cache
     JNICache::registerProxyMethod(obj->cacheKey(), slotId, jSignature,
-                                  jReturnType, jRetIsPrimitive, jParamIsPrimitive);
+                                  jReturnType, jRetIsPrimitive, jRetShape, jRetType,
+                                  jParamIsPrimitive, jParamShape, jParamType);
 }
 
 void JNICALL nativeAddSignal(JNIEnv *env, jobject, jlong handle, jstring javaSignature,
@@ -231,7 +231,8 @@ void JNICALL nativeAddProperty(JNIEnv, jobject, jlong handle, jstring name,
                                         static_cast<bool>(readable), static_cast<bool>(isConstant),
                                         notifySig.toUtf8()
                                     });
-    JNICache::registerProxyField(proxy->cacheKey(), fieldId, propertyName, propertyJavaType);
+    JNICache::registerProxyField(proxy->cacheKey(), fieldId, propertyName, propertyJavaType,
+                                bool(isPrimitive), qint8(shape), qint8(type));
 }
 
 void JNIQtObject::initializeJNI(JNIEnv *env)

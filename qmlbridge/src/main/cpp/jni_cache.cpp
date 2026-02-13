@@ -236,7 +236,10 @@ qint64 JNICache::ensureProxyClass(jclass userProxyClass)
 
 void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
                                    const QString &javaSignature, const QString &returnType,
-                                   bool retIsPrimitive, const QList<bool> &parmIsPrimitive)
+                                   bool retIsPrimitive, qint8 retShape, qint8 retType,
+                                   const QList<bool> &parmIsPrimitive,
+                                   const QList<qint8> &parmShape,
+                                   const QList<qint8> &parmType)
 {
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
@@ -268,7 +271,9 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
                    << " with signature: " << jniSignature;
         return;
     }
-    classEntry.methods.insert(methodKey, JMethodEntry{methodId, retIsPrimitive, parmIsPrimitive});
+    classEntry.methods.insert(methodKey,
+        JMethodEntry{methodId, retIsPrimitive, retShape, retType,
+                    parmIsPrimitive, parmShape, parmType});
 }
 
 void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
@@ -307,8 +312,9 @@ void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
                               JSignalEntry{signalIndex, parmMetaTypeIds});
 }
 
-void JNICache::registerProxyField(const qint64 proxyKey, const int fieldKey,
-                                  const QString &fieldName, const QString &signature)
+void JNICache::registerProxyField(qint64 proxyKey, int fieldKey, const QString &fieldName,
+                                  const QString &signature, bool isPrimitive, qint8 shape,
+                                  qint8 type)
 {
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
@@ -336,7 +342,7 @@ void JNICache::registerProxyField(const qint64 proxyKey, const int fieldKey,
                              << "with signature:" << jniSignature;
         return;
     }
-    classEntry.fields.insert(fieldKey, JFieldEntry{fieldId});
+    classEntry.fields.insert(fieldKey, JFieldEntry{fieldId, shape, type});
 }
 
 std::optional<JNICache::JMethodEntry> JNICache::getProxyMethod(
