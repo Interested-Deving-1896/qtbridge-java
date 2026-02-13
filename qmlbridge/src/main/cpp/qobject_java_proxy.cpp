@@ -335,6 +335,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         qCWarning(QT_BRIDGE, "Invokable method %s not found", method.name().constData());
         return;
     }
+    // If upmost bit is set, value Java-side representation is primitive (int instead of Integer)
+    const bool retIsPrimitive = (static_cast<quint8>(methodCacheEntry->retType) & 0x80u) != 0u;
 
     // First convert and collect the function parameters into a list.
     const auto parameterCount = method.parameterCount();
@@ -395,7 +397,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         break;
     }
     case QMetaType::LongLong:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jlong>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
             *static_cast<long long *>(args[0]) = ret;
@@ -406,7 +408,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         }
         break;
     case QMetaType::Double:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<double *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jdouble>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -416,7 +418,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         }
         break;
     case QMetaType::Float:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<float *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jfloat>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -430,7 +432,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
             env, javaObject, methodCacheEntry->method, parameters.data());
         break;
     case QMetaType::Bool:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<bool *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jboolean>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -441,7 +443,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         break;
     case QMetaType::QChar:
         jchar jc;
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             jc = JNIMethodInvoker::invokeMethodWithJValues<jchar>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -452,7 +454,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         *static_cast<QChar *>(args[0]) = QChar(jc);
         break;
     case QMetaType::SChar:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<signed char *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jbyte>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -462,7 +464,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         }
         break;
     case QMetaType::Short:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<short *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jshort>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {
@@ -472,7 +474,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         }
         break;
     case QMetaType::Int:
-        if (methodCacheEntry->retIsPrimitive) {
+        if (retIsPrimitive) {
             *static_cast<int *>(args[0]) = JNIMethodInvoker::invokeMethodWithJValues<jint>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
         } else {

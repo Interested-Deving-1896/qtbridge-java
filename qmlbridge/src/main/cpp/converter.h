@@ -26,6 +26,30 @@ namespace Utility::JNI {
             return res;
         }
 
+        // Must be kept in synch with ClassCreationEmitter table
+        enum class VarShape : qint8 {
+            Value = 0,
+            List = 1,
+            Array = 2,
+            Map = 3,
+        };
+
+        // Must be kept in synch with ClassCreationEmitter table
+        enum class VarType : qint8 {
+            Void = 0,
+            Boolean = 1,
+            Byte = 2,
+            Char = 3,
+            Short = 4,
+            Int = 5,
+            Long = 6,
+            Float = 7,
+            Double = 8,
+            String = 9,
+            QmlRegistrable = 10,
+            ItemModel = 11
+        };
+
         class Converter
         {
         public:

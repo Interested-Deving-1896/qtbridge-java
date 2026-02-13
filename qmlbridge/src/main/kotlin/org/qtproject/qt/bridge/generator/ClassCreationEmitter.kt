@@ -18,6 +18,7 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
     // we want to avoid runtime-heavy parsing of method and parameter
     // signatures, and do the heavylifthing at build-time (at the expense
     // of few extra bytes of memory).
+    // Must be kept in synch with JNI converter enum
     private fun VariableShape.code(): Byte = when (this) {
         VariableShape.VALUE -> 0
         VariableShape.LIST -> 1
@@ -25,6 +26,8 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
         VariableShape.MAP -> 3
     }.toByte();
 
+    // Must be kept in synch with JNI-side converter enum and
+    // ClassModel VariableType enum
     private fun VariableType.code(): Byte = when (this) {
         VariableType.VOID -> 0
         VariableType.BOOLEAN -> 1
@@ -38,7 +41,16 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
         VariableType.STRING -> 9
         VariableType.QML_REGISTRABLE -> 10
         VariableType.ITEM_MODEL -> 11
+        // Note: from 128 (0x80) onwards the values are reserved for marking type's
+        // Java-side representation as primitive/unboxed (the upmost bit is set)
     }.toByte();
+
+    // Packs the 'primitive'/'unboxed' information into the high bit of type code
+    private fun packedVariableTypeCode(type: VariableType, isPrimitive: Boolean): Byte {
+        val base = type.code().toInt() and 0x7F
+        val primitiveBit = if (isPrimitive) 0x80 else 0
+        return (base or primitiveBit).toByte()
+    }
 
     fun emitClassFromModel(model: RegistrableClass) {
         val packageName = model.packageName
@@ -90,23 +102,23 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
             w.appendLine("        fun registerInvokables(qtObject : QtObject) {")
             model.invokables.forEach { m ->
 
-                val paramIsPrim = if (m.paramListInfo.isEmpty()) "booleanArrayOf()" else
-                    "booleanArrayOf(" + m.paramListInfo.joinToString(", ") { it.isPrimitive.toString() } + ")"
-
+                // Array, List, Map, ..
                 val paramShape = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
                     "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.shape.code().toString() } + ")"
 
+                // Integer, String, ... and value primitiveness bit
                 val paramType = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
-                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.type.code().toString() } + ")"
+                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") {
+                        packedVariableTypeCode(it.type, it.isPrimitive).toString()
+                    } + ")"
 
                 w.appendLine(
                     "            qtObject.addInvokable(" +
-                        "\"${m.javaSignature}\", \"${m.javaReturnType}\", " +
-                        "\"${m.cppSignature}\", \"${m.cppReturnType}\", " +
-                        "${m.retInfo.isPrimitive}, " +
-                        "${m.retInfo.shape.code().toString()}, " +
-                        "${m.retInfo.type.code().toString()}, " +
-                        "$paramIsPrim, $paramShape, $paramType)"
+                    "                \"${m.javaSignature}\", \"${m.javaReturnType}\",\n" +
+                    "                \"${m.cppSignature}\", \"${m.cppReturnType}\",\n" +
+                    "                ${m.retInfo.shape.code().toString()},\n" +
+                    "                ${packedVariableTypeCode(m.retInfo.type, m.retInfo.isPrimitive).toString()},\n" +
+                    "                $paramShape, $paramType)"
                 )
             }
             w.appendLine("        }")
@@ -124,9 +136,8 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                     "                \"${p.name}\", \"$declared\",\n" +
                     "                \"${type.cppType}\", ${p.writableFromQml}, true,\n" +
                     "                ${p.constant}, \"${p.notifySignalSignature}\",\n" +
-                    "                ${typeInfo.isPrimitive},\n" +
                     "                ${typeInfo.shape.code()},\n" +
-                    "                ${typeInfo.type.code()}\n" +
+                    "                ${packedVariableTypeCode(typeInfo.type, typeInfo.isPrimitive)}\n" +
                     "            ))")
             }
 

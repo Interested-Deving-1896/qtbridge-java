@@ -236,8 +236,7 @@ qint64 JNICache::ensureProxyClass(jclass userProxyClass)
 
 void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
                                    const QString &javaSignature, const QString &returnType,
-                                   bool retIsPrimitive, qint8 retShape, qint8 retType,
-                                   const QList<bool> &parmIsPrimitive,
+                                   qint8 retShape, qint8 retType,
                                    const QList<qint8> &parmShape,
                                    const QList<qint8> &parmType)
 {
@@ -272,8 +271,7 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
         return;
     }
     classEntry.methods.insert(methodKey,
-        JMethodEntry{methodId, retIsPrimitive, retShape, retType,
-                    parmIsPrimitive, parmShape, parmType});
+        JMethodEntry{methodId, retShape, retType, parmShape, parmType});
 }
 
 void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
@@ -313,8 +311,7 @@ void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
 }
 
 void JNICache::registerProxyField(qint64 proxyKey, int fieldKey, const QString &fieldName,
-                                  const QString &signature, bool isPrimitive, qint8 shape,
-                                  qint8 type)
+                                  const QString &signature, qint8 shape, qint8 type)
 {
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);

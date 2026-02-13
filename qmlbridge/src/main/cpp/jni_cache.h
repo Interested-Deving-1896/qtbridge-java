@@ -13,14 +13,10 @@ class JNICache
 public:
     struct JMethodEntry {
         jmethodID method;
-
         // Return type information
-        bool retIsPrimitive = false;
         qint8 retShape = 0;
         qint8 retType = 0;
-
         // Parameter expectations
-        QList<bool> parmIsPrimitive;
         QList<qint8> parmShape;
         QList<qint8> parmType;
     };
@@ -37,7 +33,6 @@ public:
         // Property type information
         qint8 shape = 0;
         qint8 type = 0;
-        bool isPrimitive = false;
     };
 
     struct JClassEntry {
@@ -65,15 +60,14 @@ public:
     static qint64 ensureProxyClass(jclass userProxyClass);
     static void registerProxyMethod(const qint64 proxyKey, const int methodKey,
                                    const QString &javaSignature, const QString &returnType,
-                                   bool retIsPrimitive, qint8 retShape, qint8 retType,
-                                   const QList<bool> &parmIsPrimitive,
+                                   qint8 retShape, qint8 retType,
                                    const QList<qint8> &parmShape,
                                    const QList<qint8> &parmType);
     static void registerProxySignal(qint64 proxyKey, int signalIndex, const QString &javaSignature,
                                     const QList<QByteArray> paramCppType);
     static void registerProxyField(qint64 proxyKey, int fieldKey, const QString &fieldName,
                                    const QString &signature,
-                                   bool isPrimitive, qint8 shape, qint8 type);
+                                   qint8 shape, qint8 type);
 
     static std::optional<JMethodEntry> getProxyMethod(qint64 proxyKey, int methodKey);
     static std::optional<JSignalEntry> getProxySignal(qint64 proxyKey, const QByteArray &javaSignature);

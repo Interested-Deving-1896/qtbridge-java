@@ -25,6 +25,21 @@ Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 namespace Utility::JNI {
 
+    // Checks if the upmost bit is set, which indicates the type is primitive
+    inline bool typeIsPrimitive(qint8 packed) {
+        return (static_cast<quint8>(packed) & 0x80u) != 0u;
+    }
+
+    // Returns VarType (removes potential primitive flagging)
+    inline VarType type(qint8 packed) {
+        return static_cast<VarType>(static_cast<quint8>(packed) & 0x7Fu);
+    }
+
+    inline VarShape paramShape(const JNICache::JMethodEntry &e, int idx) {
+        Q_ASSERT(idx >= 0 && idx < e.parmShape.size());
+        return static_cast<VarShape>(e.parmShape.at(idx));
+    }
+
     // Used to convert invokable function parameters from cpp to Java.
     // Target Java types may be boxed or unboxed. To know which is expected,
     // we use the cache entry helper that was created at KSP time
@@ -32,6 +47,8 @@ namespace Utility::JNI {
         JNIEnv *env, const QMetaMethod& metaMethod, void *cppParameter,
         const JNICache::JMethodEntry methodEntry, int parameterIndex)
     {
+        Q_ASSERT(methodEntry.parmType.size() > parameterIndex);
+
         jvalue ret{};
         const auto paramMetaTypeId = metaMethod.parameterMetaType(parameterIndex).id();
 
@@ -68,7 +85,7 @@ namespace Utility::JNI {
         }
         case QMetaType::LongLong: {
             double cppValue = *static_cast<long long*>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.j = cppValue;
             else
                 ret.l = JNIObject<JavaLangLong>::makeObject(jlong(cppValue));
@@ -76,16 +93,15 @@ namespace Utility::JNI {
         }
         case QMetaType::Double: {
             double cppValue = *static_cast<double *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.d = cppValue;
             else
                 ret.l = JNIObject<JavaLangDouble>::makeObject(jdouble(cppValue));
             break;
-
         }
         case QMetaType::Float: {
             float cppValue = *static_cast<float *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.f = cppValue;
             else
                 ret.l = JNIObject<JavaLangFloat>::makeObject(jfloat(cppValue));
@@ -94,7 +110,7 @@ namespace Utility::JNI {
         }
         case QMetaType::Bool: {
             bool cppValue = *static_cast<bool *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.z = cppValue;
             else
                 ret.l = JNIObject<JavaLangBoolean>::makeObject(jboolean(cppValue));
@@ -104,7 +120,7 @@ namespace Utility::JNI {
             // Both Java Character and QChar are UTF-16 characters
             QChar cppValue = *static_cast<QChar *>(cppParameter);
             const jchar jc = static_cast<jchar>(cppValue.unicode());
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.c = jc;
             else
                 ret.l = JNIObject<JavaLangCharacter>::makeObject(jc);
@@ -125,7 +141,7 @@ namespace Utility::JNI {
         case QMetaType::SChar: {
             // QMetaType::SChar == signed char == qint8 == jbyte
             signed char cppValue = *static_cast<signed char *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.b = cppValue;
             else
                 ret.l = JNIObject<JavaLangByte>::makeObject(jbyte(cppValue));
@@ -133,7 +149,7 @@ namespace Utility::JNI {
         }
         case QMetaType::Int: {
             int cppValue = *static_cast<int *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.i = cppValue;
             else
                 ret.l = JNIObject<JavaLangInteger>::makeObject(jint(cppValue));
@@ -141,7 +157,7 @@ namespace Utility::JNI {
         }
         case QMetaType::Short: {
             short cppValue = *static_cast<short *>(cppParameter);
-            if (methodEntry.parmIsPrimitive.at(parameterIndex))
+            if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.s = cppValue;
             else
                 ret.l = JNIObject<JavaLangShort>::makeObject(jshort(cppValue));

@@ -19,6 +19,7 @@ internal enum class VariableShape {
     MAP,
 }
 
+// Keep contents in synch with ClassCreationEmitter encoder switch-case
 internal enum class VariableType {
     VOID,
     BOOLEAN,

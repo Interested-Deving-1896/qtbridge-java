@@ -59,12 +59,12 @@ class QtObject {
     // and properties to the underlying QtObjectWrapper's dynamic metaobject.
     void addInvokable(String javaSignature, String javaReturnType,
                       String cppSignature, String cppReturnType,
-                      boolean retIsPrimitive, byte retShape, byte retType,
-                      boolean[] parmIsPrimitive, byte[] parmShape, byte[] parmType) {
+                      byte retShape, byte retType,
+                      byte[] parmShape, byte[] parmType) {
         nativeAddInvokable(nativeHandle, javaSignature, javaReturnType,
                            cppSignature, cppReturnType,
-                           retIsPrimitive, retShape, retType,
-                           parmIsPrimitive, parmShape, parmType);
+                           retShape, retType,
+                           parmShape, parmType);
     }
     void addSignal(String javaSignature, String cppSignature, String[] cppParamTypes) {
         nativeAddSignal(nativeHandle, javaSignature, cppSignature, cppParamTypes);
@@ -73,19 +73,19 @@ class QtObject {
         nativeAddProperty(nativeHandle, property.name(), property.javaType(),
                 property.cppType(), property.writeable(), property.readable(),
                 property.notificationSignal(), property.constant(),
-                property.isPrimitive(), property.shape(), property.type());
+                property.shape(), property.type());
     }
 
     // Native functions
     private static native void nativeDispose(long handle);
     private native void nativeAddInvokable(long handle, String javaSignature, String javaReturnType,
                                            String cppSignature, String cppReturnType,
-                                           boolean retIsPrimitive, byte retShape, byte retType,
-                                           boolean[] parmIsPrimitive, byte[] parmShape, byte[] parmType);
+                                           byte retShape, byte retType,
+                                           byte[] parmShape, byte[] parmType);
     private native void nativeAddSignal(long handle, String javaSignature, String cppSignature, String[] cppParamTypes);
     private native void nativeAddProperty(long handle, String name, String javaType,
                                           String cppType, boolean writeable, boolean readable,
                                           String signalSignature, boolean isConstant,
-                                          boolean isPrimitive, byte shape, byte type);
+                                          byte shape, byte type);
     private native void nativeEmitSignal(long handle, String signalName, Object... args);
 }
