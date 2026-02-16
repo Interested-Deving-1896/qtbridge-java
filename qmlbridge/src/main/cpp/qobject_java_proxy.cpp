@@ -386,7 +386,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
             env, javaObject, methodCacheEntry->method, parameters.data());
         QStringList value;
         if (retShape == VarShape::Array)
-            value = Converter::convertJavaArrayToQStringList(env, ret, methodCacheEntry->retType);
+            value = Converter::convertJavaArrayToQStringList(env, ret);
         else
             value = Converter::convertJavaListToQStringList(ret);
         *static_cast<QStringList *>(args[0]) = value;

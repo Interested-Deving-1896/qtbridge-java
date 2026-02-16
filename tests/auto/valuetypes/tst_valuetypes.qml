@@ -496,7 +496,7 @@ TestCase {
     }
 
     function test_a_intArray(data) {
-        tb.intArrayEcho(data.initial)
+        compare(tb.intArrayEcho(data.initial), data.initial);
     }
 
     function test_a_IntegerArray_data() {
@@ -507,7 +507,7 @@ TestCase {
     }
 
     function test_a_IntegerArray(data) {
-        tb.IntegerArrayEcho(data.initial)
+        compare(tb.IntegerArrayEcho(data.initial), data.initial);
     }
 
     function test_a_StringArray_data() {
@@ -518,7 +518,161 @@ TestCase {
     }
 
     function test_a_StringArray(data) {
-        tb.StringArrayEcho(data.initial)
+        compare(tb.StringArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_doubleArray_data() {
+        return [
+            {tag: "a", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {tag: "b", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+        ]
+    }
+
+    function test_a_doubleArray(data) {
+        compare(tb.doubleArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_DoubleArray_data() {
+        return [
+            {tag: "a", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {tag: "b", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+        ]
+    }
+
+    function test_a_DoubleArray(data) {
+        compare(tb.DoubleArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_floatArray_data() {
+        return [
+            {tag: "a", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {tag: "b", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+        ]
+    }
+
+    function test_a_floatArray(data) {
+        compare(tb.floatArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_FloatArray_data() {
+        return [
+            {tag: "a", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {tag: "b", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+        ]
+    }
+
+    function test_a_FloatArray(data) {
+        compare(tb.FloatArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_longArray_data() {
+        return [
+            {tag: "a", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {tag: "b", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
+        ]
+    }
+
+    function test_a_longArray(data) {
+        compare(tb.longArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_LongArray_data() {
+        return [
+            {tag: "a", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {tag: "b", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
+        ]
+    }
+
+    function test_a_LongArray(data) {
+        compare(tb.LongArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_shortArray_data() {
+        return [
+            {tag: "a", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {tag: "b", initial: [12, 23, 34], changed: [45, 56, 67]},
+        ]
+    }
+
+    function test_a_shortArray(data) {
+        compare(tb.shortArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_ShortArray_data() {
+        return [
+            {tag: "a", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {tag: "b", initial: [12, 23, 34], changed: [45, 56, 67]},
+        ]
+    }
+
+    function test_a_ShortArray(data) {
+        compare(tb.ShortArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_charArray_data() {
+        return [
+            {tag: "a", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
+            {tag: "b", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
+        ]
+    }
+
+    function test_a_charArray(data) {
+        compare(tb.charArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_CharacterArray_data() {
+        return [
+            {tag: "a", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
+            {tag: "b", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
+        ]
+    }
+
+    function test_a_CharacterArray(data) {
+        compare(tb.CharacterArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_byteArray_data() {
+        return [
+            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {tag: "b", initial: [7, 8, 9], changed: [10, 11, 12]},
+        ]
+    }
+
+    function test_a_byteArray(data) {
+        compare(tb.byteArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_ByteArray_data() {
+        return [
+            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {tag: "b", initial: [7, 8, 9], changed: [10, 11, 12]},
+        ]
+    }
+
+    function test_a_ByteArray(data) {
+        compare(tb.ByteArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_booleanArray_data() {
+        return [
+            {tag: "a", initial: [true, false, true], changed: [false, true, false]},
+            {tag: "b", initial: [false, false, true], changed: [true, true, false]},
+        ]
+    }
+
+    function test_a_booleanArray(data) {
+        compare(tb.booleanArrayEcho(data.initial), data.initial);
+    }
+
+    function test_a_BooleanArray_data() {
+        return [
+            {tag: "a", initial: [true, false, true], changed: [false, true, false]},
+            {tag: "b", initial: [false, false, true], changed: [true, true, false]},
+        ]
+    }
+
+    function test_a_BooleanArray(data) {
+        compare(tb.BooleanArrayEcho(data.initial), data.initial);
     }
 
     function test_b_javaside_valueset_data() {

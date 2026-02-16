@@ -24,22 +24,6 @@ using namespace Qt::StringLiterals;
 Q_DECLARE_LOGGING_CATEGORY(QT_BRIDGE)
 
 namespace Utility::JNI {
-
-    // Checks if the upmost bit is set, which indicates the type is primitive
-    inline bool typeIsPrimitive(qint8 packed) {
-        return (static_cast<quint8>(packed) & 0x80u) != 0u;
-    }
-
-    // Returns VarType (removes potential primitive flagging)
-    inline VarType varType(qint8 packed) {
-        return static_cast<VarType>(static_cast<quint8>(packed) & 0x7Fu);
-    }
-
-    inline VarShape paramShape(const JNICache::JMethodEntry &e, int idx) {
-        Q_ASSERT(idx >= 0 && idx < e.parmShape.size());
-        return static_cast<VarShape>(e.parmShape.at(idx));
-    }
-
     // Used to convert invokable function parameters from cpp to Java.
     // Target Java types may be boxed or unboxed. To know which is expected,
     // we use the cache entry helper that was created at KSP time
@@ -66,7 +50,7 @@ namespace Utility::JNI {
         case QMetaType::QVariantList: {
             QVariantList &qlist = *static_cast<QVariantList *>(cppParameter);
             // Check if Java/Kotlin-side expects an array or a List
-            if (paramShape(methodEntry, parameterIndex) == VarShape::Array)
+            if (static_cast<VarShape>(methodEntry.parmShape.at(parameterIndex)) == VarShape::Array)
                 ret.l = convertQVariantListToArray(env, qlist, methodEntry.parmType.at(parameterIndex));
             else
                 ret.l = convertQVariantListToObject(qlist);
@@ -74,7 +58,7 @@ namespace Utility::JNI {
         }
         case QMetaType::QStringList: {
             QStringList &slist = *static_cast<QStringList *>(cppParameter);
-            if (paramShape(methodEntry, parameterIndex) == VarShape::Array)
+            if (static_cast<VarShape>(methodEntry.parmShape.at(parameterIndex)) == VarShape::Array)
                 ret.l = convertQStringListToArray(env, slist);
             else
                 ret.l = convertQStringListToObject(slist);
@@ -426,20 +410,258 @@ namespace Utility::JNI {
             return result;
 
         const VarType type = varType(elemType);
-        const bool isPrimary = typeIsPrimitive(elemType);
+        const bool isPrimitive = typeIsPrimitive(elemType);
 
+        switch (type) {
+        case VarType::Boolean:
+            if (isPrimitive) {
+                auto array = static_cast<jbooleanArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jboolean> tmp(size);
+                env->GetBooleanArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(bool(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(bool(
+                        JNIObject<JavaLangBoolean>::callMethod<jboolean>(value, "booleanValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Byte:
+            if (isPrimitive) {
+                auto array = static_cast<jbyteArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jbyte> tmp(size);
+                env->GetByteArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(qint8(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(qint8(JNIObject<JavaLangByte>::callMethod<jbyte>(value, "byteValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Char:
+            if (isPrimitive) {
+                auto array = static_cast<jcharArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jchar> tmp(size);
+                env->GetCharArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(QChar(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(
+                        QChar(JNIObject<JavaLangCharacter>::callMethod<jchar>(value, "charValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Short:
+            if (isPrimitive) {
+                auto array = static_cast<jshortArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jshort> tmp(size);
+                env->GetShortArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(int(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(int(JNIObject<JavaLangShort>::callMethod<jshort>(value, "shortValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Int:
+            if (isPrimitive) {
+                auto array = static_cast<jintArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jint> tmp(size);
+                env->GetIntArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(int(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(int(JNIObject<JavaLangInteger>::callMethod<jint>(value, "intValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Long:
+            if (isPrimitive) {
+                auto array = static_cast<jlongArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jlong> tmp(size);
+                env->GetLongArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(qint64(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(
+                        qint64(JNIObject<JavaLangLong>::callMethod<jlong>(value, "longValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Float:
+            if (isPrimitive) {
+                auto array = static_cast<jfloatArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jfloat> tmp(size);
+                env->GetFloatArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(float(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(
+                        float(JNIObject<JavaLangFloat>::callMethod<jfloat>(value, "floatValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::Double:
+            if (isPrimitive) {
+                auto array = static_cast<jdoubleArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                QList<jdouble> tmp(size);
+                env->GetDoubleArrayRegion(array, 0, size, tmp.data());
+                for (jsize i = 0; i < size; ++i)
+                    result.append(double(tmp.at(i)));
+            } else {
+                const auto array = static_cast<jobjectArray>(javaArray);
+                const jsize size = env->GetArrayLength(array);
+                result.reserve(size);
+                for (jsize i = 0; i < size; ++i) {
+                    jobject value = env->GetObjectArrayElement(array, i);
+                    if (!value) { // Guard for null because callMethod below would throw
+                        result.append(QVariant{});
+                        continue;
+                    }
+                    result.append(
+                        double(JNIObject<JavaLangDouble>::callMethod<jdouble>(value, "doubleValue")));
+                    env->DeleteLocalRef(value);
+                }
+            }
+            break;
+        case VarType::String: {
+            const auto array = static_cast<jobjectArray>(javaArray);
+            const jsize size = env->GetArrayLength(array);
+            result.reserve(size);
+            for (jsize i = 0; i < size; ++i) {
+                jobject value = env->GetObjectArrayElement(array, i);
+                if (!value) {
+                    result.append(QString());
+                    continue;
+                }
+                result.append(Utility::JNI::toQString(static_cast<jstring>(value)));
+                env->DeleteLocalRef(value);
+            }
+            break;
+        }
+        case VarType::QmlRegistrable: {
+            const auto array = static_cast<jobjectArray>(javaArray);
+            const jsize size = env->GetArrayLength(array);
+            result.reserve(size);
+            for (jsize i = 0; i < size; ++i) {
+                jobject value = env->GetObjectArrayElement(array, i);
+                result.append(convertObjectToQVariant(value));
+                if (value)
+                    env->DeleteLocalRef(value);
+            }
+            break;
+        }
+        default:
+            qCWarning(QT_BRIDGE, "Unsupported array element type: %d", int(type));
+        }
         return result;
     }
 
-    QStringList Converter::convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray, qint8 elemType)
+    QStringList Converter::convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray)
     {
         QStringList result;
         if (!javaArray)
             return result;
 
-        const VarType type = varType(elemType);
-        const bool isPrimary = typeIsPrimitive(elemType);
+        const auto array = static_cast<jobjectArray>(javaArray);
+        const jsize size = env->GetArrayLength(array);
+        result.reserve(size);
 
+        for (jsize i = 0; i < size; ++i) {
+            jobject value = env->GetObjectArrayElement(array, i);
+            if (!value) {
+                result.append(QString());
+                continue;
+            }
+            result.append(Utility::JNI::toQString(static_cast<jstring>(value)));
+            env->DeleteLocalRef(value);
+        }
         return result;
     }
 
@@ -572,16 +794,29 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Char:
+        case VarType::Char: {
+            auto toJChar = [&warn](const QVariant &value, int i, const char *expected) -> jchar {
+                if (value.canConvert<QChar>())
+                    return static_cast<jchar>(value.toChar().unicode());
+
+                // QML/JS has no char type, and it may actually give a single character QString
+                if (value.typeId() == QMetaType::QString) {
+                    const QString s = value.toString();
+                    if (s.size() == 1)
+                        return static_cast<jchar>(s.at(0).unicode());
+                }
+
+                warn(i, expected);
+                return static_cast<jchar>(value.toChar().unicode());
+            };
+
             if (isPrimitive) {
                 jcharArray array = env->NewCharArray(size);
                 QList<jchar> tmp;
                 tmp.reserve(size);
                 for (int i = 0; i < list.size(); ++i) {
                     const QVariant &value = list.at(i);
-                    if (!value.canConvert<QChar>())
-                        warn(i, "char");
-                    tmp.append(static_cast<jchar>(value.toChar().unicode()));
+                    tmp.append(toJChar(value, i, "char"));
                 }
                 env->SetCharArrayRegion(array, 0, size, tmp.constData());
                 return array;
@@ -590,14 +825,14 @@ namespace Utility::JNI {
                 jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
                 for (int i = 0; i < list.size(); ++i) {
                     const QVariant &value = list.at(i);
-                    if (!value.canConvert<QChar>())
-                        warn(i, "char");
-                    jobject object = JNIObject<JavaLangCharacter>::makeObject(static_cast<jchar>(value.toChar().unicode()));
+                    jobject object = JNIObject<JavaLangCharacter>::makeObject(
+                        toJChar(value, i, "Character"));
                     env->SetObjectArrayElement(array, i, object);
                     env->DeleteLocalRef(object);
                 }
                 return array;
             }
+        }
         case VarType::Short:
             if (isPrimitive) {
                 jshortArray array = env->NewShortArray(size);

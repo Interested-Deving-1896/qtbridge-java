@@ -47,22 +47,106 @@ public class ValueTypesTestBackend {
     public QtProperty<int[]> intArrayProp = new QtProperty<>(new int[] {1, 2, 3});
     public QtProperty<String[]> stringArrayProp = new QtProperty<>(new String[] {"aa", "bb", "cc"});
 
-    public void intArrayEcho(int[] value) {
+    public int[] intArrayEcho(int[] value) {
         System.out.println("==== Java intArray echo got array: " + Arrays.toString(value));
         // todo emit signal
-        // todo return value
+        return value;
     }
 
-    public void IntegerArrayEcho(Integer[] value) {
+    public Integer[] IntegerArrayEcho(Integer[] value) {
         System.out.println("==== Java IntegerArray echo got array: " + Arrays.toString(value));
         // todo emit signal
-        // todo return value
+        return value;
     }
 
-    public void StringArrayEcho(String[] value) {
+    public String[] StringArrayEcho(String[] value) {
         System.out.println("==== Java StringArray echo got array: " + Arrays.toString(value));
         // todo emit signal
-        // todo return value
+        return value;
+    }
+
+    public double[] doubleArrayEcho(double[] value) {
+        System.out.println("==== Java doubleArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Double[] DoubleArrayEcho(Double[] value) {
+        System.out.println("==== Java DoubleArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public float[] floatArrayEcho(float[] value) {
+        System.out.println("==== Java floatArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Float[] FloatArrayEcho(Float[] value) {
+        System.out.println("==== Java FloatArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public long[] longArrayEcho(long[] value) {
+        System.out.println("==== Java longArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Long[] LongArrayEcho(Long[] value) {
+        System.out.println("==== Java LongArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public short[] shortArrayEcho(short[] value) {
+        System.out.println("==== Java shortArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Short[] ShortArrayEcho(Short[] value) {
+        System.out.println("==== Java ShortArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public char[] charArrayEcho(char[] value) {
+        System.out.println("==== Java charArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Character[] CharacterArrayEcho(Character[] value) {
+        System.out.println("==== Java CharacterArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public byte[] byteArrayEcho(byte[] value) {
+        System.out.println("==== Java byteArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Byte[] ByteArrayEcho(Byte[] value) {
+        System.out.println("==== Java ByteArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public boolean[] booleanArrayEcho(boolean[] value) {
+        System.out.println("==== Java booleanArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
+    }
+
+    public Boolean[] BooleanArrayEcho(Boolean[] value) {
+        System.out.println("==== Java BooleanArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        return value;
     }
 
     // Map

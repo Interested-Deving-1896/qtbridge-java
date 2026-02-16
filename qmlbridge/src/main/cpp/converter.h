@@ -50,6 +50,16 @@ namespace Utility::JNI {
             ItemModel = 11
         };
 
+        // Checks if the upmost bit is set, which indicates the type is primitive
+        inline bool typeIsPrimitive(qint8 packed) {
+            return (static_cast<quint8>(packed) & 0x80u) != 0u;
+        }
+
+        // Returns VarType (removes potential primitive flagging)
+        inline VarType varType(qint8 packed) {
+            return static_cast<VarType>(static_cast<quint8>(packed) & 0x7Fu);
+        }
+
         class Converter
         {
         public:
@@ -65,7 +75,7 @@ namespace Utility::JNI {
             static QVariantList convertJavaListToQVariantList(const jobject &javaObject);
             static QStringList convertJavaListToQStringList(const jobject &javaObject);
             static QVariantList convertJavaArrayToQVariantList(JNIEnv *env, jobject javaArray, qint8 elemType);
-            static QStringList convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray, qint8 elemType);
+            static QStringList convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray);
 
             static jobject convertQVariantToObject(const QVariant &var);
             static jobject convertQVariantListToObject(const QVariantList &value);
