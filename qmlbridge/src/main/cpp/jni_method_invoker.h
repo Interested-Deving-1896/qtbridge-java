@@ -190,7 +190,7 @@ namespace Utility::JNI
                 if (checkAndClearException(env)) {
                     return QStringList();
                 }
-                return Converter::convertJavaToQStringList(javaValue);
+                return Converter::convertJavaListToQStringList(javaValue);
             } else {
                 // everything else (URI, ...)
                 const auto result = env->CallStaticObjectMethodA(javaClass, methodId, jniArgs);
@@ -278,7 +278,7 @@ namespace Utility::JNI
                 if (checkAndClearException(env)) {
                     return QStringList();
                 }
-                return Converter::convertJavaToQStringList(javaValue);
+                return Converter::convertJavaListToQStringList(javaValue);
             } else {
                 // Everything else (URI, ...)
                 const auto result = env->CallObjectMethod(javaObject, getter);
@@ -358,7 +358,7 @@ namespace Utility::JNI
             } else if constexpr (std::is_same_v<ReturnType, QStringList>) {
                 const auto javaValue = env->CallStaticObjectMethod(javaClass, getter);
                 checkAndClearException(env);
-                return Converter::convertJavaToQStringList(javaValue);
+                return Converter::convertJavaListToQStringList(javaValue);
             } else {
                 // Everything else
                 const auto result = env->CallStaticObjectMethod(javaClass, getter);
@@ -454,7 +454,7 @@ namespace Utility::JNI
             if (checkAndClearException(env)) {
                 return QStringList();
             }
-            return Converter::convertJavaToQStringList(javaValue);
+            return Converter::convertJavaListToQStringList(javaValue);
         }
     }
 } // namespace Utility::JNI

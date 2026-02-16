@@ -6,6 +6,7 @@
 package org.qtproject.qt.bridge.autotest;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.qtproject.qt.bridge.annotations.QMLSignals;
@@ -45,6 +46,24 @@ public class ValueTypesTestBackend {
     // Plain/raw arrays
     public QtProperty<int[]> intArrayProp = new QtProperty<>(new int[] {1, 2, 3});
     public QtProperty<String[]> stringArrayProp = new QtProperty<>(new String[] {"aa", "bb", "cc"});
+
+    public void intArrayEcho(int[] value) {
+        System.out.println("==== Java intArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        // todo return value
+    }
+
+    public void IntegerArrayEcho(Integer[] value) {
+        System.out.println("==== Java IntegerArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        // todo return value
+    }
+
+    public void StringArrayEcho(String[] value) {
+        System.out.println("==== Java StringArray echo got array: " + Arrays.toString(value));
+        // todo emit signal
+        // todo return value
+    }
 
     // Map
     public QtProperty<Map<String,Object>> mapProp =

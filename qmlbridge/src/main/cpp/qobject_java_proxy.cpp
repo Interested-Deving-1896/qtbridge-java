@@ -198,7 +198,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         *static_cast<QString *>(args[0]) = Utility::JNI::toQString(jstring(valueLocal));
         break;
     case QMetaType::QStringList:
-        *static_cast<QStringList *>(args[0]) = Converter::convertJavaToQStringList(valueLocal);
+        *static_cast<QStringList *>(args[0]) = Converter::convertJavaListToQStringList(valueLocal);
         break;
     case QMetaType::QVariant:
         *static_cast<QVariant *>(args[0]) = Converter::convertObjectToQVariant(valueLocal);
@@ -337,6 +337,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
     }
     // If upmost bit is set, value Java-side representation is primitive (int instead of Integer)
     const bool retIsPrimitive = (static_cast<quint8>(methodCacheEntry->retType) & 0x80u) != 0u;
+    const auto retShape = static_cast<VarShape>(methodCacheEntry->retShape);
 
     // First convert and collect the function parameters into a list.
     const auto parameterCount = method.parameterCount();
@@ -372,14 +373,22 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
     case QMetaType::QVariantList: {
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
-        const auto value = Converter::convertJavaListToQVariantList(ret);
+        QVariantList value;
+        if (retShape == VarShape::Array)
+            value = Converter::convertJavaArrayToQVariantList(env, ret, methodCacheEntry->retType);
+        else
+            value = Converter::convertJavaListToQVariantList(ret);
         *static_cast<QVariantList *>(args[0]) = value;
         break;
     }
     case QMetaType::QStringList: {
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
-        const auto value = Converter::convertJavaToQStringList(ret);
+        QStringList value;
+        if (retShape == VarShape::Array)
+            value = Converter::convertJavaArrayToQStringList(env, ret, methodCacheEntry->retType);
+        else
+            value = Converter::convertJavaListToQStringList(ret);
         *static_cast<QStringList *>(args[0]) = value;
         break;
     }

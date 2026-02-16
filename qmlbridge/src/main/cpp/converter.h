@@ -63,12 +63,17 @@ namespace Utility::JNI {
             static QVariant convertObjectToQVariant(const jobject &javaObject);
             static QVariantMap convertJavaMapToQVariantMap(const jobject &jmap);
             static QVariantList convertJavaListToQVariantList(const jobject &javaObject);
-            static QStringList convertJavaToQStringList(const jobject &javaObject);
+            static QStringList convertJavaListToQStringList(const jobject &javaObject);
+            static QVariantList convertJavaArrayToQVariantList(JNIEnv *env, jobject javaArray, qint8 elemType);
+            static QStringList convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray, qint8 elemType);
 
             static jobject convertQVariantToObject(const QVariant &var);
             static jobject convertQVariantListToObject(const QVariantList &value);
+            static jobject convertQVariantListToArray(JNIEnv *env, const QVariantList &list,
+                                                      qint8 elemType);
             static jobject convertQVariantMapToObject(const QVariantMap &value);
             static jobject convertQStringListToObject(const QStringList &value);
+            static jobject convertQStringListToArray(JNIEnv *env, const QStringList &list);
         };
 } // namespace Utility::JNI
 #endif // CONVERTER_H

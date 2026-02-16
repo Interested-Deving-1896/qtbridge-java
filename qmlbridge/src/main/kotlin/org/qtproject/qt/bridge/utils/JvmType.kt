@@ -33,14 +33,14 @@ internal data class JvmType(val javaType: String, val cppType: String, val isPri
             "kotlin.Float" to Mapping("java.lang.Float", "float"),
             "kotlin.Double" to Mapping("java.lang.Double", "double"),
 
-            "kotlin.IntArray" to Mapping("int[]", "QVariantList"),
-            "kotlin.LongArray" to Mapping("long[]", "QVariantList"),
-            "kotlin.ShortArray" to Mapping("short[]", "QVariantList"),
-            "kotlin.FloatArray" to Mapping("float[]", "QVariantList"),
-            "kotlin.DoubleArray" to Mapping("double[]", "QVariantList"),
-            "kotlin.ByteArray" to Mapping("byte[]", "QVariantList"),
-            "kotlin.CharArray" to Mapping("char[]", "QVariantList"),
-            "kotlin.BooleanArray" to Mapping("boolean[]", "QVariantList"),
+            "kotlin.IntArray" to Mapping("int[]", "QVariantList", isPrimitive = true),
+            "kotlin.LongArray" to Mapping("long[]", "QVariantList", isPrimitive = true),
+            "kotlin.ShortArray" to Mapping("short[]", "QVariantList", isPrimitive = true),
+            "kotlin.FloatArray" to Mapping("float[]", "QVariantList", isPrimitive = true),
+            "kotlin.DoubleArray" to Mapping("double[]", "QVariantList", isPrimitive = true),
+            "kotlin.ByteArray" to Mapping("byte[]", "QVariantList", isPrimitive = true),
+            "kotlin.CharArray" to Mapping("char[]", "QVariantList", isPrimitive = true),
+            "kotlin.BooleanArray" to Mapping("boolean[]", "QVariantList", isPrimitive = true),
 
             "kotlin.collections.Map" to Mapping("java.util.Map", "QVariantMap"),
             "kotlin.collections.MutableMap" to Mapping("java.util.Map", "QVariantMap"),
@@ -136,7 +136,7 @@ internal data class JvmType(val javaType: String, val cppType: String, val isPri
                     val mapped = mapKotlinTypeToJavaAndCppType(rawName, type, builtIns)
                     //logger.warn("JvmType.fromKSType() mapped $rawName to $mapped")
                     if (mapped != null)
-                        return JvmType(mapped.javaType, mapped.cppType)
+                        return JvmType(mapped.javaType, mapped.cppType, mapped.isPrimitive)
 
                     // No predefined type matched. The type may still legitimately be QMLRegistrable or an enum
                     if (type.isEnum())

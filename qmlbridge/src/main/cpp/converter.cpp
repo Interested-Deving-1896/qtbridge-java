@@ -31,7 +31,7 @@ namespace Utility::JNI {
     }
 
     // Returns VarType (removes potential primitive flagging)
-    inline VarType type(qint8 packed) {
+    inline VarType varType(qint8 packed) {
         return static_cast<VarType>(static_cast<quint8>(packed) & 0x7Fu);
     }
 
@@ -65,12 +65,19 @@ namespace Utility::JNI {
         }
         case QMetaType::QVariantList: {
             QVariantList &qlist = *static_cast<QVariantList *>(cppParameter);
-            ret.l = convertQVariantListToObject(qlist);
+            // Check if Java/Kotlin-side expects an array or a List
+            if (paramShape(methodEntry, parameterIndex) == VarShape::Array)
+                ret.l = convertQVariantListToArray(env, qlist, methodEntry.parmType.at(parameterIndex));
+            else
+                ret.l = convertQVariantListToObject(qlist);
             break;
         }
         case QMetaType::QStringList: {
             QStringList &slist = *static_cast<QStringList *>(cppParameter);
-            ret.l = convertQStringListToObject(slist);
+            if (paramShape(methodEntry, parameterIndex) == VarShape::Array)
+                ret.l = convertQStringListToArray(env, slist);
+            else
+                ret.l = convertQStringListToObject(slist);
             break;
         }
         case QMetaType::QUrl: {
@@ -84,7 +91,7 @@ namespace Utility::JNI {
             break;
         }
         case QMetaType::LongLong: {
-            double cppValue = *static_cast<long long*>(cppParameter);
+            qint64 cppValue = *static_cast<long long*>(cppParameter);
             if (typeIsPrimitive(methodEntry.parmType.at(parameterIndex)))
                 ret.j = cppValue;
             else
@@ -194,7 +201,7 @@ namespace Utility::JNI {
             return true;
         }
         case QMetaType::QStringList: {
-            *static_cast<QStringList *>(outPtr) = convertJavaToQStringList(valueObj);
+            *static_cast<QStringList *>(outPtr) = convertJavaListToQStringList(valueObj);
             return true;
         }
         case QMetaType::LongLong: {
@@ -400,7 +407,8 @@ namespace Utility::JNI {
         }
         return qtList;
     }
-    QStringList Converter::convertJavaToQStringList(const jobject &javaObject)
+
+    QStringList Converter::convertJavaListToQStringList(const jobject &javaObject)
     {
         const auto size = JNIObject<JavaList>::callMethod<jint>(javaObject, "size");
         QStringList qtList;
@@ -410,6 +418,31 @@ namespace Utility::JNI {
         }
         return qtList;
     }
+
+    QVariantList Converter::convertJavaArrayToQVariantList(JNIEnv* env, jobject javaArray, qint8 elemType)
+    {
+        QVariantList result;
+        if (!javaArray)
+            return result;
+
+        const VarType type = varType(elemType);
+        const bool isPrimary = typeIsPrimitive(elemType);
+
+        return result;
+    }
+
+    QStringList Converter::convertJavaArrayToQStringList(JNIEnv *env, jobject javaArray, qint8 elemType)
+    {
+        QStringList result;
+        if (!javaArray)
+            return result;
+
+        const VarType type = varType(elemType);
+        const bool isPrimary = typeIsPrimitive(elemType);
+
+        return result;
+    }
+
     jobject Converter::convertQVariantToObject(const QVariant &var)
     {
         if (!var.isValid()) {
@@ -474,6 +507,258 @@ namespace Utility::JNI {
         }
         return arrayListObj;
     }
+
+    jobject Converter::convertQVariantListToArray(JNIEnv *env, const QVariantList &list, qint8 elemType)
+    {
+        const bool isPrimitive = typeIsPrimitive(elemType);
+        const VarType type = varType(elemType);
+        const jsize size = static_cast<jsize>(list.size());
+
+        auto warn = [&list](int i, const char *expected) {
+            qCWarning(QT_BRIDGE, "Invokable expects %s[]; element %d is %s",
+                      expected, i, list.at(i).typeName());
+        };
+
+        switch (type) {
+        case VarType::Boolean:
+            if (isPrimitive) {
+                jbooleanArray array = env->NewBooleanArray(size);
+                QList<jboolean> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<bool>())
+                        warn(i, "boolean");
+                    tmp.append(static_cast<jboolean>(value.toBool()));
+                }
+                env->SetBooleanArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangBoolean>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<bool>())
+                        warn(i, "Boolean");
+                    jobject object = JNIObject<JavaLangBoolean>::makeObject(static_cast<jboolean>(value.toBool()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Byte:
+            if (isPrimitive) {
+                jbyteArray array = env->NewByteArray(size);
+                QList<jbyte> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<qint8>()) // jbyte ~ qint8 (signed char)
+                        warn(i, "byte");
+                    tmp.append(static_cast<jbyte>(value.value<qint8>()));
+                }
+                env->SetByteArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangByte>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<qint8>())
+                        warn(i, "Byte");
+                    jobject object = JNIObject<JavaLangByte>::makeObject(static_cast<jbyte>(value.value<qint8>()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Char:
+            if (isPrimitive) {
+                jcharArray array = env->NewCharArray(size);
+                QList<jchar> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<QChar>())
+                        warn(i, "char");
+                    tmp.append(static_cast<jchar>(value.toChar().unicode()));
+                }
+                env->SetCharArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangCharacter>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<QChar>())
+                        warn(i, "char");
+                    jobject object = JNIObject<JavaLangCharacter>::makeObject(static_cast<jchar>(value.toChar().unicode()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Short:
+            if (isPrimitive) {
+                jshortArray array = env->NewShortArray(size);
+                QList<jshort> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<short>())
+                        warn(i, "short");
+                    tmp.append(static_cast<short>(value.value<short>()));
+                }
+                env->SetShortArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangShort>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<short>())
+                        warn(i, "Short");
+                    jobject object = JNIObject<JavaLangShort>::makeObject(static_cast<jshort>(value.value<short>()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Int:
+            if (isPrimitive) {
+                jintArray array = env->NewIntArray(size);
+                QList<jint> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<int>())
+                        warn(i, "int");
+                    tmp.append(static_cast<jint>(value.toInt()));
+                }
+                env->SetIntArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangInteger>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<int>())
+                        warn(i, "Integer");
+                    jobject object = JNIObject<JavaLangInteger>::makeObject(static_cast<jint>(value.toInt()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Long:
+            if (isPrimitive) {
+                jlongArray array = env->NewLongArray(size);
+                QList<jlong> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<qint64>()) // qint64 ~ jlong ~ long long
+                        warn(i, "long");
+                    tmp.append(static_cast<jlong>(value.toLongLong()));
+                }
+                env->SetLongArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangLong>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<qint64>())
+                        warn(i, "Long");
+                    jobject object = JNIObject<JavaLangLong>::makeObject(static_cast<jlong>(value.toLongLong()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Float:
+            if (isPrimitive) {
+                jfloatArray array = env->NewFloatArray(size);
+                QList<jfloat> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<float>())
+                        warn(i, "float");
+                    tmp.append(static_cast<jfloat>(value.toFloat()));
+                }
+                env->SetFloatArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangFloat>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<float>())
+                        warn(i, "Float");
+                    jobject object = JNIObject<JavaLangFloat>::makeObject(static_cast<jfloat>(value.toFloat()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::Double:
+            if (isPrimitive) {
+                jdoubleArray array = env->NewDoubleArray(size);
+                QList<jdouble> tmp;
+                tmp.reserve(size);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<double>())
+                        warn(i, "double");
+                    tmp.append(static_cast<jdouble>(value.toDouble()));
+                }
+                env->SetDoubleArrayRegion(array, 0, size, tmp.constData());
+                return array;
+            } else {
+                jclass clazz = JNIObject<JavaLangDouble>::get();
+                jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+                for (int i = 0; i < list.size(); ++i) {
+                    const QVariant &value = list.at(i);
+                    if (!value.canConvert<double>())
+                        warn(i, "Double");
+                    jobject object = JNIObject<JavaLangDouble>::makeObject(static_cast<jdouble>(value.toDouble()));
+                    env->SetObjectArrayElement(array, i, object);
+                    env->DeleteLocalRef(object);
+                }
+                return array;
+            }
+        case VarType::String: {
+            jclass clazz = JNIObject<JavaLangString>::get();
+            jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+            for (int i = 0; i < list.size(); ++i) {
+                const QVariant &value = list.at(i);
+                jobject string = JNIObject<JavaLangString>::makeObject(value.toString());
+                env->SetObjectArrayElement(array, i, string);
+                env->DeleteLocalRef(string);
+            }
+            return array;
+        }
+        case VarType::QmlRegistrable: {
+            const jclass clazz = JNIObject<JavaLangObject>::get();
+            jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+            if (!array)
+                return nullptr;
+            for (int i = 0; i < list.size(); ++i) {
+                const QVariant &value = list.at(i);
+                jobject object = Converter::convertQVariantToObject(value);
+                env->SetObjectArrayElement(array, i, object);
+                if (object)
+                    env->DeleteLocalRef(object);
+            }
+            return array;
+        }
+        default:
+            qCWarning(QT_BRIDGE, "Unsupported invokable array parameter type: %d", int(type));
+        }
+        return nullptr;
+    }
+
     jobject Converter::convertQVariantMapToObject(const QVariantMap &map)
     {
         const auto env = JniContext::getEnv();
@@ -523,4 +808,19 @@ namespace Utility::JNI {
         }
         return arrayListObj;
     }
+
+    jobject Converter::convertQStringListToArray(JNIEnv *env, const QStringList &list)
+    {
+        const jsize size = static_cast<jsize>(list.size());
+        jclass clazz = JNIObject<JavaLangString>::get();
+        jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
+        for (int i = 0; i < list.size(); ++i) {
+            jobject string = JNIObject<JavaLangString>::makeObject(list.at(i));
+            env->SetObjectArrayElement(array, i, string);
+            env->DeleteLocalRef(string);
+        }
+        return array;
+    }
+
+
 } // namespace Utility::JNI

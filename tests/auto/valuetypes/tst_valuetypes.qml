@@ -488,6 +488,39 @@ TestCase {
         compare(tb.enumProp.rgb, "#0000FF");
     }
 
+    function test_a_intArray_data() {
+        return [
+            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {tag: "b", initial: [4, 5 , 6], changed: [7, 8, 9]},
+        ]
+    }
+
+    function test_a_intArray(data) {
+        tb.intArrayEcho(data.initial)
+    }
+
+    function test_a_IntegerArray_data() {
+        return [
+            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {tag: "b", initial: [4, 5 , 6], changed: [7, 8, 9]},
+        ]
+    }
+
+    function test_a_IntegerArray(data) {
+        tb.IntegerArrayEcho(data.initial)
+    }
+
+    function test_a_StringArray_data() {
+        return [
+            {tag: "a", initial: ["aa", "bb", "cc"], changed: ["dd", "ee", "ff"]},
+            {tag: "b", initial: ["dd", "ee" , "ff"], changed: ["hh", "ii", "jj"]},
+        ]
+    }
+
+    function test_a_StringArray(data) {
+        tb.StringArrayEcho(data.initial)
+    }
+
     function test_b_javaside_valueset_data() {
         return [
             {tag: "int", property: "intProp", setter: "setIntProperty", value: 123},
