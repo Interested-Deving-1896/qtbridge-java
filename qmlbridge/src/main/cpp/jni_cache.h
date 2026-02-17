@@ -16,7 +16,7 @@ public:
         // Return type information
         qint8 retShape = 0;
         qint8 retType = 0;
-        // Parameter expectations
+        // Java-side parameter information
         QList<qint8> parmShape;
         QList<qint8> parmType;
     };
@@ -26,11 +26,14 @@ public:
         // Stores the metatype id of each parameter to support
         // faster type conversions when signals are emitted.
         QList<int> parmMetaTypeIds;
+        // Java-side parameter information
+        QList<qint8> parmShape;
+        QList<qint8> parmType;
     };
 
     struct JFieldEntry {
         jfieldID field;
-        // Property type information
+        // Java-side property type information
         qint8 shape = 0;
         qint8 type = 0;
     };
@@ -64,7 +67,9 @@ public:
                                    const QList<qint8> &parmShape,
                                    const QList<qint8> &parmType);
     static void registerProxySignal(qint64 proxyKey, int signalIndex, const QString &javaSignature,
-                                    const QList<QByteArray> paramCppType);
+                                    const QList<QByteArray> &paramCppType,
+                                    const QList<qint8> &parmShape,
+                                    const QList<qint8> &parmType);
     static void registerProxyField(qint64 proxyKey, int fieldKey, const QString &fieldName,
                                    const QString &signature,
                                    qint8 shape, qint8 type);

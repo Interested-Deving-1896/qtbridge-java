@@ -398,6 +398,7 @@ internal class ClassModelGenerator(
                     javaSignature = javaSignature,
                     cppSignature = cppSignature,
                     cppParams = cppParams,
+                    paramListInfo = paramJvmTypes.map { it.toVariableInfo() },
                     sourceLocation = sourceLocationOf(signal)
                 )
 

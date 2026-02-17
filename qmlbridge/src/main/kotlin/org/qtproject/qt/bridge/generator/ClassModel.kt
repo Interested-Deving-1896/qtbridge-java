@@ -94,6 +94,7 @@ internal data class Signal(
     val javaSignature: String,
     val cppSignature: String,
     val cppParams: List<Pair<String, String>>, // 'name, type' pairs
+    val paramListInfo: List<VariableInfo>,
     val sourceLocation: SourceLocation? = null,
 )
 

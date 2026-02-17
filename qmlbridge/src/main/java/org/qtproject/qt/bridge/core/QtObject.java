@@ -66,8 +66,10 @@ class QtObject {
                            retShape, retType,
                            parmShape, parmType);
     }
-    void addSignal(String javaSignature, String cppSignature, String[] cppParamTypes) {
-        nativeAddSignal(nativeHandle, javaSignature, cppSignature, cppParamTypes);
+    void addSignal(String javaSignature, String cppSignature, String[] cppParamTypes,
+                   byte[] parmShape, byte[] parmType) {
+        nativeAddSignal(nativeHandle, javaSignature, cppSignature, cppParamTypes,
+                        parmShape, parmType);
     }
     void addProperty(QProperty property) {
         nativeAddProperty(nativeHandle, property.name(), property.javaType(),
@@ -82,7 +84,8 @@ class QtObject {
                                            String cppSignature, String cppReturnType,
                                            byte retShape, byte retType,
                                            byte[] parmShape, byte[] parmType);
-    private native void nativeAddSignal(long handle, String javaSignature, String cppSignature, String[] cppParamTypes);
+    private native void nativeAddSignal(long handle, String javaSignature, String cppSignature,
+                                        String[] cppParamTypes, byte[] parmShape, byte[] parmType);
     private native void nativeAddProperty(long handle, String name, String javaType,
                                           String cppType, boolean writeable, boolean readable,
                                           String signalSignature, boolean isConstant,

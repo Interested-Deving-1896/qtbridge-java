@@ -276,7 +276,9 @@ void JNICache::registerProxyMethod(const qint64 proxyKey, const int methodKey,
 
 void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
                                    const QString &javaSignature,
-                                   const QList<QByteArray> paramCppType)
+                                   const QList<QByteArray> &paramCppType,
+                                   const QList<qint8> &parmShape,
+                                   const QList<qint8> &parmType)
 {
     QMutexLocker locker(&s_classCache->mutex);
     const auto classIt = s_classCache->proxyClasses.find(proxyKey);
@@ -307,7 +309,7 @@ void JNICache::registerProxySignal(qint64 proxyKey, int signalIndex,
                      param.constData(), qPrintable(javaSignature));
     }
     classEntry.signalz.insert(javaSignature.toUtf8(),
-                              JSignalEntry{signalIndex, parmMetaTypeIds});
+                              JSignalEntry{signalIndex, parmMetaTypeIds, parmShape, parmType});
 }
 
 void JNICache::registerProxyField(qint64 proxyKey, int fieldKey, const QString &fieldName,

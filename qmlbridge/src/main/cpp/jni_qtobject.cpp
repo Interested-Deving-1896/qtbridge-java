@@ -73,7 +73,8 @@ void JNICALL nativeAddInvokable(JNIEnv *env, jobject, jlong handle, jstring java
 }
 
 void JNICALL nativeAddSignal(JNIEnv *env, jobject, jlong handle, jstring javaSignature,
-                             jstring cppSignature, jobjectArray cppParamTypes)
+                             jstring cppSignature, jobjectArray cppParamTypes,
+                             jbyteArray paramShape, jbyteArray paramType)
 {
     const auto jSignature = JNI::toQString(javaSignature);
     const auto cSignature = JNI::toQString(cppSignature).toUtf8();
@@ -96,8 +97,31 @@ void JNICALL nativeAddSignal(JNIEnv *env, jobject, jlong handle, jstring javaSig
         }
     }
 
+    // Is a parameter an Array, List, Map, ..?
+    QList<qint8> jParamShape;
+    if (paramShape) {
+        jsize count = env->GetArrayLength(paramShape);
+        jbyte *elems = env->GetByteArrayElements(paramShape, nullptr);
+        jParamShape.reserve(count);
+        for (jsize i = 0; i < count; ++i)
+            jParamShape.push_back(static_cast<qint8>(elems[i]));
+        env->ReleaseByteArrayElements(paramShape, elems, 0);
+    }
+
+    // The expected data type of the parameter (int, Integer, String, ...)
+    QList<qint8> jParamType;
+    if (paramType) {
+        jsize count = env->GetArrayLength(paramType);
+        jbyte *elems = env->GetByteArrayElements(paramType, nullptr);
+        jParamType.reserve(count);
+        for (jsize i = 0; i < count; ++i)
+            jParamType.push_back(static_cast<qint8>(elems[i]));
+        env->ReleaseByteArrayElements(paramType, elems, 0);
+    }
+
     const auto signalIndex = obj->addSignal(cSignature);
-    JNICache::registerProxySignal(obj->cacheKey(), signalIndex, jSignature, paramCppTypes);
+    JNICache::registerProxySignal(obj->cacheKey(), signalIndex, jSignature,
+                                  paramCppTypes, jParamShape, jParamType);
 }
 
 void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
@@ -231,7 +255,8 @@ void JNIQtObject::initializeJNI(JNIEnv *env)
         JNIUtilities::createJNIMethod("nativeAddInvokable",
                                       "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;BB[B[B)V",
                                       (void *)&nativeAddInvokable),
-        JNIUtilities::createJNIMethod("nativeAddSignal", "(JLjava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V",
+        JNIUtilities::createJNIMethod("nativeAddSignal",
+                                      "(JLjava/lang/String;Ljava/lang/String;[Ljava/lang/String;[B[B)V",
                                       (void *)&nativeAddSignal),
         JNIUtilities::createJNIMethod("nativeAddProperty",
                                       "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZLjava/lang/String;ZBB)V",

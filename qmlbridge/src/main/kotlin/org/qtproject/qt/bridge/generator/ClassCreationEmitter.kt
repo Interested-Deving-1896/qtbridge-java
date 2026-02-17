@@ -84,7 +84,25 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                     val cppParamTypesArray =
                         if (cppParamTypes.isEmpty()) "emptyArray<String>()"
                         else "arrayOf(" + cppParamTypes.joinToString(", ") { "\"$it\"" } + ")"
-                    w.appendLine("            qtObject.addSignal(\"${sig.javaSignature}\", \"${sig.cppSignature}\", $cppParamTypesArray)")
+
+                    // Array, List, Map, ..
+                    val paramShape = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
+                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") { it.shape.code().toString() } + ")"
+
+                    // Integer, String, ... and value primitiveness bit
+                    val paramType = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
+                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") {
+                            packedVariableTypeCode(it.type, it.isPrimitive).toString()
+                        } + ")"
+
+                    w.appendLine(
+                        "            qtObject.addSignal(\n" +
+                        "                \"${sig.javaSignature}\",\n" +
+                        "                \"${sig.cppSignature}\",\n" +
+                        "                $cppParamTypesArray,\n" +
+                        "                $paramShape,\n" +
+                        "                $paramType)"
+                    )
                 }
             }
             // Add change signals to QtProperties (currently always no-arg)
@@ -92,7 +110,10 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                 if (p.kind != PropertyKind.QT_PROPERTY) return@forEach
                 val sig = p.notifySignalSignature
                 // No arguments -> Java and C++ signatures are identical
-                w.appendLine("            qtObject.addSignal(\"$sig\", \"$sig\", emptyArray<String>())")
+                w.appendLine(
+                    "            qtObject.addSignal(" +
+                    "\"$sig\", \"$sig\", emptyArray<String>(), byteArrayOf(), byteArrayOf())"
+                )
             }
             w.appendLine("        }")
             w.appendLine()
@@ -113,7 +134,7 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                     } + ")"
 
                 w.appendLine(
-                    "            qtObject.addInvokable(" +
+                    "            qtObject.addInvokable(\n" +
                     "                \"${m.javaSignature}\", \"${m.javaReturnType}\",\n" +
                     "                \"${m.cppSignature}\", \"${m.cppReturnType}\",\n" +
                     "                ${m.retInfo.shape.code().toString()},\n" +
