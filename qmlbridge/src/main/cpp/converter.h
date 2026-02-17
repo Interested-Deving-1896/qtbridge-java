@@ -67,7 +67,9 @@ namespace Utility::JNI {
                 JNIEnv *env, const QMetaMethod& metaMethod,
                 void *cppParameter, const JNICache::JMethodEntry methodEntry,
                 int parameterIndex);
-            static bool javaParameterToCppParameter(int cppMetaTypeId, JNIEnv *env, jobject valueObj, void *outPtr);
+            static bool javaParameterToCppParameter(JNIEnv *env,
+                int cppMetaTypeId, jobject valueObj,
+                qint8 shape, qint8 type, void *outPtr);
 
             static QVariantMap convertEnumToQVariantMap(const jobject &javaObject);
             static QVariant convertObjectToQVariant(const jobject &javaObject);

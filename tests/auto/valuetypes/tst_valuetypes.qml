@@ -490,180 +490,225 @@ TestCase {
 
     function test_a_integerArray_data() {
         return [
-            {property: "intArrayProp", echo: "intArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {property: "intArrayProp", echo: "intArrayEcho", initial: [4, 5, 6], changed: [7, 8, 9]},
-            {property: "integerArrayProp", echo: "IntegerArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {property: "integerArrayProp", echo: "IntegerArrayEcho", initial: [4, 5, 6], changed: [7, 8, 9]},
+            {property: "intArrayProp", echo: "intArrayEcho", signal: "intArraySignal", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "intArrayProp", echo: "intArrayEcho", signal: "intArraySignal", initial: [4, 5, 6], changed: [7, 8, 9]},
+            {property: "integerArrayProp", echo: "IntegerArrayEcho", signal: "IntegerArraySignal", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "integerArrayProp", echo: "IntegerArrayEcho", signal: "IntegerArraySignal", initial: [4, 5, 6], changed: [7, 8, 9]},
         ]
     }
 
     function test_a_integerArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_StringArray_data() {
         return [
-            {property: "stringArrayProp", echo: "StringArrayEcho", initial: ["aa", "bb", "cc"], changed: ["dd", "ee", "ff"]},
-            {property: "stringArrayProp", echo: "StringArrayEcho", initial: ["dd", "ee", "ff"], changed: ["hh", "ii", "jj"]},
+            {property: "stringArrayProp", echo: "StringArrayEcho", signal: "StringArraySignal", initial: ["aa", "bb", "cc"], changed: ["dd", "€€", "ff"]},
+            {property: "stringArrayProp", echo: "StringArrayEcho", signal: "StringArraySignal", initial: ["dd", "€€", "ff"], changed: ["hh", "ii", "jj"]},
         ]
     }
 
     function test_a_StringArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_doubleArray_data() {
         return [
-            {property: "doubleArrayProp", echo: "doubleArrayEcho", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
-            {property: "doubleArrayProp", echo: "doubleArrayEcho", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
-            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
-            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+            {property: "doubleArrayProp", echo: "doubleArrayEcho", signal: "doubleArraySignal", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {property: "doubleArrayProp", echo: "doubleArrayEcho", signal: "doubleArraySignal", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", signal: "DoubleArraySignal", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", signal: "DoubleArraySignal", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
         ]
     }
 
     function test_a_doubleArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_floatArray_data() {
         return [
-            {property: "floatArrayProp", echo: "floatArrayEcho", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
-            {property: "floatArrayProp", echo: "floatArrayEcho", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
-            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
-            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+            {property: "floatArrayProp", echo: "floatArrayEcho", signal: "floatArraySignal", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {property: "floatArrayProp", echo: "floatArrayEcho", signal: "floatArraySignal", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", signal: "FloatArraySignal", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", signal: "FloatArraySignal", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
         ]
     }
 
     function test_a_floatArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_longArray_data() {
         return [
-            {property: "longArrayProp", echo: "longArrayEcho", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
-            {property: "longArrayProp", echo: "longArrayEcho", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
-            {property: "boxedLongArrayProp", echo: "LongArrayEcho", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
-            {property: "boxedLongArrayProp", echo: "LongArrayEcho", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
+            {property: "longArrayProp", echo: "longArrayEcho", signal: "longArraySignal", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {property: "longArrayProp", echo: "longArrayEcho", signal: "longArraySignal", initial: [2001, 2002, 2003], changed: [3001, 3002, 3003]},
+            {property: "boxedLongArrayProp", echo: "LongArrayEcho", signal: "LongArraySignal", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {property: "boxedLongArrayProp", echo: "LongArrayEcho", signal: "LongArraySignal", initial: [2001, 2002, 2003], changed: [3001, 3002, 3003]},
         ]
     }
 
     function test_a_longArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_shortArray_data() {
         return [
-            {property: "shortArrayProp", echo: "shortArrayEcho", initial: [11, 22, 33], changed: [44, 55, 66]},
-            {property: "shortArrayProp", echo: "shortArrayEcho", initial: [12, 23, 34], changed: [45, 56, 67]},
-            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", initial: [11, 22, 33], changed: [44, 55, 66]},
-            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", initial: [12, 23, 34], changed: [45, 56, 67]},
+            {property: "shortArrayProp", echo: "shortArrayEcho", signal: "shortArraySignal", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {property: "shortArrayProp", echo: "shortArrayEcho", signal: "shortArraySignal", initial: [44, 55, 66], changed: [77, 88, 99]},
+            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", signal: "ShortArraySignal", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", signal: "ShortArraySignal", initial: [44, 55, 66], changed: [77, 88, 99]},
         ]
     }
 
     function test_a_shortArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_charArray_data() {
         return [
-            {property: "charArrayProp", echo: "charArrayEcho", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
-            {property: "charArrayProp", echo: "charArrayEcho", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
-            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
-            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
+            {property: "charArrayProp", echo: "charArrayEcho", signal: "charArraySignal", initial: ['a', 'b', 'c'], changed: ['d', '€', 'f']},
+            {property: "charArrayProp", echo: "charArrayEcho", signal: "charArraySignal", initial: ['d', '€', 'f'], changed: ['g', 'h', 'i']},
+            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", signal: "CharacterArraySignal", initial: ['a', 'b', 'c'], changed: ['d', '€', 'f']},
+            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", signal: "CharacterArraySignal", initial: ['d', '€', 'f'], changed: ['g', 'h', 'i']},
         ]
     }
 
     function test_a_charArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_byteArray_data() {
         return [
-            {property: "byteArrayProp", echo: "byteArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {property: "byteArrayProp", echo: "byteArrayEcho", initial: [7, 8, 9], changed: [10, 11, 12]},
-            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", initial: [7, 8, 9], changed: [10, 11, 12]},
+            {property: "byteArrayProp", echo: "byteArrayEcho", signal: "byteArraySignal", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "byteArrayProp", echo: "byteArrayEcho", signal: "byteArraySignal", initial: [4, 5, 6], changed: [7, 8, 9]},
+            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", signal: "ByteArraySignal", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", signal: "ByteArraySignal", initial: [4, 5, 6], changed: [7, 8, 9]},
         ]
     }
 
     function test_a_byteArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_a_booleanArray_data() {
         return [
-            {property: "booleanArrayProp", echo: "booleanArrayEcho", initial: [true, false, true], changed: [false, true, false]},
-            {property: "booleanArrayProp", echo: "booleanArrayEcho", initial: [false, false, true], changed: [true, true, false]},
-            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", initial: [true, false, true], changed: [false, true, false]},
-            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", initial: [false, false, true], changed: [true, true, false]},
+            {property: "booleanArrayProp", echo: "booleanArrayEcho", signal: "booleanArraySignal", initial: [true, false, true], changed: [false, true, false]},
+            {property: "booleanArrayProp", echo: "booleanArrayEcho", signal: "booleanArraySignal", initial: [false, true, false], changed: [true, true, false]},
+            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", signal: "BooleanArraySignal", initial: [true, false, true], changed: [false, true, false]},
+            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", signal: "BooleanArraySignal", initial: [false, true, false], changed: [true, true, false]},
         ]
     }
 
     function test_a_booleanArray(data) {
-        tb[data.property] = data.initial
-        wait(1)
+        var callbackSpy = spy(data.signal)
         compare(tb[data.property], data.initial)
         compare(tb[data.echo](data.initial), data.initial)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.initial)
         tb[data.property] = data.changed
         wait(1)
         compare(tb[data.property], data.changed)
         compare(tb[data.echo](data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 2)
+        compare(callbackSpy.signalArguments[1][0], data.changed)
     }
 
     function test_b_javaside_valueset_data() {

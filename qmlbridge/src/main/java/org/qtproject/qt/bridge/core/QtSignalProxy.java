@@ -17,13 +17,20 @@ import java.util.Arrays;
 final class QtSignalProxy {
     private QtSignalProxy() {}
 
+    private static String toSignalTypeName(Class<?> clazz) {
+        if (clazz.isArray())
+            return toSignalTypeName(clazz.getComponentType()) + "[]";
+        return clazz.getName();
+    }
+
     @SuppressWarnings("unchecked")
     static <T> T bind(Class<T> signalsInterface, QtObject qtObject) {
         InvocationHandler handler = (proxy, method, args) -> {
-            // Convert proxy method-call-data to proper signal signature "name(type1,type2,...)"
+            // Convert proxy methodcall data to proper signal signature "name(type1,type2,...)".
+            // The signature is used as a cache key to find the right signal
             String signature = method.getName() + "(" +
                     Arrays.stream(method.getParameterTypes())
-                            .map(c -> c.isPrimitive() ? c.getName() : c.getName())
+                            .map(QtSignalProxy::toSignalTypeName)
                             .reduce((a, b) -> a + "," + b).orElse("") +
                     ")";
             qtObject.emitSignal(signature, args == null ? new Object[0] : args);

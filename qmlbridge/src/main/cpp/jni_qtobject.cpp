@@ -142,9 +142,15 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
     const auto signalIndex = signalCacheEntry->signalIndex;
     const jsize argCount = args ? env->GetArrayLength(args) : 0;
     const auto &metaIds = signalCacheEntry->parmMetaTypeIds;
+    const auto &paramShapes = signalCacheEntry->parmShape;
+    const auto &paramTypes = signalCacheEntry->parmType;
 
     if (argCount != metaIds.size()) {
         qCWarning(QT_BRIDGE, "Signal argument count mismatch for %s", jSignature.constData());
+        return;
+    }
+    if (argCount != paramShapes.size() || argCount != paramTypes.size()) {
+        qCWarning(QT_BRIDGE, "Signal parameter metadata count mismatch for %s", jSignature.constData());
         return;
     }
 
@@ -199,7 +205,7 @@ void JNICALL nativeEmitSignal(JNIEnv *env, jobject, jlong handle,
         }
 
         // 2. Assign it with a proper value
-        if (!JNI::Converter::javaParameterToCppParameter(metaId, env, arg, p)) {
+        if (!JNI::Converter::javaParameterToCppParameter(env, metaId, arg, paramShapes.at(i), paramTypes.at(i), p)) {
             qCWarning(QT_BRIDGE, "Failed to convert signal arg %s", jSignature.constData());
             return;
         }

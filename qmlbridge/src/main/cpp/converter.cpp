@@ -162,9 +162,12 @@ namespace Utility::JNI {
         return ret;
     }
 
-    // Used to convert signal parameters. Signal parameters are always boxed because
-    // they go through the signal proxy which auto-boxes them.
-    bool Converter::javaParameterToCppParameter(int cppMetaTypeId, JNIEnv *env, jobject valueObj, void *outPtr)
+    // Used to convert signal parameters. Signal parameters are boxed because
+    // they go through the signal proxy which auto-boxes them. Java arrays
+    // such as int[] themselves may contain boxed and unboxed values though
+    bool Converter::javaParameterToCppParameter(JNIEnv *env,
+                                                int cppMetaTypeId, jobject valueObj,
+                                                qint8 shape, qint8 type, void *outPtr)
     {
         Q_ASSERT(outPtr);
 
@@ -175,19 +178,30 @@ namespace Utility::JNI {
             return true;
         }
 
+        const auto varShape = static_cast<VarShape>(shape);
+
         switch (cppMetaTypeId) {
         case QMetaType::QVariant: {
             *static_cast<QVariant *>(outPtr) = convertObjectToQVariant(valueObj);
             return true;
         }
-        case QMetaType::QVariantList: {
-            *static_cast<QVariantList *>(outPtr) = convertJavaListToQVariantList(valueObj);
-            return true;
-        }
-        case QMetaType::QStringList: {
-            *static_cast<QStringList *>(outPtr) = convertJavaListToQStringList(valueObj);
-            return true;
-        }
+        case QMetaType::QVariantList:
+            if (varShape == VarShape::Array) {
+                *static_cast<QVariantList *>(outPtr) = convertJavaArrayToQVariantList(env, valueObj, type);
+                return true;
+            } else {
+                *static_cast<QVariantList *>(outPtr) = convertJavaListToQVariantList(valueObj);
+                return true;
+
+            }
+        case QMetaType::QStringList:
+            if (varShape == VarShape::Array) {
+                *static_cast<QStringList *>(outPtr) = convertJavaArrayToQStringList(env, valueObj);
+                return true;
+            } else {
+                *static_cast<QStringList *>(outPtr) = convertJavaListToQStringList(valueObj);
+                return true;
+            }
         case QMetaType::LongLong: {
             const auto value = JNIObject<JavaLangLong>::callMethod<jlong>(valueObj, "longValue");
             *static_cast<long long *>(outPtr) = value;

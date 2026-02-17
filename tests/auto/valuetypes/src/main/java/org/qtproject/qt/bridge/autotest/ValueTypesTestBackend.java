@@ -32,6 +32,23 @@ public class ValueTypesTestBackend {
         void unboxedShortSignal(short value);
         void boxedByteSignal(Byte value);
         void unboxedByteSignal(byte value);
+        void intArraySignal(int[] value);
+        void IntegerArraySignal(Integer[] value);
+        void StringArraySignal(String[] value);
+        void doubleArraySignal(double[] value);
+        void DoubleArraySignal(Double[] value);
+        void floatArraySignal(float[] value);
+        void FloatArraySignal(Float[] value);
+        void longArraySignal(long[] value);
+        void LongArraySignal(Long[] value);
+        void shortArraySignal(short[] value);
+        void ShortArraySignal(Short[] value);
+        void charArraySignal(char[] value);
+        void CharacterArraySignal(Character[] value);
+        void byteArraySignal(byte[] value);
+        void ByteArraySignal(Byte[] value);
+        void booleanArraySignal(boolean[] value);
+        void BooleanArraySignal(Boolean[] value);
         void stringSignal(String value);
         void uriSignal(URI value);
         void registrableSignal(ValueTypesMyType value);
@@ -64,104 +81,87 @@ public class ValueTypesTestBackend {
     public QtProperty<String[]> stringArrayProp = new QtProperty<>(new String[] {"aa", "bb", "cc"});
 
     public int[] intArrayEcho(int[] value) {
-        System.out.println("==== Java intArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.intArraySignal(value);
         return value;
     }
 
     public Integer[] IntegerArrayEcho(Integer[] value) {
-        System.out.println("==== Java IntegerArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.IntegerArraySignal(value);
         return value;
     }
 
     public String[] StringArrayEcho(String[] value) {
-        System.out.println("==== Java StringArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.StringArraySignal(value);
         return value;
     }
 
     public double[] doubleArrayEcho(double[] value) {
-        System.out.println("==== Java doubleArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.doubleArraySignal(value);
         return value;
     }
 
     public Double[] DoubleArrayEcho(Double[] value) {
-        System.out.println("==== Java DoubleArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.DoubleArraySignal(value);
         return value;
     }
 
     public float[] floatArrayEcho(float[] value) {
-        System.out.println("==== Java floatArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.floatArraySignal(value);
         return value;
     }
 
     public Float[] FloatArrayEcho(Float[] value) {
-        System.out.println("==== Java FloatArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.FloatArraySignal(value);
         return value;
     }
 
     public long[] longArrayEcho(long[] value) {
-        System.out.println("==== Java longArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.longArraySignal(value);
         return value;
     }
 
     public Long[] LongArrayEcho(Long[] value) {
-        System.out.println("==== Java LongArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.LongArraySignal(value);
         return value;
     }
 
     public short[] shortArrayEcho(short[] value) {
-        System.out.println("==== Java shortArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.shortArraySignal(value);
         return value;
     }
 
     public Short[] ShortArrayEcho(Short[] value) {
-        System.out.println("==== Java ShortArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.ShortArraySignal(value);
         return value;
     }
 
     public char[] charArrayEcho(char[] value) {
-        System.out.println("==== Java charArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.charArraySignal(value);
         return value;
     }
 
     public Character[] CharacterArrayEcho(Character[] value) {
-        System.out.println("==== Java CharacterArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.CharacterArraySignal(value);
         return value;
     }
 
     public byte[] byteArrayEcho(byte[] value) {
-        System.out.println("==== Java byteArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.byteArraySignal(value);
         return value;
     }
 
     public Byte[] ByteArrayEcho(Byte[] value) {
-        System.out.println("==== Java ByteArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.ByteArraySignal(value);
         return value;
     }
 
     public boolean[] booleanArrayEcho(boolean[] value) {
-        System.out.println("==== Java booleanArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.booleanArraySignal(value);
         return value;
     }
 
     public Boolean[] BooleanArrayEcho(Boolean[] value) {
-        System.out.println("==== Java BooleanArray echo got array: " + Arrays.toString(value));
-        // todo emit signal
+        qmlCallback.BooleanArraySignal(value);
         return value;
     }
 
