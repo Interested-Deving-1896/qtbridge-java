@@ -45,6 +45,22 @@ public class ValueTypesTestBackend {
 
     // Plain/raw arrays
     public QtProperty<int[]> intArrayProp = new QtProperty<>(new int[] {1, 2, 3});
+    public QtProperty<Integer[]> integerArrayProp = new QtProperty<>(new Integer[] {1, 2, 3});
+    public QtProperty<double[]> doubleArrayProp = new QtProperty<>(new double[] {1.1, 2.2, 3.3});
+    public QtProperty<Double[]> boxedDoubleArrayProp = new QtProperty<>(new Double[] {1.1, 2.2, 3.3});
+    public QtProperty<float[]> floatArrayProp = new QtProperty<>(new float[] {1.5f, 2.5f, 3.5f});
+    public QtProperty<Float[]> boxedFloatArrayProp = new QtProperty<>(new Float[] {1.5f, 2.5f, 3.5f});
+    public QtProperty<long[]> longArrayProp = new QtProperty<>(new long[] {1001, 1002, 1003});
+    public QtProperty<Long[]> boxedLongArrayProp = new QtProperty<>(new Long[] {1001L, 1002L, 1003L});
+    public QtProperty<short[]> shortArrayProp = new QtProperty<>(new short[] {11, 22, 33});
+    public QtProperty<Short[]> boxedShortArrayProp = new QtProperty<>(new Short[] {11, 22, 33});
+    public QtProperty<char[]> charArrayProp = new QtProperty<>(new char[] {'a', 'b', 'c'});
+    public QtProperty<Character[]> boxedCharArrayProp = new QtProperty<>(new Character[] {'a', 'b', 'c'});
+    public QtProperty<byte[]> byteArrayProp = new QtProperty<>(new byte[] {1, 2, 3});
+    public QtProperty<Byte[]> boxedByteArrayProp = new QtProperty<>(new Byte[] {1, 2, 3});
+    public QtProperty<boolean[]> booleanArrayProp = new QtProperty<>(new boolean[] {true, false, true});
+    public QtProperty<Boolean[]> boxedBooleanArrayProp =
+            new QtProperty<>(new Boolean[] {true, false, true});
     public QtProperty<String[]> stringArrayProp = new QtProperty<>(new String[] {"aa", "bb", "cc"});
 
     public int[] intArrayEcho(int[] value) {

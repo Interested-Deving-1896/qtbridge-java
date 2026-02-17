@@ -198,13 +198,19 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         *static_cast<QString *>(args[0]) = Utility::JNI::toQString(jstring(valueLocal));
         break;
     case QMetaType::QStringList:
-        *static_cast<QStringList *>(args[0]) = Converter::convertJavaListToQStringList(valueLocal);
+        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+            *static_cast<QStringList *>(args[0]) = Converter::convertJavaArrayToQStringList(env, valueLocal);
+        else
+            *static_cast<QStringList *>(args[0]) = Converter::convertJavaListToQStringList(valueLocal);
         break;
     case QMetaType::QVariant:
         *static_cast<QVariant *>(args[0]) = Converter::convertObjectToQVariant(valueLocal);
         break;
     case QMetaType::QVariantList:
-        *static_cast<QVariantList *>(args[0]) = Converter::convertJavaListToQVariantList(valueLocal);
+        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+            *static_cast<QVariantList *>(args[0]) = Converter::convertJavaArrayToQVariantList(env, valueLocal, entry.type);
+        else
+            *static_cast<QVariantList *>(args[0]) = Converter::convertJavaListToQVariantList(valueLocal);
         break;
     case QMetaType::QVariantMap:
         if (JNIObject<JavaLangEnum>::isInstanceOf(valueLocal))
@@ -238,6 +244,7 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         return;
     }
 
+    const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
     const auto metaType = mp.metaType();
     JNIEnv *env = JniContext::getEnv();
     jobject valueObj = nullptr;
@@ -271,10 +278,16 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         valueObj = Converter::convertQVariantToObject(*static_cast<QVariant *>(args[0]));
         break;
     case QMetaType::QVariantList:
-        valueObj = Converter::convertQVariantListToObject(*static_cast<QVariantList *>(args[0]));
+        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+            valueObj = Converter::convertQVariantListToArray(env, *static_cast<QVariantList *>(args[0]), entry.type);
+        else
+            valueObj = Converter::convertQVariantListToObject(*static_cast<QVariantList *>(args[0]));
         break;
     case QMetaType::QStringList:
-        valueObj = Converter::convertQStringListToObject(*static_cast<QStringList *>(args[0]));
+        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+            valueObj = Converter::convertQStringListToArray(env, *static_cast<QStringList *>(args[0]));
+        else
+            valueObj = Converter::convertQStringListToObject(*static_cast<QStringList *>(args[0]));
         break;
     case QMetaType::QVariantMap:
         valueObj = Converter::convertQVariantMapToObject(*static_cast<QVariantMap *>(args[0]));
@@ -304,7 +317,6 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         qCWarning(QT_BRIDGE, "Property write failed, value object creation failed for %s", mp.name());
         return;
     }
-    const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
 
     if (entry.field) {
         jobject fieldObject = env->GetObjectField(javaObject, entry.field);

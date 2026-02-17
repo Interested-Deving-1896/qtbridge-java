@@ -488,191 +488,182 @@ TestCase {
         compare(tb.enumProp.rgb, "#0000FF");
     }
 
-    function test_a_intArray_data() {
+    function test_a_integerArray_data() {
         return [
-            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {tag: "b", initial: [4, 5 , 6], changed: [7, 8, 9]},
+            {property: "intArrayProp", echo: "intArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "intArrayProp", echo: "intArrayEcho", initial: [4, 5, 6], changed: [7, 8, 9]},
+            {property: "integerArrayProp", echo: "IntegerArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "integerArrayProp", echo: "IntegerArrayEcho", initial: [4, 5, 6], changed: [7, 8, 9]},
         ]
     }
 
-    function test_a_intArray(data) {
-        compare(tb.intArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_IntegerArray_data() {
-        return [
-            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {tag: "b", initial: [4, 5 , 6], changed: [7, 8, 9]},
-        ]
-    }
-
-    function test_a_IntegerArray(data) {
-        compare(tb.IntegerArrayEcho(data.initial), data.initial);
+    function test_a_integerArray(data) {
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_StringArray_data() {
         return [
-            {tag: "a", initial: ["aa", "bb", "cc"], changed: ["dd", "ee", "ff"]},
-            {tag: "b", initial: ["dd", "ee" , "ff"], changed: ["hh", "ii", "jj"]},
+            {property: "stringArrayProp", echo: "StringArrayEcho", initial: ["aa", "bb", "cc"], changed: ["dd", "ee", "ff"]},
+            {property: "stringArrayProp", echo: "StringArrayEcho", initial: ["dd", "ee", "ff"], changed: ["hh", "ii", "jj"]},
         ]
     }
 
     function test_a_StringArray(data) {
-        compare(tb.StringArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_doubleArray_data() {
         return [
-            {tag: "a", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
-            {tag: "b", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+            {property: "doubleArrayProp", echo: "doubleArrayEcho", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {property: "doubleArrayProp", echo: "doubleArrayEcho", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
+            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
+            {property: "boxedDoubleArrayProp", echo: "DoubleArrayEcho", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
         ]
     }
 
     function test_a_doubleArray(data) {
-        compare(tb.doubleArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_DoubleArray_data() {
-        return [
-            {tag: "a", initial: [1.1, 2.2, 3.3], changed: [4.4, 5.5, 6.6]},
-            {tag: "b", initial: [4.4, 5.5, 6.6], changed: [7.7, 8.8, 9.9]},
-        ]
-    }
-
-    function test_a_DoubleArray(data) {
-        compare(tb.DoubleArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_floatArray_data() {
         return [
-            {tag: "a", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
-            {tag: "b", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+            {property: "floatArrayProp", echo: "floatArrayEcho", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {property: "floatArrayProp", echo: "floatArrayEcho", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
+            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
+            {property: "boxedFloatArrayProp", echo: "FloatArrayEcho", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
         ]
     }
 
     function test_a_floatArray(data) {
-        compare(tb.floatArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_FloatArray_data() {
-        return [
-            {tag: "a", initial: [1.5, 2.5, 3.5], changed: [4.5, 5.5, 6.5]},
-            {tag: "b", initial: [4.5, 5.5, 6.5], changed: [7.5, 8.5, 9.5]},
-        ]
-    }
-
-    function test_a_FloatArray(data) {
-        compare(tb.FloatArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_longArray_data() {
         return [
-            {tag: "a", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
-            {tag: "b", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
+            {property: "longArrayProp", echo: "longArrayEcho", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {property: "longArrayProp", echo: "longArrayEcho", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
+            {property: "boxedLongArrayProp", echo: "LongArrayEcho", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
+            {property: "boxedLongArrayProp", echo: "LongArrayEcho", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
         ]
     }
 
     function test_a_longArray(data) {
-        compare(tb.longArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_LongArray_data() {
-        return [
-            {tag: "a", initial: [1001, 1002, 1003], changed: [2001, 2002, 2003]},
-            {tag: "b", initial: [3001, 3002, 3003], changed: [4001, 4002, 4003]},
-        ]
-    }
-
-    function test_a_LongArray(data) {
-        compare(tb.LongArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_shortArray_data() {
         return [
-            {tag: "a", initial: [11, 22, 33], changed: [44, 55, 66]},
-            {tag: "b", initial: [12, 23, 34], changed: [45, 56, 67]},
+            {property: "shortArrayProp", echo: "shortArrayEcho", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {property: "shortArrayProp", echo: "shortArrayEcho", initial: [12, 23, 34], changed: [45, 56, 67]},
+            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", initial: [11, 22, 33], changed: [44, 55, 66]},
+            {property: "boxedShortArrayProp", echo: "ShortArrayEcho", initial: [12, 23, 34], changed: [45, 56, 67]},
         ]
     }
 
     function test_a_shortArray(data) {
-        compare(tb.shortArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_ShortArray_data() {
-        return [
-            {tag: "a", initial: [11, 22, 33], changed: [44, 55, 66]},
-            {tag: "b", initial: [12, 23, 34], changed: [45, 56, 67]},
-        ]
-    }
-
-    function test_a_ShortArray(data) {
-        compare(tb.ShortArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_charArray_data() {
         return [
-            {tag: "a", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
-            {tag: "b", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
+            {property: "charArrayProp", echo: "charArrayEcho", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
+            {property: "charArrayProp", echo: "charArrayEcho", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
+            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
+            {property: "boxedCharArrayProp", echo: "CharacterArrayEcho", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
         ]
     }
 
     function test_a_charArray(data) {
-        compare(tb.charArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_CharacterArray_data() {
-        return [
-            {tag: "a", initial: ['a', 'b', 'c'], changed: ['d', 'e', 'f']},
-            {tag: "b", initial: ['g', 'h', 'i'], changed: ['j', 'k', 'l']},
-        ]
-    }
-
-    function test_a_CharacterArray(data) {
-        compare(tb.CharacterArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_byteArray_data() {
         return [
-            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {tag: "b", initial: [7, 8, 9], changed: [10, 11, 12]},
+            {property: "byteArrayProp", echo: "byteArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "byteArrayProp", echo: "byteArrayEcho", initial: [7, 8, 9], changed: [10, 11, 12]},
+            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", initial: [1, 2, 3], changed: [4, 5, 6]},
+            {property: "boxedByteArrayProp", echo: "ByteArrayEcho", initial: [7, 8, 9], changed: [10, 11, 12]},
         ]
     }
 
     function test_a_byteArray(data) {
-        compare(tb.byteArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_ByteArray_data() {
-        return [
-            {tag: "a", initial: [1, 2, 3], changed: [4, 5, 6]},
-            {tag: "b", initial: [7, 8, 9], changed: [10, 11, 12]},
-        ]
-    }
-
-    function test_a_ByteArray(data) {
-        compare(tb.ByteArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_a_booleanArray_data() {
         return [
-            {tag: "a", initial: [true, false, true], changed: [false, true, false]},
-            {tag: "b", initial: [false, false, true], changed: [true, true, false]},
+            {property: "booleanArrayProp", echo: "booleanArrayEcho", initial: [true, false, true], changed: [false, true, false]},
+            {property: "booleanArrayProp", echo: "booleanArrayEcho", initial: [false, false, true], changed: [true, true, false]},
+            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", initial: [true, false, true], changed: [false, true, false]},
+            {property: "boxedBooleanArrayProp", echo: "BooleanArrayEcho", initial: [false, false, true], changed: [true, true, false]},
         ]
     }
 
     function test_a_booleanArray(data) {
-        compare(tb.booleanArrayEcho(data.initial), data.initial);
-    }
-
-    function test_a_BooleanArray_data() {
-        return [
-            {tag: "a", initial: [true, false, true], changed: [false, true, false]},
-            {tag: "b", initial: [false, false, true], changed: [true, true, false]},
-        ]
-    }
-
-    function test_a_BooleanArray(data) {
-        compare(tb.BooleanArrayEcho(data.initial), data.initial);
+        tb[data.property] = data.initial
+        wait(1)
+        compare(tb[data.property], data.initial)
+        compare(tb[data.echo](data.initial), data.initial)
+        tb[data.property] = data.changed
+        wait(1)
+        compare(tb[data.property], data.changed)
+        compare(tb[data.echo](data.changed), data.changed)
     }
 
     function test_b_javaside_valueset_data() {
