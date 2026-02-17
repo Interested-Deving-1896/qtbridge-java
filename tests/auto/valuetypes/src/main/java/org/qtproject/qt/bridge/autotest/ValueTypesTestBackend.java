@@ -301,6 +301,74 @@ public class ValueTypesTestBackend {
         stringArrayProp = null;
     }
 
+    public void setIntArrayProperty(int[] value) {
+        intArrayProp.setValue(value);
+    }
+
+    public void setIntegerArrayProperty(Integer[] value) {
+        integerArrayProp.setValue(value);
+    }
+
+    public void setDoubleArrayProperty(double[] value) {
+        doubleArrayProp.setValue(value);
+    }
+
+    public void setBoxedDoubleArrayProperty(Double[] value) {
+        boxedDoubleArrayProp.setValue(value);
+    }
+
+    public void setFloatArrayProperty(float[] value) {
+        floatArrayProp.setValue(value);
+    }
+
+    public void setBoxedFloatArrayProperty(Float[] value) {
+        boxedFloatArrayProp.setValue(value);
+    }
+
+    public void setLongArrayProperty(long[] value) {
+        longArrayProp.setValue(value);
+    }
+
+    public void setBoxedLongArrayProperty(Long[] value) {
+        boxedLongArrayProp.setValue(value);
+    }
+
+    public void setShortArrayProperty(short[] value) {
+        shortArrayProp.setValue(value);
+    }
+
+    public void setBoxedShortArrayProperty(Short[] value) {
+        boxedShortArrayProp.setValue(value);
+    }
+
+    public void setCharArrayProperty(char[] value) {
+        charArrayProp.setValue(value);
+    }
+
+    public void setBoxedCharArrayProperty(Character[] value) {
+        boxedCharArrayProp.setValue(value);
+    }
+
+    public void setByteArrayProperty(byte[] value) {
+        byteArrayProp.setValue(value);
+    }
+
+    public void setBoxedByteArrayProperty(Byte[] value) {
+        boxedByteArrayProp.setValue(value);
+    }
+
+    public void setBooleanArrayProperty(boolean[] value) {
+        booleanArrayProp.setValue(value);
+    }
+
+    public void setBoxedBooleanArrayProperty(Boolean[] value) {
+        boxedBooleanArrayProp.setValue(value);
+    }
+
+    public void setStringArrayProperty(String[] value) {
+        stringArrayProp.setValue(value);
+    }
+
     // Map
     public QtProperty<Map<String,Object>> mapProp =
             new QtProperty<>(Map.of("k1", 1, "k2", 2));
