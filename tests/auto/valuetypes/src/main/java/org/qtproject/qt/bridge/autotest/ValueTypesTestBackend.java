@@ -165,6 +165,142 @@ public class ValueTypesTestBackend {
         return value;
     }
 
+    public void intArrayValueNull() {
+        intArrayProp.setValue(null);
+    }
+
+    public void integerArrayValueNull() {
+        integerArrayProp.setValue(null);
+    }
+
+    public void doubleArrayValueNull() {
+        doubleArrayProp.setValue(null);
+    }
+
+    public void boxedDoubleArrayValueNull() {
+        boxedDoubleArrayProp.setValue(null);
+    }
+
+    public void floatArrayValueNull() {
+        floatArrayProp.setValue(null);
+    }
+
+    public void boxedFloatArrayValueNull() {
+        boxedFloatArrayProp.setValue(null);
+    }
+
+    public void longArrayValueNull() {
+        longArrayProp.setValue(null);
+    }
+
+    public void boxedLongArrayValueNull() {
+        boxedLongArrayProp.setValue(null);
+    }
+
+    public void shortArrayValueNull() {
+        shortArrayProp.setValue(null);
+    }
+
+    public void boxedShortArrayValueNull() {
+        boxedShortArrayProp.setValue(null);
+    }
+
+    public void charArrayValueNull() {
+        charArrayProp.setValue(null);
+    }
+
+    public void boxedCharArrayValueNull() {
+        boxedCharArrayProp.setValue(null);
+    }
+
+    public void byteArrayValueNull() {
+        byteArrayProp.setValue(null);
+    }
+
+    public void boxedByteArrayValueNull() {
+        boxedByteArrayProp.setValue(null);
+    }
+
+    public void booleanArrayValueNull() {
+        booleanArrayProp.setValue(null);
+    }
+
+    public void boxedBooleanArrayValueNull() {
+        boxedBooleanArrayProp.setValue(null);
+    }
+
+    public void stringArrayValueNull() {
+        stringArrayProp.setValue(null);
+    }
+
+    public void intArrayPropertyNull() {
+        intArrayProp = null;
+    }
+
+    public void integerArrayPropertyNull() {
+        integerArrayProp = null;
+    }
+
+    public void doubleArrayPropertyNull() {
+        doubleArrayProp = null;
+    }
+
+    public void boxedDoubleArrayPropertyNull() {
+        boxedDoubleArrayProp = null;
+    }
+
+    public void floatArrayPropertyNull() {
+        floatArrayProp = null;
+    }
+
+    public void boxedFloatArrayPropertyNull() {
+        boxedFloatArrayProp = null;
+    }
+
+    public void longArrayPropertyNull() {
+        longArrayProp = null;
+    }
+
+    public void boxedLongArrayPropertyNull() {
+        boxedLongArrayProp = null;
+    }
+
+    public void shortArrayPropertyNull() {
+        shortArrayProp = null;
+    }
+
+    public void boxedShortArrayPropertyNull() {
+        boxedShortArrayProp = null;
+    }
+
+    public void charArrayPropertyNull() {
+        charArrayProp = null;
+    }
+
+    public void boxedCharArrayPropertyNull() {
+        boxedCharArrayProp = null;
+    }
+
+    public void byteArrayPropertyNull() {
+        byteArrayProp = null;
+    }
+
+    public void boxedByteArrayPropertyNull() {
+        boxedByteArrayProp = null;
+    }
+
+    public void booleanArrayPropertyNull() {
+        booleanArrayProp = null;
+    }
+
+    public void boxedBooleanArrayPropertyNull() {
+        boxedBooleanArrayProp = null;
+    }
+
+    public void stringArrayPropertyNull() {
+        stringArrayProp = null;
+    }
+
     // Map
     public QtProperty<Map<String,Object>> mapProp =
             new QtProperty<>(Map.of("k1", 1, "k2", 2));

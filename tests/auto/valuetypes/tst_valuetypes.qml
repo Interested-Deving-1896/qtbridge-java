@@ -766,14 +766,65 @@ TestCase {
         tb.intValueNull();
         compare(tb.intProp, 0);
 
+        tb.intArrayValueNull();
+        compare(tb.intArrayProp, []);
+
+        tb.integerArrayValueNull();
+        compare(tb.integerArrayProp, []);
+
         tb.stringValueNull();
         compare(tb.stringProp, "");
+
+        tb.stringArrayValueNull();
+        compare(tb.stringArrayProp, []);
 
         tb.longValueNull();
         compare(tb.longProp, 0);
 
+        tb.longArrayValueNull();
+        compare(tb.longArrayProp, []);
+
+        tb.boxedLongArrayValueNull();
+        compare(tb.boxedLongArrayProp, []);
+
         tb.uriValueNull();
         compare(tb.uriProp, "");
+
+        tb.doubleArrayValueNull();
+        compare(tb.doubleArrayProp, []);
+
+        tb.boxedDoubleArrayValueNull();
+        compare(tb.boxedDoubleArrayProp, []);
+
+        tb.floatArrayValueNull();
+        compare(tb.floatArrayProp, []);
+
+        tb.boxedFloatArrayValueNull();
+        compare(tb.boxedFloatArrayProp, []);
+
+        tb.shortArrayValueNull();
+        compare(tb.shortArrayProp, []);
+
+        tb.boxedShortArrayValueNull();
+        compare(tb.boxedShortArrayProp, []);
+
+        tb.byteArrayValueNull();
+        compare(tb.byteArrayProp, []);
+
+        tb.boxedByteArrayValueNull();
+        compare(tb.boxedByteArrayProp, []);
+
+        tb.charArrayValueNull();
+        compare(tb.charArrayProp, []);
+
+        tb.boxedCharArrayValueNull();
+        compare(tb.boxedCharArrayProp, []);
+
+        tb.booleanArrayValueNull();
+        compare(tb.booleanArrayProp, []);
+
+        tb.boxedBooleanArrayValueNull();
+        compare(tb.boxedBooleanArrayProp, []);
 
         tb.registrableValueNull();
         compare(tb.registrableProp, null);
@@ -822,17 +873,85 @@ TestCase {
         ignoreWarning(warning)
         compare(tb.intProp, 0);
 
+        tb.intArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.intArrayProp, []);
+
+        tb.integerArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.integerArrayProp, []);
+
         tb.stringPropertyNull();
         ignoreWarning(warning)
         compare(tb.stringProp, "");
+
+        tb.stringArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.stringArrayProp, []);
 
         tb.longPropertyNull();
         ignoreWarning(warning)
         compare(tb.longProp, 0);
 
+        tb.longArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.longArrayProp, []);
+
+        tb.boxedLongArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedLongArrayProp, []);
+
         tb.uriPropertyNull();
         ignoreWarning(warning)
         compare(tb.uriProp, "");
+
+        tb.doubleArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.doubleArrayProp, []);
+
+        tb.boxedDoubleArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedDoubleArrayProp, []);
+
+        tb.floatArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.floatArrayProp, []);
+
+        tb.boxedFloatArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedFloatArrayProp, []);
+
+        tb.shortArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.shortArrayProp, []);
+
+        tb.boxedShortArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedShortArrayProp, []);
+
+        tb.byteArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.byteArrayProp, []);
+
+        tb.boxedByteArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedByteArrayProp, []);
+
+        tb.charArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.charArrayProp, []);
+
+        tb.boxedCharArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedCharArrayProp, []);
+
+        tb.booleanArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.booleanArrayProp, []);
+
+        tb.boxedBooleanArrayPropertyNull();
+        ignoreWarning(warning)
+        compare(tb.boxedBooleanArrayProp, []);
 
         tb.registrablePropertyNull();
         ignoreWarning(warning)
