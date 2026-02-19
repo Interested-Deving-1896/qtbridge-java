@@ -472,7 +472,9 @@ Following shows the possible composition of such class:
 #### Properties (`QtProperty`)
   Properties are represented by instances of `QtProperty`. A `QtProperty` wraps a value and automatically notifies
   QML when the value changes. Updates from either the Java-side or the QML-side are reflected on the other side.
-  QtProperty supports basic boxed datatypes (Integer, String, ...), Java Collections (lists), and Enums.
+  QtProperty supports simple types (String, numbers, booleans, chars), `URI`, enums, Java collections,
+  `Map<String, ?>`, plain arrays (primitive/boxed + String), and `@QMLRegistrable` objects.
+  Collections/maps/arrays are stored as shallow snapshots (collections/maps as unmodifiable views).
 
   For observing changes on the QML-side normal QML bindings and signal catching mechanisms work.
   On the Java-side QtProperty the property value-change observation is provided with a callback

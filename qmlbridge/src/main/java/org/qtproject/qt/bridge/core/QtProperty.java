@@ -29,21 +29,30 @@ import java.util.logging.Logger;
  * {@link QMLRegistrable @QMLRegistrable} class so that QML can access it.</p>
  *
  * <h2 id="supported-types">Supported types</h2>
- * TODO verify the supported types for correctness.
  * <ul>
- *   <li><strong>Simple types</strong> (numbers, booleans, strings) are kept as-is.</li>
- *   <li><strong>Collections</strong> are copied defensively and stored as
- *       unmodifiable list copy to avoid accidental outside mutation.</li>
- *   <li><strong>Map&lt;String, Object&gt;</strong> types are supported.</li>
+ *   <li><strong>Simple types</strong> ({@code String}, numbers, booleans, chars) are supported.</li>
+ *   <li><strong>URI</strong> ({@code java.net.URI}) is supported.</li>
+ *   <li><strong>Collections</strong> are supported and normalized to an unmodifiable list snapshot.</li>
+ *   <li><strong>Map&lt;String, ?&gt;</strong> is supported and normalized to an unmodifiable map snapshot.
+ *   Map keys must be {@code String}.</li>
  *   <li><strong>Enum</strong> types have a limited support. They can be
  *   set in Java and read in QML, but cannot be written from QML
- *   <a href="https://bugreports.qt.io/browse/QTBUG-141710" >(QTBUG-141710)</a>. The Java enum
+ *   <a href="https://bugreports.qt.io/browse/QTBRIDGES-121" >(QTBRIDGES-121)</a>. The Java enum
  *   is mapped to Map with members {@code name}, {@code ordinal}, and any additional member fields.
  *   These can be accessed at QML-side.</li>
- *   <li><strong>Plain Java arrays</strong> (e.g. {@code String[]}) are not supported at the
- *       moment and will cause {@link IllegalArgumentException}, see
- *       <a href="https://bugreports.qt.io/browse/QTBUG-140227" >(QTBUG-140227)</a></li>
+ *   <li><strong>Plain Java arrays</strong> are supported for primitive and boxed primitive types,
+ *   and {@code String[]} (for example {@code int[]}, {@code Integer[]}, {@code String[]}).</li>
+ *   <li><strong>QMLRegistrable</strong> types are supported and stored as-is (reference type).</li>
  * </ul>
+ *
+ * <h2 id="copy-semantics">Copy semantics</h2>
+ * <ul>
+ *   <li><strong>Collection/Map</strong>: shallow copied and exposed as unmodifiable snapshots.</li>
+ *   <li><strong>Arrays</strong>: shallow copied on set.</li>
+ *   <li><strong>Simple types</strong>, <strong>URI</strong>, <strong>@QMLRegistrable</strong>: stored as-is.</li>
+ * </ul>
+ *
+ * <p>Copying is shallow: nested objects are not deep-copied. Avoid mutating arrays in-place after setting them.</p>
  *
  * <h2 id="subscription-semantics">Subscription semantics</h2>
  * <p>Observer registration methods (e.g. {@link #onValueChanged(Runnable)}) return an
@@ -83,10 +92,10 @@ public class QtProperty<T> {
      * Creates a property with an initial value.
      *
      * <p>The value is normalized (see <a href="#supported-types">Supported types</a>).
-     * Arrays are not supported.</p>
+     * Supported arrays are copied on set.</p>
      *
      * @param initialValue initial value (may be {@code null})
-     * @throws IllegalArgumentException if {@code initialValue} is a plain array
+     * @throws IllegalArgumentException if {@code initialValue} type is not supported
      */
     public QtProperty(T initialValue) {
         valueRef.set(normalizeValue(initialValue));
