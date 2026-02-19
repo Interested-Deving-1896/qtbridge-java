@@ -12,27 +12,41 @@ internal enum class PropertyKind {
     QT_LIST_MODEL,
 }
 
-internal enum class VariableShape {
-    VALUE,
-    LIST,
-    ARRAY,
-    MAP,
+// Keep numeric values in sync with C++ Utility::JNI::VarShape.
+internal enum class VariableShape(val code: Byte) {
+    VALUE(0),
+    LIST(1),
+    ARRAY(2),
+    MAP(3),
 }
 
-// Keep contents in synch with ClassCreationEmitter encoder switch-case
-internal enum class VariableType {
-    VOID,
-    BOOLEAN,
-    BYTE,
-    CHAR,
-    SHORT,
-    INT,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    STRING,
-    QML_REGISTRABLE,
-    ITEM_MODEL,
+// Keep numeric values in sync with C++ Utility::JNI::VarType.
+// Use byte encoding for shapes and types so that we can easily pass
+// them to JNI, without JNI needing to invoke Java/Kotlin functions
+// to determine these shapes / types. Also we want to avoid runtime
+// JNI parsing of method and parameter signatures (for performance).
+internal enum class VariableType(val code: Byte) {
+    VOID(0),
+    BOOLEAN(1),
+    BYTE(2),
+    CHAR(3),
+    SHORT(4),
+    INT(5),
+    LONG(6),
+    FLOAT(7),
+    DOUBLE(8),
+    STRING(9),
+    QML_REGISTRABLE(10),
+    ITEM_MODEL(11),
+    // Values starting from 128 / 0x80 are reserved, see packedCode() below
+    ;
+
+    // Packs primitive/unboxed information into the high bit of the encoded value.
+    fun packedCode(isPrimitive: Boolean): Byte {
+        val base = code.toInt() and 0x7F
+        val primitiveBit = if (isPrimitive) 0x80 else 0
+        return (base or primitiveBit).toByte()
+    }
 }
 
 // Stores information of function parameters, return values and property types.

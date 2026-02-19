@@ -11,47 +11,6 @@ import org.qtproject.qt.bridge.generator.*
 
 internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
 
-    // Functions for mapping variable types and shapes into bytes.
-    // Use byte encoding (instead of Java/Kotlin side structs) so that
-    // we can easily pass them to JNI, without JNI needing to invoke
-    // Java/Kotlin functions to determine these shapes / types. Also
-    // we want to avoid runtime-heavy parsing of method and parameter
-    // signatures, and do the heavylifthing at build-time (at the expense
-    // of few extra bytes of memory).
-    // Must be kept in synch with JNI converter enum
-    private fun VariableShape.code(): Byte = when (this) {
-        VariableShape.VALUE -> 0
-        VariableShape.LIST -> 1
-        VariableShape.ARRAY -> 2
-        VariableShape.MAP -> 3
-    }.toByte();
-
-    // Must be kept in synch with JNI-side converter enum and
-    // ClassModel VariableType enum
-    private fun VariableType.code(): Byte = when (this) {
-        VariableType.VOID -> 0
-        VariableType.BOOLEAN -> 1
-        VariableType.BYTE -> 2
-        VariableType.CHAR -> 3
-        VariableType.SHORT -> 4
-        VariableType.INT -> 5
-        VariableType.LONG -> 6
-        VariableType.FLOAT -> 7
-        VariableType.DOUBLE -> 8
-        VariableType.STRING -> 9
-        VariableType.QML_REGISTRABLE -> 10
-        VariableType.ITEM_MODEL -> 11
-        // Note: from 128 (0x80) onwards the values are reserved for marking type's
-        // Java-side representation as primitive/unboxed (the upmost bit is set)
-    }.toByte();
-
-    // Packs the 'primitive'/'unboxed' information into the high bit of type code
-    private fun packedVariableTypeCode(type: VariableType, isPrimitive: Boolean): Byte {
-        val base = type.code().toInt() and 0x7F
-        val primitiveBit = if (isPrimitive) 0x80 else 0
-        return (base or primitiveBit).toByte()
-    }
-
     fun emitClassFromModel(model: RegistrableClass) {
         val packageName = model.packageName
         val className = model.simpleName
@@ -87,12 +46,12 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
 
                     // Array, List, Map, ..
                     val paramShape = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
-                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") { it.shape.code().toString() } + ")"
+                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") { it.shape.code.toString() } + ")"
 
                     // Integer, String, ... and value primitiveness bit
                     val paramType = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
                         "byteArrayOf(" + sig.paramListInfo.joinToString(", ") {
-                            packedVariableTypeCode(it.type, it.isPrimitive).toString()
+                            it.type.packedCode(it.isPrimitive).toString()
                         } + ")"
 
                     w.appendLine(
@@ -125,20 +84,20 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
 
                 // Array, List, Map, ..
                 val paramShape = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
-                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.shape.code().toString() } + ")"
+                    "byteArrayOf(" + m.paramListInfo.joinToString(", ") { it.shape.code.toString() } + ")"
 
                 // Integer, String, ... and value primitiveness bit
                 val paramType = if (m.paramListInfo.isEmpty()) "byteArrayOf()" else
                     "byteArrayOf(" + m.paramListInfo.joinToString(", ") {
-                        packedVariableTypeCode(it.type, it.isPrimitive).toString()
+                        it.type.packedCode(it.isPrimitive).toString()
                     } + ")"
 
                 w.appendLine(
                     "            qtObject.addInvokable(\n" +
                     "                \"${m.javaSignature}\", \"${m.javaReturnType}\",\n" +
                     "                \"${m.cppSignature}\", \"${m.cppReturnType}\",\n" +
-                    "                ${m.retInfo.shape.code().toString()},\n" +
-                    "                ${packedVariableTypeCode(m.retInfo.type, m.retInfo.isPrimitive).toString()},\n" +
+                    "                ${m.retInfo.shape.code.toString()},\n" +
+                    "                ${m.retInfo.type.packedCode(m.retInfo.isPrimitive).toString()},\n" +
                     "                $paramShape, $paramType)"
                 )
             }
@@ -157,8 +116,8 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                     "                \"${p.name}\", \"$declared\",\n" +
                     "                \"${type.cppType}\", ${p.writableFromQml}, true,\n" +
                     "                ${p.constant}, \"${p.notifySignalSignature}\",\n" +
-                    "                ${typeInfo.shape.code()},\n" +
-                    "                ${packedVariableTypeCode(typeInfo.type, typeInfo.isPrimitive)}\n" +
+                    "                ${typeInfo.shape.code},\n" +
+                    "                ${typeInfo.type.packedCode(typeInfo.isPrimitive)}\n" +
                     "            ))")
             }
 
