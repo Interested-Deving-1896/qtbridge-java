@@ -69,10 +69,17 @@ import java.util.logging.Logger;
  * For more granular updates see {@link QtListModel}.
  *
  * <h2 id="threading-notes">Threading notes</h2>
- * TODO check the threading correctness (<a href="https://bugreports.qt.io/browse/QTBUG-139177">QTBUG-139177</a>)
- * <p>Reads/writes are backed by an {@link AtomicReference}. Callbacks run on the thread that
- * triggers the change (Java setter) or the thread that delivers native notifications from Qt.
- * If your UI/state must be updated on a different thread, forward accordingly.</p>
+ * <ul>
+ *   <li><strong>Thread-safe basics</strong>: {@link #getValue()}, {@link #setValue(Object)},
+ *   {@link #observe(QtPropertyObserver)} and {@link #removeObserver(QtPropertyObserver)}
+ *   are safe to call from multiple threads.</li>
+ *   <li><strong>Callback thread</strong>: observers run synchronously on the same thread that calls
+ *   {@link #setValue(Object)}.</li>
+ *   <li><strong>QML writes</strong>: when QML writes a property, that write may trigger the observers
+ *   in QtQuickApplication's thread.</li>
+ *   <li><strong>Recommendation</strong>: keep observers lightweight and thread-safe, and when needed,
+ *   forward work to the correct thread explicitly.</li>
+ * </ul>
  *
  * @param <T> property value type (after normalization, see <a href="#supported-types">Supported types</a>)
  */
