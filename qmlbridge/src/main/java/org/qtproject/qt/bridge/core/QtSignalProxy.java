@@ -49,6 +49,17 @@ final class QtSignalProxy {
         final Map<Method, String> signatureCache = Map.copyOf(mutableSignatureCache);
 
         InvocationHandler handler = (proxy, method, args) -> {
+            // Handle general Object methods so what we won't try to use
+            // them as signals (would throw).
+            if (method.getDeclaringClass() == Object.class) {
+                String name = method.getName();
+                if ("toString".equals(name))
+                    return "QtSignalProxy(" + signalsInterface.getName() + ")";
+                if ("hashCode".equals(name))
+                    return System.identityHashCode(proxy);
+                if ("equals".equals(name))
+                    return proxy == args[0];
+            }
             String signature = signatureCache.get(method);
             // Signatures are computed at bind-time, so a signature miss here is an error
             if (signature == null)

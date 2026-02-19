@@ -72,4 +72,7 @@ public class InstantiableTestBackend {
     public void triggerCallWithUrl(java.net.URI url) { backendCallback.callWithUrl(url); }
     public void triggerCallWithEnum() { backendCallback.callWithEnum(SingletonTestBackend.Color.BLUE); }
 
+    public String callbackProxyToString() {
+        return backendCallback.toString();
+    }
 }

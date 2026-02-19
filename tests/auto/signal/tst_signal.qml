@@ -419,5 +419,12 @@ Item {
             compare(enumArg.ordinal, 2)
             compare(enumArg.rgb, "#0000FF")
         }
+
+        function test_callbackProxyToString(data) {
+            // Test QtSignalProxy.toString() works (does not try to emit)
+            root.targetBackend = data.target
+            let string = root.targetBackend.callbackProxyToString()
+            verify(string.length > 0)
+        }
     }
 }

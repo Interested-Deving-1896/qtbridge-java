@@ -84,4 +84,8 @@ public class SingletonTestBackend {
     public void triggerCallWithMap(java.util.Map<String, Object> map) { backendCallback.callWithMap(map); }
     public void triggerCallWithUrl(java.net.URI url) { backendCallback.callWithUrl(url); }
     public void triggerCallWithEnum() { backendCallback.callWithEnum(Color.BLUE); }
+
+    public String callbackProxyToString() {
+        return backendCallback.toString();
+    }
 }
