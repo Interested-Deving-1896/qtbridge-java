@@ -117,23 +117,6 @@ namespace Utility::JNI {
         }
 
         template<typename PropertyType>
-        static PropertyType callGetter(JNIEnv *env, const jobject javaObject, const char *getterName)
-        {
-            const auto clazz = env->GetObjectClass(javaObject);
-            const auto result = JavaObject::callMethod<PropertyType>(env, clazz, javaObject, getterName);
-            env->DeleteLocalRef(clazz);
-            return result;
-        }
-
-        template<typename PropertyType>
-        static void callSetter(JNIEnv *env, jobject javaObject, const char *setterName, PropertyType value)
-        {
-            const auto clazz = env->GetObjectClass(javaObject);
-            JavaObject::callMethod<void>(env, clazz, javaObject, setterName, value);
-            env->DeleteLocalRef(clazz);
-        }
-
-        template<typename PropertyType>
         static PropertyType getProperty(JNIEnv *env, const jobject javaObject, const char *propertyName)
         {
             const auto name = QString::fromUtf8(propertyName);

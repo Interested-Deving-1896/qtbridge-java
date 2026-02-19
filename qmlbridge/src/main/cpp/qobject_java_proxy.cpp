@@ -150,7 +150,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         }
         if (JNIObject<JavaQtProperty>::isInstanceOf(holderLocal)) {
             // QtProperty<T> – getValue() returns boxed T (or null)
-            valueLocal = JavaObject::callGetter<jobject>(env, holderLocal, "getValue");
+            valueLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
         } else {
             // Raw field, use as-is
             valueLocal = holderLocal; // share the same local ref
@@ -322,7 +322,7 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         jobject fieldObject = env->GetObjectField(javaObject, entry.field);
         if (fieldObject && JNIObject<JavaQtProperty>::isInstanceOf(fieldObject)) {
             // QtProperty<T> – call setValue(Object) on the QtProperty instance
-            JavaObject::callSetter<jobject>(env, fieldObject, "setValue", valueObj);
+            JNIObject<JavaQtProperty>::callMethod<void>(fieldObject, "setValue", valueObj);
             env->DeleteLocalRef(fieldObject);
             return;
         }
@@ -577,7 +577,7 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
 
     // Extract actual user object if it's wrapped in a QtProperty
     if (JNIObject<JavaQtProperty>::isInstanceOf(holderLocal)) {
-        userLocal = JavaObject::callGetter<jobject>(env, holderLocal, "getValue");
+        userLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
         if (!userLocal)
             return; // Valid use-case: null userObject => return null proxy
     } else {
@@ -613,7 +613,7 @@ void QObjectJavaProxy::writeQmlRegistrableProperty(const jobject javaObject,
     if (entry.field) {
         jobject fieldObj = JniContext::getEnv()->GetObjectField(javaObject, entry.field);
         if (fieldObj && JNIObject<JavaQtProperty>::isInstanceOf(fieldObj))
-            JavaObject::callSetter<jobject>(env, fieldObj, "setValue", userObject);
+            JNIObject<JavaQtProperty>::callMethod<void>(fieldObj, "setValue", userObject);
         else
             env->SetObjectField(javaObject, entry.field, userObject); // raw field, assign directly
 
