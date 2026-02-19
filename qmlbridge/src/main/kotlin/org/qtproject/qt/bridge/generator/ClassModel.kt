@@ -12,7 +12,7 @@ internal enum class PropertyKind {
     QT_LIST_MODEL,
 }
 
-// Keep numeric values in sync with C++ Utility::JNI::VarShape.
+// Keep numeric values in sync with JNI Converter's VariableShape.
 internal enum class VariableShape(val code: Byte) {
     VALUE(0),
     LIST(1),
@@ -20,7 +20,7 @@ internal enum class VariableShape(val code: Byte) {
     MAP(3),
 }
 
-// Keep numeric values in sync with C++ Utility::JNI::VarType.
+// Keep numeric values in sync with JNI Converter's VariableType.
 // Use byte encoding for shapes and types so that we can easily pass
 // them to JNI, without JNI needing to invoke Java/Kotlin functions
 // to determine these shapes / types. Also we want to avoid runtime

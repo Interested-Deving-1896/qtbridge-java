@@ -27,7 +27,7 @@ namespace Utility::JNI {
         }
 
         // Must be kept in synch with ClassCreationEmitter table
-        enum class VarShape : qint8 {
+        enum class VariableShape : qint8 {
             Value = 0,
             List = 1,
             Array = 2,
@@ -35,7 +35,7 @@ namespace Utility::JNI {
         };
 
         // Must be kept in synch with ClassCreationEmitter table
-        enum class VarType : qint8 {
+        enum class VariableType : qint8 {
             Void = 0,
             Boolean = 1,
             Byte = 2,
@@ -56,8 +56,8 @@ namespace Utility::JNI {
         }
 
         // Returns VarType (removes potential primitive flagging)
-        inline VarType varType(qint8 packed) {
-            return static_cast<VarType>(static_cast<quint8>(packed) & 0x7Fu);
+        inline VariableType varType(qint8 packed) {
+            return static_cast<VariableType>(static_cast<quint8>(packed) & 0x7Fu);
         }
 
         class Converter

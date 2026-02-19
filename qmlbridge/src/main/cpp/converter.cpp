@@ -50,7 +50,7 @@ namespace Utility::JNI {
         case QMetaType::QVariantList: {
             QVariantList &qlist = *static_cast<QVariantList *>(cppParameter);
             // Check if Java/Kotlin-side expects an array or a List
-            if (static_cast<VarShape>(methodEntry.parmShape.at(parameterIndex)) == VarShape::Array)
+            if (static_cast<VariableShape>(methodEntry.parmShape.at(parameterIndex)) == VariableShape::Array)
                 ret.l = convertQVariantListToArray(env, qlist, methodEntry.parmType.at(parameterIndex));
             else
                 ret.l = convertQVariantListToObject(qlist);
@@ -58,7 +58,7 @@ namespace Utility::JNI {
         }
         case QMetaType::QStringList: {
             QStringList &slist = *static_cast<QStringList *>(cppParameter);
-            if (static_cast<VarShape>(methodEntry.parmShape.at(parameterIndex)) == VarShape::Array)
+            if (static_cast<VariableShape>(methodEntry.parmShape.at(parameterIndex)) == VariableShape::Array)
                 ret.l = convertQStringListToArray(env, slist);
             else
                 ret.l = convertQStringListToObject(slist);
@@ -178,7 +178,7 @@ namespace Utility::JNI {
             return true;
         }
 
-        const auto varShape = static_cast<VarShape>(shape);
+        const auto varShape = static_cast<VariableShape>(shape);
 
         switch (cppMetaTypeId) {
         case QMetaType::QVariant: {
@@ -186,7 +186,7 @@ namespace Utility::JNI {
             return true;
         }
         case QMetaType::QVariantList:
-            if (varShape == VarShape::Array) {
+            if (varShape == VariableShape::Array) {
                 *static_cast<QVariantList *>(outPtr) = convertJavaArrayToQVariantList(env, valueObj, type);
                 return true;
             } else {
@@ -195,7 +195,7 @@ namespace Utility::JNI {
 
             }
         case QMetaType::QStringList:
-            if (varShape == VarShape::Array) {
+            if (varShape == VariableShape::Array) {
                 *static_cast<QStringList *>(outPtr) = convertJavaArrayToQStringList(env, valueObj);
                 return true;
             } else {
@@ -423,11 +423,11 @@ namespace Utility::JNI {
         if (!javaArray)
             return result;
 
-        const VarType type = varType(elemType);
+        const VariableType type = varType(elemType);
         const bool isPrimitive = typeIsPrimitive(elemType);
 
         switch (type) {
-        case VarType::Boolean:
+        case VariableType::Boolean:
             if (isPrimitive) {
                 auto array = static_cast<jbooleanArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -452,7 +452,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Byte:
+        case VariableType::Byte:
             if (isPrimitive) {
                 auto array = static_cast<jbyteArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -476,7 +476,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Char:
+        case VariableType::Char:
             if (isPrimitive) {
                 auto array = static_cast<jcharArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -501,7 +501,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Short:
+        case VariableType::Short:
             if (isPrimitive) {
                 auto array = static_cast<jshortArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -525,7 +525,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Int:
+        case VariableType::Int:
             if (isPrimitive) {
                 auto array = static_cast<jintArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -549,7 +549,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Long:
+        case VariableType::Long:
             if (isPrimitive) {
                 auto array = static_cast<jlongArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -574,7 +574,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Float:
+        case VariableType::Float:
             if (isPrimitive) {
                 auto array = static_cast<jfloatArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -599,7 +599,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::Double:
+        case VariableType::Double:
             if (isPrimitive) {
                 auto array = static_cast<jdoubleArray>(javaArray);
                 const jsize size = env->GetArrayLength(array);
@@ -624,7 +624,7 @@ namespace Utility::JNI {
                 }
             }
             break;
-        case VarType::String: {
+        case VariableType::String: {
             const auto array = static_cast<jobjectArray>(javaArray);
             const jsize size = env->GetArrayLength(array);
             result.reserve(size);
@@ -639,7 +639,7 @@ namespace Utility::JNI {
             }
             break;
         }
-        case VarType::QmlRegistrable: {
+        case VariableType::QmlRegistrable: {
             const auto array = static_cast<jobjectArray>(javaArray);
             const jsize size = env->GetArrayLength(array);
             result.reserve(size);
@@ -747,7 +747,7 @@ namespace Utility::JNI {
     jobject Converter::convertQVariantListToArray(JNIEnv *env, const QVariantList &list, qint8 elemType)
     {
         const bool isPrimitive = typeIsPrimitive(elemType);
-        const VarType type = varType(elemType);
+        const VariableType type = varType(elemType);
         const jsize size = static_cast<jsize>(list.size());
 
         auto warn = [&list](int i, const char *expected) {
@@ -756,7 +756,7 @@ namespace Utility::JNI {
         };
 
         switch (type) {
-        case VarType::Boolean:
+        case VariableType::Boolean:
             if (isPrimitive) {
                 jbooleanArray array = env->NewBooleanArray(size);
                 QList<jboolean> tmp;
@@ -782,7 +782,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Byte:
+        case VariableType::Byte:
             if (isPrimitive) {
                 jbyteArray array = env->NewByteArray(size);
                 QList<jbyte> tmp;
@@ -808,7 +808,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Char: {
+        case VariableType::Char: {
             auto toJChar = [&warn](const QVariant &value, int i, const char *expected) -> jchar {
                 if (value.canConvert<QChar>())
                     return static_cast<jchar>(value.toChar().unicode());
@@ -847,7 +847,7 @@ namespace Utility::JNI {
                 return array;
             }
         }
-        case VarType::Short:
+        case VariableType::Short:
             if (isPrimitive) {
                 jshortArray array = env->NewShortArray(size);
                 QList<jshort> tmp;
@@ -873,7 +873,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Int:
+        case VariableType::Int:
             if (isPrimitive) {
                 jintArray array = env->NewIntArray(size);
                 QList<jint> tmp;
@@ -899,7 +899,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Long:
+        case VariableType::Long:
             if (isPrimitive) {
                 jlongArray array = env->NewLongArray(size);
                 QList<jlong> tmp;
@@ -925,7 +925,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Float:
+        case VariableType::Float:
             if (isPrimitive) {
                 jfloatArray array = env->NewFloatArray(size);
                 QList<jfloat> tmp;
@@ -951,7 +951,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::Double:
+        case VariableType::Double:
             if (isPrimitive) {
                 jdoubleArray array = env->NewDoubleArray(size);
                 QList<jdouble> tmp;
@@ -977,7 +977,7 @@ namespace Utility::JNI {
                 }
                 return array;
             }
-        case VarType::String: {
+        case VariableType::String: {
             jclass clazz = JNIObject<JavaLangString>::get();
             jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
             for (int i = 0; i < list.size(); ++i) {
@@ -988,7 +988,7 @@ namespace Utility::JNI {
             }
             return array;
         }
-        case VarType::QmlRegistrable: {
+        case VariableType::QmlRegistrable: {
             const jclass clazz = JNIObject<JavaLangObject>::get();
             jobjectArray array = env->NewObjectArray(size, clazz, nullptr);
             if (!array)

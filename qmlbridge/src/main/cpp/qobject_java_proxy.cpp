@@ -198,7 +198,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         *static_cast<QString *>(args[0]) = Utility::JNI::toQString(jstring(valueLocal));
         break;
     case QMetaType::QStringList:
-        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+        if (static_cast<VariableShape>(entry.shape) == VariableShape::Array)
             *static_cast<QStringList *>(args[0]) = Converter::convertJavaArrayToQStringList(env, valueLocal);
         else
             *static_cast<QStringList *>(args[0]) = Converter::convertJavaListToQStringList(valueLocal);
@@ -207,7 +207,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         *static_cast<QVariant *>(args[0]) = Converter::convertObjectToQVariant(valueLocal);
         break;
     case QMetaType::QVariantList:
-        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+        if (static_cast<VariableShape>(entry.shape) == VariableShape::Array)
             *static_cast<QVariantList *>(args[0]) = Converter::convertJavaArrayToQVariantList(env, valueLocal, entry.type);
         else
             *static_cast<QVariantList *>(args[0]) = Converter::convertJavaListToQVariantList(valueLocal);
@@ -278,13 +278,13 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         valueObj = Converter::convertQVariantToObject(*static_cast<QVariant *>(args[0]));
         break;
     case QMetaType::QVariantList:
-        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+        if (static_cast<VariableShape>(entry.shape) == VariableShape::Array)
             valueObj = Converter::convertQVariantListToArray(env, *static_cast<QVariantList *>(args[0]), entry.type);
         else
             valueObj = Converter::convertQVariantListToObject(*static_cast<QVariantList *>(args[0]));
         break;
     case QMetaType::QStringList:
-        if (static_cast<VarShape>(entry.shape) == VarShape::Array)
+        if (static_cast<VariableShape>(entry.shape) == VariableShape::Array)
             valueObj = Converter::convertQStringListToArray(env, *static_cast<QStringList *>(args[0]));
         else
             valueObj = Converter::convertQStringListToObject(*static_cast<QStringList *>(args[0]));
@@ -349,7 +349,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
     }
     // If upmost bit is set, value Java-side representation is primitive (int instead of Integer)
     const bool retIsPrimitive = (static_cast<quint8>(methodCacheEntry->retType) & 0x80u) != 0u;
-    const auto retShape = static_cast<VarShape>(methodCacheEntry->retShape);
+    const auto retShape = static_cast<VariableShape>(methodCacheEntry->retShape);
 
     // First convert and collect the function parameters into a list.
     const auto parameterCount = method.parameterCount();
@@ -386,7 +386,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
         QVariantList value;
-        if (retShape == VarShape::Array)
+        if (retShape == VariableShape::Array)
             value = Converter::convertJavaArrayToQVariantList(env, ret, methodCacheEntry->retType);
         else
             value = Converter::convertJavaListToQVariantList(ret);
@@ -397,7 +397,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
         QStringList value;
-        if (retShape == VarShape::Array)
+        if (retShape == VariableShape::Array)
             value = Converter::convertJavaArrayToQStringList(env, ret);
         else
             value = Converter::convertJavaListToQStringList(ret);
