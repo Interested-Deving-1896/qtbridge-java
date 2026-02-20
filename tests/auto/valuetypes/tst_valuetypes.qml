@@ -385,6 +385,33 @@ TestCase {
         compare(callbackSpy.signalArguments[0][0], data.changed)
     }
 
+    // List<List<...>>
+    function test_a_listOfLists_data() {
+        return [
+            { tag: "int", initial: [[1, 2], [3, 4]], changed: [[5, 6], [7, 8, 9]] },
+            { tag: "String", initial: [["aa", "bb"], ["cc"]], changed: [["€€"], ["dd", "ee"]] },
+        ]
+    }
+    function test_a_listOfLists(data) {
+        var propChangedSpy = spy("listPropChanged")
+        var callbackSpy = spy("listSignal")
+
+        tb.listProp = data.initial
+        wait(1)
+        propChangedSpy.clear()
+        callbackSpy.clear()
+
+        compare(tb.listProp, data.initial)
+        tb.listProp = data.changed
+        wait(1)
+        compare(propChangedSpy.count, 1)
+        compare(tb.listProp, data.changed)
+        compare(tb.listEcho(data.changed), data.changed)
+        wait(1)
+        compare(callbackSpy.count, 1)
+        compare(callbackSpy.signalArguments[0][0], data.changed)
+    }
+
     // List<String>
     function test_a_stringlist_data() {
         var list1 = ["aa", "bb"]
