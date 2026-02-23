@@ -54,10 +54,8 @@ Item {
         }
         function benchmark_instantiation() {
             // Instantiate more than one instance so that we measure cached operation
-            for (let i = 0; i < 10; ++i) {
+            for (let i = 0; i < 10; ++i)
                 var instance = myTypeComponent.createObject();
-                gc() // TODO this is temporary workaround for QTBUG-141076
-            }
         }
     }
 }
