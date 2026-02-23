@@ -9,6 +9,7 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qloggingcategory.h>
+#include <cstdlib>
 
 using namespace Qt::StringLiterals;
 
@@ -37,6 +38,8 @@ JniDynamicMetaObject::JniDynamicMetaObject(const char *className, const QMetaObj
 
 JniDynamicMetaObject::~JniDynamicMetaObject()
 {
+    if (m_cachedMetaObject)
+        std::free(m_cachedMetaObject);
     delete m_builder;
 }
 
@@ -109,6 +112,7 @@ int JniDynamicMetaObject::addSlot(const QByteArray &signature, const QByteArray 
 {
     if (!checkSignature(signature))
         return -1;
+    invalidateMetaObjectCache();
     QMetaMethodBuilder methodBuilder = provideBuilder()->addSlot(signature);
     if (!returnType.isEmpty() && returnType != "void"_ba)
         methodBuilder.setReturnType(returnType);
@@ -119,6 +123,7 @@ int JniDynamicMetaObject::addSignal(const QByteArray &signature)
 {
     if (!checkSignature(signature))
         return -1;
+    invalidateMetaObjectCache();
     return m_baseObject->methodCount() + provideBuilder()->addSignal(signature).index();
 }
 
@@ -127,6 +132,7 @@ int JniDynamicMetaObject::addProperty(const QByteArray &name, const QtProperty &
     int index = indexOfProperty(name);
     if (index != -1)
         return index;
+    invalidateMetaObjectCache();
     auto newProperty = createProperty(name, value);
 
     newProperty.setReadable(value.isReadable);
@@ -139,7 +145,17 @@ int JniDynamicMetaObject::addProperty(const QByteArray &name, const QtProperty &
 
 const QMetaObject *JniDynamicMetaObject::metaObject() const
 {
-    return m_builder->toMetaObject();
+    if (!m_cachedMetaObject)
+        m_cachedMetaObject = m_builder->toMetaObject();
+    return m_cachedMetaObject;
+}
+
+void JniDynamicMetaObject::invalidateMetaObjectCache()
+{
+    if (!m_cachedMetaObject)
+        return;
+    std::free(m_cachedMetaObject);
+    m_cachedMetaObject = nullptr;
 }
 
 void JniDynamicMetaObject::dumpQObjectMeta(const QObject *obj)

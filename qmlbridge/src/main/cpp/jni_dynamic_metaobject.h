@@ -30,6 +30,7 @@ public:
 private:
     QMetaPropertyBuilder createProperty(const QByteArray &propertyName, const QtProperty &property);
     int getPropertyNotifyId(const QByteArray &signature) const;
+    void invalidateMetaObjectCache();
 
     int indexOfMethod(QMetaMethod::MethodType mtype, const QByteArray &signature) const;
     int indexOfProperty(const QByteArray &name) const;
@@ -38,6 +39,7 @@ private:
 
     const QMetaObject *m_baseObject = nullptr;
     QMetaObjectBuilder *m_builder = nullptr;
+    mutable QMetaObject *m_cachedMetaObject = nullptr;
 };
 
 #endif // JNI_DYNAMIC_METAOBJECT_H
