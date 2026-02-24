@@ -71,7 +71,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             project = project,
             generateQmldirAndQmltypesTask = qmlDirAndTypesTask,
             importPaths = toolingInfo.qmlImportPaths,
-            docDir = resolverFactory.qtDocDirResolver.resolve()?.absolutePath
+            docDir = toolingInfo.docDir
         )
 
         val qmlToolingInfoTask = registerQmlToolingInfoForIDETask(
@@ -116,6 +116,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             qmllintPath = resolverFactory.qmllintResolver.resolve()?.absolutePath,
             qmllsIniFilePath = project.qmllsIniFile().absolutePath,
             buildDir = project.layout.buildDirectory.get().asFile.absolutePath,
+            docDir = resolverFactory.qtDocDirResolver.resolve()?.absolutePath,
             qmlImportPaths = importPaths.distinct(),
         )
     }

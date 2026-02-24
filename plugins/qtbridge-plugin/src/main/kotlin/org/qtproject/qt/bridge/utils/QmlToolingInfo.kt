@@ -14,6 +14,7 @@ internal data class QmlToolingInfo(
     val qmllintPath: String? = null,
     val qmllsIniFilePath: String? = null,
     val buildDir: String? = null,
+    val docDir: String? = null,
     val qmlImportPaths: List<String> = emptyList(),
     val qmlResourcesPaths: List<String> = emptyList(),
 ) {
