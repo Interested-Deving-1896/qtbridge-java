@@ -1,0 +1,33 @@
+<!--
+  ~ Copyright (C) 2026 The Qt Company Ltd.
+  ~ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+  -->
+
+<idea-plugin>
+    <id>org.qtproject.qt.qtbridge</id>
+    <name>Qt Bridge for JVM</name>
+    <vendor url="https://qt.io" email="">Qt Group</vendor>
+    <description><![CDATA[]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="lsp4ij-support.xml">com.redhat.devtools.lsp4ij</depends>
+    <depends optional="true" config-file="native-lsp.xml">com.intellij.modules.lsp</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType
+            name="QML File"
+            implementationClass="org.qtproject.qt.qtbridge.ide.lang.QmlFileType"
+            fieldName="INSTANCE"
+            language="QML"
+            extensions="qml"
+        />
+
+        <!--        <platform.backend.documentation.targetProvider-->
+<!--                implementation="org.qtproject.qt.qtbridge.ide.documentation.QmlDocumentationTargetProvider"/>-->
+
+        <!-- Old API: quick navigate tooltip (Ctrl+hover) -->
+        <lang.documentationProvider
+                implementationClass="org.qtproject.qt.qtbridge.ide.documentation.QmlDocumentationProvider"
+                language="QML"
+        />
+    </extensions>
+</idea-plugin>
