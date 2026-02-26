@@ -46,3 +46,5 @@ internal fun QmlToolingConfig.toQmlLSConfig(): QmlLSConfig {
         docDir = this.docDir ?: ""
     )
 }
+
+internal data class GradleKspConfig(val projectPath: File, val kspTask: String = ":kspKotlin")

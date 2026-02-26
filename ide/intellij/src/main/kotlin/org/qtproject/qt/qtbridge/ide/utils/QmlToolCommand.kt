@@ -7,6 +7,7 @@ package org.qtproject.qt.qtbridge.ide.utils
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.logger
+import java.io.File
 
 internal sealed interface QmlToolCommand<T> {
     fun buildCommandLine(config: T): GeneralCommandLine?
@@ -43,6 +44,25 @@ internal sealed interface QmlToolCommand<T> {
                 config.qmlResourcesPaths.forEach { addParameters("-resource", it) }
                 addParameters("--json", "-")
                 addParameters("--bare", config.qmlFilePath)
+            }
+        }
+    }
+    object GradleKsp : QmlToolCommand<GradleKspConfig> {
+        private val logger = logger<GradleKsp>()
+
+        override fun buildCommandLine(config: GradleKspConfig): GeneralCommandLine? {
+            val isWindows = System.getProperty("os.name").lowercase().contains("win")
+            val gradlew = config.projectPath.resolve(if (isWindows) "gradlew.bat" else "gradlew")
+
+            if (!gradlew.exists()) {
+                logger.warn("gradlew not found at ${gradlew.absolutePath}")
+                return null
+            }
+
+            return GeneralCommandLine().apply {
+                exePath = gradlew.absolutePath
+                addParameter(config.kspTask)
+                withWorkDirectory(config.projectPath)
             }
         }
     }

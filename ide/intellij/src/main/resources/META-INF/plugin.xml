@@ -12,6 +12,12 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="lsp4ij-support.xml">com.redhat.devtools.lsp4ij</depends>
     <depends optional="true" config-file="native-lsp.xml">com.intellij.modules.lsp</depends>
+
+    <applicationListeners>
+        <listener class="org.qtproject.qt.qtbridge.ide.utils.QmlToolingFilesGenerationOnSave"
+                  topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="com.intellij">
         <fileType
             name="QML File"
