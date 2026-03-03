@@ -240,6 +240,62 @@ jmethodID JNICache::qtPropertySetValueMethod()
     return methodId;
 }
 
+jmethodID JNICache::qtPropertyGetIntValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getIntValue", "()I");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetBooleanValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getBooleanValue", "()Z");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetByteValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getByteValue", "()B");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetCharValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getCharValue", "()C");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetShortValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getShortValue", "()S");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetLongValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getLongValue", "()J");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetFloatValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getFloatValue", "()F");
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertyGetDoubleValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getDoubleValue", "()D");
+    return methodId;
+}
+
 jmethodID JNICache::javaIntValueMethod()
 {
     static const jmethodID methodId = resolveCachedGlobalMethod(

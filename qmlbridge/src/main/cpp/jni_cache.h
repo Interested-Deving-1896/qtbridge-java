@@ -58,8 +58,10 @@ public:
     static JMethodEntry getGlobalMethod(const QByteArray &className, const QByteArray &methodName,
                                         const QByteArray &signature, bool isStatic = false,
                                         bool autoRegister = true);
+
     static jmethodID qtPropertyGetValueMethod();
     static jmethodID qtPropertySetValueMethod();
+
     static jmethodID javaIntValueMethod();
     static jmethodID javaBooleanValueMethod();
     static jmethodID javaDoubleValueMethod();
@@ -68,6 +70,15 @@ public:
     static jmethodID javaShortValueMethod();
     static jmethodID javaByteValueMethod();
     static jmethodID javaCharValueMethod();
+
+    static jmethodID qtPropertyGetIntValueMethod();
+    static jmethodID qtPropertyGetBooleanValueMethod();
+    static jmethodID qtPropertyGetByteValueMethod();
+    static jmethodID qtPropertyGetCharValueMethod();
+    static jmethodID qtPropertyGetShortValueMethod();
+    static jmethodID qtPropertyGetLongValueMethod();
+    static jmethodID qtPropertyGetFloatValueMethod();
+    static jmethodID qtPropertyGetDoubleValueMethod();
 
     /*** KEY-BASED API (for dynamically registered proxy classes) ***/
     static qint64 ensureProxyClass(jclass userProxyClass);

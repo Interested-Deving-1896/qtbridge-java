@@ -138,6 +138,56 @@ public class QtProperty<T> {
             notifyValueChanged();
     }
 
+    // Fast-path helpers used by JNI bridge for specific property reads. For example
+    // avoids QtProperty.getValue() + Integer.intValue() as two separate JNI calls
+    @SuppressWarnings("unused") // Called from JNI
+    private int getIntValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0 : ((Integer) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private boolean getBooleanValue() {
+        final Object value = valueRef.get();
+        return value != null && ((Boolean) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private byte getByteValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0 : ((Byte) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private char getCharValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0 : ((Character) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private short getShortValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0 : ((Short) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private long getLongValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0L : ((Long) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private float getFloatValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0.0f : ((Float) value);
+    }
+
+    @SuppressWarnings("unused") // Called from JNI
+    private double getDoubleValue() {
+        final Object value = valueRef.get();
+        return value == null ? 0.0 : ((Double) value);
+    }
+
     @SuppressWarnings("unchecked") // About generics cast (T)
     private T normalizeValue(T value) {
         if (value == null)

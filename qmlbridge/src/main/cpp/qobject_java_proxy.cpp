@@ -135,6 +135,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         setPropertyDefaultValue(args, mp.metaType());
         return;
     }
+    const auto metaId = mp.metaType().id();
 
     jobject holderLocal = nullptr; // the field (QtProperty<T>)
     jobject valueLocal  = nullptr; // the actual value (boxed T, String, Map, Enum, etc.)
@@ -154,7 +155,49 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         return;
     }
 
-    // QtProperty<T> – getValue() returns boxed T (or null)
+    // First handle types that have dedicated getters on QtProperty.java. These
+    // dedicated getters allow us to get the value directly, without needing to call both
+    // QtProperty.getValue() and 'Integer.intValue()' -> significant performance gain per read
+    switch (metaId) {
+    case QMetaType::Int:
+        *static_cast<int *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jint>(env, holderLocal, JNICache::qtPropertyGetIntValueMethod());
+        return;
+    case QMetaType::SChar:
+        // QMetaType::SChar == signed char == qint8 == jbyte
+        *static_cast<signed char *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jbyte>(env, holderLocal, JNICache::qtPropertyGetByteValueMethod());
+        return;
+    case QMetaType::QChar:
+        // Java Character and QChar are both UTF-16 characters
+        *static_cast<QChar *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jchar>(env, holderLocal, JNICache::qtPropertyGetCharValueMethod());
+        return;
+    case QMetaType::Bool:
+        *static_cast<bool *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jboolean>(env, holderLocal, JNICache::qtPropertyGetBooleanValueMethod());
+        return;
+    case QMetaType::Float:
+        *static_cast<float *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jfloat>(env, holderLocal, JNICache::qtPropertyGetFloatValueMethod());
+        return;
+    case QMetaType::Double:
+        *static_cast<double *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jdouble>(env, holderLocal, JNICache::qtPropertyGetDoubleValueMethod());
+        return;
+    case QMetaType::LongLong:
+        *static_cast<long long *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jlong>(env, holderLocal, JNICache::qtPropertyGetLongValueMethod());
+        return;
+    case QMetaType::Short:
+        *static_cast<short *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jshort>(env, holderLocal, JNICache::qtPropertyGetShortValueMethod());
+        return;
+    default:
+        break;
+    };
+
+    // QtProperty<T> – getValue()
     valueLocal = JNIMethodInvoker::invokeMethod<jobject>(
         env, holderLocal, JNICache::qtPropertyGetValueMethod());
     if (!valueLocal) {
@@ -162,43 +205,8 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         return;
     }
 
-    const auto metaId = mp.metaType().id();
-
+    // Basic types have been handled already above
     switch (metaId) {
-    case QMetaType::Int:
-        *static_cast<int *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jint>(env, valueLocal, JNICache::javaIntValueMethod());
-        break;
-    case QMetaType::SChar:
-        // QMetaType::SChar == signed char == qint8 == jbyte
-        *static_cast<signed char *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jbyte>(env, valueLocal, JNICache::javaByteValueMethod());
-        break;
-    case QMetaType::QChar:
-        // Java Character and QChar are both UTF-16 characters
-        *static_cast<QChar *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jchar>(env, valueLocal, JNICache::javaCharValueMethod());
-        break;
-    case QMetaType::Bool:
-        *static_cast<bool *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jboolean>(env, valueLocal, JNICache::javaBooleanValueMethod());
-        break;
-    case QMetaType::Float:
-        *static_cast<float *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jfloat>(env, valueLocal, JNICache::javaFloatValueMethod());
-        break;
-    case QMetaType::Double:
-        *static_cast<double *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jdouble>(env, valueLocal, JNICache::javaDoubleValueMethod());
-        break;
-    case QMetaType::LongLong:
-        *static_cast<long long *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jlong>(env, valueLocal, JNICache::javaLongValueMethod());
-        break;
-    case QMetaType::Short:
-        *static_cast<short *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jshort>(env, valueLocal, JNICache::javaShortValueMethod());
-        break;
     case QMetaType::QString:
         *static_cast<QString *>(args[0]) = Utility::JNI::toQString(jstring(valueLocal));
         break;
