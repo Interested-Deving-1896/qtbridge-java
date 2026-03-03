@@ -128,11 +128,17 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         return;
     }
 
-    JNIEnv *env = JniContext::getEnv();
     const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
+    if (!entry.field) {
+        qCWarning(QT_BRIDGE, "Property read: could not find entry for %s %s",
+                  mp.name(), mp.typeName());
+        setPropertyDefaultValue(args, mp.metaType());
+        return;
+    }
 
-    jobject holderLocal = nullptr; // the field (QtProperty<T> or raw), if any
+    jobject holderLocal = nullptr; // the field (QtProperty<T>)
     jobject valueLocal  = nullptr; // the actual value (boxed T, String, Map, Enum, etc.)
+    JNIEnv *env = JniContext::getEnv();
 
     auto guard = qScopeGuard([&]{
         if (valueLocal && valueLocal != holderLocal)
@@ -141,24 +147,15 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
             env->DeleteLocalRef(holderLocal);
     });
 
-    if (entry.field) {
-        holderLocal = env->GetObjectField(javaObject, entry.field);
-        if (!holderLocal) {
-            qCWarning(QT_BRIDGE, "Property read failed, field %s is null", mp.name());
-            setPropertyDefaultValue(args, mp.metaType());
-            return;
-        }
-        if (JNIObject<JavaQtProperty>::isInstanceOf(holderLocal)) {
-            // QtProperty<T> – getValue() returns boxed T (or null)
-            valueLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
-        } else {
-            // Raw field, use as-is
-            valueLocal = holderLocal; // share the same local ref
-        }
-    } else {
-        // No backing field in QtObject, call Java getter directly
-        valueLocal = JavaObject::getProperty<jobject>(env, javaObject, mp.name());
+    holderLocal = env->GetObjectField(javaObject, entry.field);
+    if (!holderLocal) {
+        qCWarning(QT_BRIDGE, "Property read failed, field %s is null", mp.name());
+        setPropertyDefaultValue(args, mp.metaType());
+        return;
     }
+
+    // QtProperty<T> – getValue() returns boxed T (or null)
+    valueLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
 
     if (!valueLocal) {
         setPropertyDefaultValue(args, mp.metaType());
@@ -213,10 +210,10 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
             *static_cast<QVariantList *>(args[0]) = Converter::convertJavaListToQVariantList(valueLocal);
         break;
     case QMetaType::QVariantMap:
-        if (JNIObject<JavaLangEnum>::isInstanceOf(valueLocal))
-            *static_cast<QVariantMap *>(args[0]) = Converter::convertEnumToQVariantMap(valueLocal);
         if (JNIObject<JavaMap>::isInstanceOf(valueLocal))
             *static_cast<QVariantMap *>(args[0]) = Converter::convertJavaMapToQVariantMap(valueLocal);
+        if (JNIObject<JavaLangEnum>::isInstanceOf(valueLocal))
+            *static_cast<QVariantMap *>(args[0]) = Converter::convertEnumToQVariantMap(valueLocal);
         break;
     case QMetaType::QUrl: {
         const auto value = JNIObject<JavaNetURI>::callMethod<jstring>(valueLocal, "toString");
@@ -240,11 +237,16 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
 {
     const auto mp = metaObject()->property(propertyIndex);
     if (!mp.isWritable()) {
-        qCDebug(QT_BRIDGE, "Property is not writable: %s", mp.name());
+        qCWarning(QT_BRIDGE, "Property is not writable: %s", mp.name());
         return;
     }
 
     const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
+    if (!entry.field) {
+        qCWarning(QT_BRIDGE, "Property write: unable to find entry for: %s", mp.name());
+        return;
+    }
+
     const auto metaType = mp.metaType();
     JNIEnv *env = JniContext::getEnv();
     jobject valueObj = nullptr;
@@ -317,19 +319,10 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
         qCWarning(QT_BRIDGE, "Property write failed, value object creation failed for %s", mp.name());
         return;
     }
-
-    if (entry.field) {
-        jobject fieldObject = env->GetObjectField(javaObject, entry.field);
-        if (fieldObject && JNIObject<JavaQtProperty>::isInstanceOf(fieldObject)) {
-            // QtProperty<T> – call setValue(Object) on the QtProperty instance
-            JNIObject<JavaQtProperty>::callMethod<void>(fieldObject, "setValue", valueObj);
-            env->DeleteLocalRef(fieldObject);
-            return;
-        }
-        if (fieldObject)
-            env->DeleteLocalRef(fieldObject);
-    }
-    qCWarning(QT_BRIDGE, "Property write failed for: %s", mp.name());
+    // QtProperty<T> – call setValue(Object) on the QtProperty instance
+    jobject fieldObject = env->GetObjectField(javaObject, entry.field);
+    JNIObject<JavaQtProperty>::callMethod<void>(fieldObject, "setValue", valueObj);
+    env->DeleteLocalRef(fieldObject);
 }
 
 void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int methodIndex,
@@ -554,14 +547,16 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
                                                   const QMetaProperty &mp, void **args)
 {
     JNIEnv *env = JniContext::getEnv();
-    const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
     *static_cast<QObject **>(args[0]) = nullptr; // return value
 
-    // Get holder object (either a backing field or a getter result)
-    jobject holderLocal = entry.field
-                              ? env->GetObjectField(javaObject, entry.field)
-                              : JavaObject::getProperty<jobject>(env, javaObject, mp.name());
+    const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
+    if (!entry.field) {
+        qCWarning(QT_BRIDGE, "Unable to find entry for property %s", mp.name());
+        return;
+    }
 
+    // Get holder object (QtProperty<T>)
+    jobject holderLocal = env->GetObjectField(javaObject, entry.field);
     if (!holderLocal) {
         qCWarning(QT_BRIDGE, "Unable to find holding field for property %s", mp.name());
         return;
@@ -575,15 +570,10 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
             env->DeleteLocalRef(holderLocal);
     });
 
-    // Extract actual user object if it's wrapped in a QtProperty
-    if (JNIObject<JavaQtProperty>::isInstanceOf(holderLocal)) {
-        userLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
-        if (!userLocal)
-            return; // Valid use-case: null userObject => return null proxy
-    } else {
-        // Not wrapped in a QtProperty, use the field value directly
-        userLocal = holderLocal;
-    }
+    // Extract actual user object
+    userLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
+    if (!userLocal)
+        return; // Valid use-case: null userObject => return null proxy
 
     // Ensure we have a proxy, create a new one if we didn't.
     // Creating a new one means the user object is a new object set by
@@ -609,20 +599,17 @@ void QObjectJavaProxy::writeQmlRegistrableProperty(const jobject javaObject,
         userObject = proxy->userObjectLocalRef();
 
     const auto &entry = JNICache::getProxyField(cacheKey(), mp.propertyIndex());
-    // Store the userObject value either in QProperty or directly to a field
-    if (entry.field) {
-        jobject fieldObj = JniContext::getEnv()->GetObjectField(javaObject, entry.field);
-        if (fieldObj && JNIObject<JavaQtProperty>::isInstanceOf(fieldObj))
-            JNIObject<JavaQtProperty>::callMethod<void>(fieldObj, "setValue", userObject);
-        else
-            env->SetObjectField(javaObject, entry.field, userObject); // raw field, assign directly
-
-        if (fieldObj)
-            env->DeleteLocalRef(fieldObj);
-    } else {
-        JavaObject::setProperty<jobject>(env, javaObject, mp.name(), userObject);
+    if (!entry.field) {
+        qCWarning(QT_BRIDGE, "Property write: unable to find entry for: %s", mp.name());
+        return;
     }
 
+    // Store the userObject value in QProperty
+    jobject fieldObj = JniContext::getEnv()->GetObjectField(javaObject, entry.field);
+    JNIObject<JavaQtProperty>::callMethod<void>(fieldObj, "setValue", userObject);
+
+    if (fieldObj)
+        env->DeleteLocalRef(fieldObj);
     if (userObject)
         env->DeleteLocalRef(userObject);
 }
