@@ -60,6 +60,14 @@ public:
                                         bool autoRegister = true);
     static jmethodID qtPropertyGetValueMethod();
     static jmethodID qtPropertySetValueMethod();
+    static jmethodID javaIntValueMethod();
+    static jmethodID javaBooleanValueMethod();
+    static jmethodID javaDoubleValueMethod();
+    static jmethodID javaFloatValueMethod();
+    static jmethodID javaLongValueMethod();
+    static jmethodID javaShortValueMethod();
+    static jmethodID javaByteValueMethod();
+    static jmethodID javaCharValueMethod();
 
     /*** KEY-BASED API (for dynamically registered proxy classes) ***/
     static qint64 ensureProxyClass(jclass userProxyClass);

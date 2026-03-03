@@ -166,30 +166,38 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
 
     switch (metaId) {
     case QMetaType::Int:
-        *static_cast<int *>(args[0]) = JNIObject<JavaLangInteger>::callMethod<jint>(valueLocal, "intValue");
+        *static_cast<int *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jint>(env, valueLocal, JNICache::javaIntValueMethod());
         break;
     case QMetaType::SChar:
         // QMetaType::SChar == signed char == qint8 == jbyte
-        *static_cast<signed char *>(args[0]) = JNIObject<JavaLangByte>::callMethod<jbyte>(valueLocal, "byteValue");
+        *static_cast<signed char *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jbyte>(env, valueLocal, JNICache::javaByteValueMethod());
         break;
     case QMetaType::QChar:
         // Java Character and QChar are both UTF-16 characters
-        *static_cast<QChar *>(args[0]) = JNIObject<JavaLangCharacter>::callMethod<jchar>(valueLocal, "charValue");
+        *static_cast<QChar *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jchar>(env, valueLocal, JNICache::javaCharValueMethod());
         break;
     case QMetaType::Bool:
-        *static_cast<bool *>(args[0]) = JNIObject<JavaLangBoolean>::callMethod<jboolean>(valueLocal, "booleanValue");
+        *static_cast<bool *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jboolean>(env, valueLocal, JNICache::javaBooleanValueMethod());
         break;
     case QMetaType::Float:
-        *static_cast<float *>(args[0]) = JNIObject<JavaLangFloat>::callMethod<jfloat>(valueLocal, "floatValue");
+        *static_cast<float *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jfloat>(env, valueLocal, JNICache::javaFloatValueMethod());
         break;
     case QMetaType::Double:
-        *static_cast<double *>(args[0]) = JNIObject<JavaLangDouble>::callMethod<jdouble>(valueLocal, "doubleValue");
+        *static_cast<double *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jdouble>(env, valueLocal, JNICache::javaDoubleValueMethod());
         break;
     case QMetaType::LongLong:
-        *static_cast<long long *>(args[0]) = JNIObject<JavaLangLong>::callMethod<jlong>(valueLocal, "longValue");
+        *static_cast<long long *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jlong>(env, valueLocal, JNICache::javaLongValueMethod());
         break;
     case QMetaType::Short:
-        *static_cast<short *>(args[0]) = JNIObject<JavaLangShort>::callMethod<jshort>(valueLocal, "shortValue");
+        *static_cast<short *>(args[0]) =
+            JNIMethodInvoker::invokeMethod<jshort>(env, valueLocal, JNICache::javaShortValueMethod());
         break;
     case QMetaType::QString:
         *static_cast<QString *>(args[0]) = Utility::JNI::toQString(jstring(valueLocal));
@@ -421,7 +429,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<long long *>(args[0]) = JNIObject<JavaLangLong>::callMethod<jlong>(ret, "longValue");
+            *static_cast<long long *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jlong>(env, ret, JNICache::javaLongValueMethod());
         }
         break;
     case QMetaType::Double:
@@ -431,7 +440,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<double *>(args[0]) = JNIObject<JavaLangDouble>::callMethod<jdouble>(ret, "doubleValue");
+            *static_cast<double *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jdouble>(env, ret, JNICache::javaDoubleValueMethod());
         }
         break;
     case QMetaType::Float:
@@ -441,7 +451,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<float *>(args[0]) = JNIObject<JavaLangFloat>::callMethod<jfloat>(ret, "floatValue");
+            *static_cast<float *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jfloat>(env, ret, JNICache::javaFloatValueMethod());
         }
         break;
     case QMetaType::Void:
@@ -455,7 +466,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<bool *>(args[0]) = JNIObject<JavaLangBoolean>::callMethod<jboolean>(ret, "booleanValue");
+            *static_cast<bool *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jboolean>(env, ret, JNICache::javaBooleanValueMethod());
         }
         break;
     case QMetaType::QChar:
@@ -466,7 +478,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            jc = JNIObject<JavaLangCharacter>::callMethod<jchar>(ret, "charValue");
+            jc = JNIMethodInvoker::invokeMethod<jchar>(env, ret, JNICache::javaCharValueMethod());
         }
         *static_cast<QChar *>(args[0]) = QChar(jc);
         break;
@@ -477,7 +489,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<signed char *>(args[0]) = JNIObject<JavaLangByte>::callMethod<jbyte>(ret, "byteValue");
+            *static_cast<signed char *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jbyte>(env, ret, JNICache::javaByteValueMethod());
         }
         break;
     case QMetaType::Short:
@@ -487,7 +500,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
         } else {
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
-            *static_cast<short *>(args[0]) = JNIObject<JavaLangShort>::callMethod<jshort>(ret, "shortValue");
+            *static_cast<short *>(args[0]) =
+                JNIMethodInvoker::invokeMethod<jshort>(env, ret, JNICache::javaShortValueMethod());
         }
         break;
     case QMetaType::Int:
@@ -498,7 +512,7 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
             const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
                 env, javaObject, methodCacheEntry->method, parameters.data());
             *static_cast<int *>(args[0]) =
-                JNIObject<JavaLangInteger>::callMethod<jint>(ret, "intValue");
+                JNIMethodInvoker::invokeMethod<jint>(env, ret, JNICache::javaIntValueMethod());
         }
         break;
     case QMetaType::QObjectStar: {

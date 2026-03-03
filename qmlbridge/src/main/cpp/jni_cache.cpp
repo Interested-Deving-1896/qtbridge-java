@@ -213,32 +213,86 @@ JNICache::JMethodEntry JNICache::getGlobalMethod(const QByteArray &className,
     return methodIt.value();
 }
 
-// Resolve QtProperty<T> getValue() and setValue() method IDs for performance reasons
+static jmethodID resolveCachedGlobalMethod(const QByteArray &className,
+                                           const QByteArray &methodName,
+                                           const QByteArray &signature)
+{
+    const auto entry = JNICache::getGlobalMethod(className, methodName, signature);
+    if (!entry.method)
+        qCCritical(QT_BRIDGE, "Failed to resolve methodId for %s", methodName.constData());
+    return entry.method;
+}
+
+// Resolve and cache often used (generic) QtProperty<T> getValue(), setValue(), intValue(),
+// and other methodIDs for performance reasons (resolving the methods is computationally
+// expensive on data paths)
 jmethodID JNICache::qtPropertyGetValueMethod()
 {
-    static const jmethodID methodId = [] {
-        static const QByteArray className("org/qtproject/qt/bridge/core/QtProperty");
-        static const QByteArray methodName("getValue");
-        static const QByteArray signature("()Ljava/lang/Object;");
-        const auto entry = getGlobalMethod(className, methodName, signature);
-        if (!entry.method)
-            qCCritical(QT_BRIDGE) << "Failed to resolve QtProperty::getValue() method";
-        return entry.method;
-    }();
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "getValue", "()Ljava/lang/Object;");
     return methodId;
 }
 
 jmethodID JNICache::qtPropertySetValueMethod()
 {
-    static const jmethodID methodId = [] {
-        static const QByteArray className("org/qtproject/qt/bridge/core/QtProperty");
-        static const QByteArray methodName("setValue");
-        static const QByteArray signature("(Ljava/lang/Object;)V");
-        const auto entry = getGlobalMethod(className, methodName, signature);
-        if (!entry.method)
-            qCCritical(QT_BRIDGE) << "Failed to resolve QtProperty::setValue() method";
-        return entry.method;
-    }();
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "org/qtproject/qt/bridge/core/QtProperty", "setValue", "(Ljava/lang/Object;)V");
+    return methodId;
+}
+
+jmethodID JNICache::javaIntValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Integer", "intValue", "()I");
+    return methodId;
+}
+
+jmethodID JNICache::javaBooleanValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Boolean", "booleanValue", "()Z");
+    return methodId;
+}
+
+jmethodID JNICache::javaDoubleValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Double", "doubleValue", "()D");
+    return methodId;
+}
+
+jmethodID JNICache::javaFloatValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Float", "floatValue", "()F");
+    return methodId;
+}
+
+jmethodID JNICache::javaLongValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Long", "longValue", "()J");
+    return methodId;
+}
+
+jmethodID JNICache::javaShortValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Short", "shortValue", "()S");
+    return methodId;
+}
+
+jmethodID JNICache::javaByteValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Byte", "byteValue", "()B");
+    return methodId;
+}
+
+jmethodID JNICache::javaCharValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        "java/lang/Character", "charValue", "()C");
     return methodId;
 }
 
