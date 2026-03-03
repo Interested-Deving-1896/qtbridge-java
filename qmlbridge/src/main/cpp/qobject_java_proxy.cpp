@@ -155,8 +155,8 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
     }
 
     // QtProperty<T> – getValue() returns boxed T (or null)
-    valueLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
-
+    valueLocal = JNIMethodInvoker::invokeMethod<jobject>(
+        env, holderLocal, JNICache::qtPropertyGetValueMethod());
     if (!valueLocal) {
         setPropertyDefaultValue(args, mp.metaType());
         return;
@@ -321,7 +321,10 @@ void QObjectJavaProxy::qtWritePropertyMetacall(const jobject javaObject,
     }
     // QtProperty<T> – call setValue(Object) on the QtProperty instance
     jobject fieldObject = env->GetObjectField(javaObject, entry.field);
-    JNIObject<JavaQtProperty>::callMethod<void>(fieldObject, "setValue", valueObj);
+
+    JNIMethodInvoker::invokeMethod<void>(
+        env, fieldObject, JNICache::qtPropertySetValueMethod(), valueObj);
+
     env->DeleteLocalRef(fieldObject);
 }
 
@@ -571,7 +574,8 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
     });
 
     // Extract actual user object
-    userLocal = JNIObject<JavaQtProperty>::callMethod<jobject>(holderLocal, "getValue");
+    userLocal = JNIMethodInvoker::invokeMethod<jobject>(
+        env, holderLocal, JNICache::qtPropertyGetValueMethod());
     if (!userLocal)
         return; // Valid use-case: null userObject => return null proxy
 
@@ -606,7 +610,8 @@ void QObjectJavaProxy::writeQmlRegistrableProperty(const jobject javaObject,
 
     // Store the userObject value in QProperty
     jobject fieldObj = JniContext::getEnv()->GetObjectField(javaObject, entry.field);
-    JNIObject<JavaQtProperty>::callMethod<void>(fieldObj, "setValue", userObject);
+    JNIMethodInvoker::invokeMethod<void>(
+        env, fieldObj, JNICache::qtPropertySetValueMethod(), userObject);
 
     if (fieldObj)
         env->DeleteLocalRef(fieldObj);

@@ -58,6 +58,8 @@ public:
     static JMethodEntry getGlobalMethod(const QByteArray &className, const QByteArray &methodName,
                                         const QByteArray &signature, bool isStatic = false,
                                         bool autoRegister = true);
+    static jmethodID qtPropertyGetValueMethod();
+    static jmethodID qtPropertySetValueMethod();
 
     /*** KEY-BASED API (for dynamically registered proxy classes) ***/
     static qint64 ensureProxyClass(jclass userProxyClass);

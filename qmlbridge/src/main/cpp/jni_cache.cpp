@@ -213,6 +213,35 @@ JNICache::JMethodEntry JNICache::getGlobalMethod(const QByteArray &className,
     return methodIt.value();
 }
 
+// Resolve QtProperty<T> getValue() and setValue() method IDs for performance reasons
+jmethodID JNICache::qtPropertyGetValueMethod()
+{
+    static const jmethodID methodId = [] {
+        static const QByteArray className("org/qtproject/qt/bridge/core/QtProperty");
+        static const QByteArray methodName("getValue");
+        static const QByteArray signature("()Ljava/lang/Object;");
+        const auto entry = getGlobalMethod(className, methodName, signature);
+        if (!entry.method)
+            qCCritical(QT_BRIDGE) << "Failed to resolve QtProperty::getValue() method";
+        return entry.method;
+    }();
+    return methodId;
+}
+
+jmethodID JNICache::qtPropertySetValueMethod()
+{
+    static const jmethodID methodId = [] {
+        static const QByteArray className("org/qtproject/qt/bridge/core/QtProperty");
+        static const QByteArray methodName("setValue");
+        static const QByteArray signature("(Ljava/lang/Object;)V");
+        const auto entry = getGlobalMethod(className, methodName, signature);
+        if (!entry.method)
+            qCCritical(QT_BRIDGE) << "Failed to resolve QtProperty::setValue() method";
+        return entry.method;
+    }();
+    return methodId;
+}
+
 qint64 JNICache::ensureProxyClass(jclass userProxyClass)
 {
     Q_ASSERT(userProxyClass != nullptr);
