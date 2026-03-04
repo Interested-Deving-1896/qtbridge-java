@@ -260,18 +260,10 @@ namespace Utility::JNI {
         }
         case QMetaType::QVariantMap: {
             QVariantMap map;
-            if (JNIObject<JavaMap>::isInstanceOf(valueObj)) {
-                // Map<String, Object> -> QVariantMap
-                map = convertJavaMapToQVariantMap(valueObj);
-            } else if (JNIObject<JavaLangEnum>::isInstanceOf(valueObj)) {
-                // Enum -> QVariantMap
+            if (varType(type) == VariableType::Enum)
                 map = convertEnumToQVariantMap(valueObj);
-            } else {
-                qCWarning(QT_BRIDGE, "convertJavaToMetaType: expected Map or Enum "
-                                     "for QVariantMap param");
-                *static_cast<QVariantMap *>(outPtr) = QVariantMap{};
-                return false;
-            }
+            else
+                map = convertJavaMapToQVariantMap(valueObj);
             *static_cast<QVariantMap *>(outPtr) = std::move(map);
             return true;
         }

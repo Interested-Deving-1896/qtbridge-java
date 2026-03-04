@@ -225,12 +225,14 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         else
             *static_cast<QVariantList *>(args[0]) = Converter::convertJavaListToQVariantList(valueLocal);
         break;
-    case QMetaType::QVariantMap:
-        if (JNIObject<JavaMap>::isInstanceOf(valueLocal))
-            *static_cast<QVariantMap *>(args[0]) = Converter::convertJavaMapToQVariantMap(valueLocal);
-        if (JNIObject<JavaLangEnum>::isInstanceOf(valueLocal))
+    case QMetaType::QVariantMap: {
+        const auto type = varType(entry.type);
+        if (type == VariableType::Enum)
             *static_cast<QVariantMap *>(args[0]) = Converter::convertEnumToQVariantMap(valueLocal);
+        else
+            *static_cast<QVariantMap *>(args[0]) = Converter::convertJavaMapToQVariantMap(valueLocal);
         break;
+    }
     case QMetaType::QUrl: {
         const auto value = JNIObject<JavaNetURI>::callMethod<jstring>(valueLocal, "toString");
         *static_cast<QUrl *>(args[0]) = QUrl(Utility::JNI::toQString(value));
@@ -388,7 +390,8 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
     case QMetaType::QVariantMap: {
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
-        if (JNIObject<JavaLangEnum>::isInstanceOf(ret))
+        const auto retType = varType(methodCacheEntry->retType);
+        if (retType == VariableType::Enum)
             *static_cast<QVariantMap *>(args[0]) = Converter::convertEnumToQVariantMap(ret);
         else
             *static_cast<QVariantMap *>(args[0]) = Converter::convertJavaMapToQVariantMap(ret);

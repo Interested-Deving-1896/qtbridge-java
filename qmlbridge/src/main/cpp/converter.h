@@ -47,7 +47,8 @@ namespace Utility::JNI {
             Double = 8,
             String = 9,
             QmlRegistrable = 10,
-            ItemModel = 11
+            ItemModel = 11,
+            Enum = 12,
         };
 
         // Checks if the upmost bit is set, which indicates the type is primitive

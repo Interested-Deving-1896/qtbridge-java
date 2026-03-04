@@ -38,6 +38,7 @@ internal enum class VariableType(val code: Byte) {
     STRING(9),
     QML_REGISTRABLE(10),
     ITEM_MODEL(11),
+    ENUM(12),
     // Values starting from 128 / 0x80 are reserved, see packedCode() below
     ;
 
