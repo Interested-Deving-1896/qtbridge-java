@@ -360,6 +360,20 @@ jmethodID JNICache::javaCharValueMethod()
     return methodId;
 }
 
+jmethodID JNICache::javaListSizeMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaList::className(), "size", "()I");
+    return methodId;
+}
+
+jmethodID JNICache::javaListGetMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaList::className(), "get", "(I)Ljava/lang/Object;");
+    return methodId;
+}
+
 jmethodID JNICache::javaMapSizeMethod()
 {
     static const jmethodID methodId = resolveCachedGlobalMethod(

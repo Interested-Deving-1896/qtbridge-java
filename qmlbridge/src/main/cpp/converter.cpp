@@ -411,22 +411,34 @@ namespace Utility::JNI {
 
     QVariantList Converter::convertJavaListToQVariantList(const jobject &javaObject)
     {
-        const auto size = JNIObject<JavaList>::callMethod<jint>(javaObject, "size");
+        JNIEnv *env = JniContext::getEnv();
+        const auto size =
+            JNIMethodInvoker::invokeMethod<jint>(env, javaObject, JNICache::javaListSizeMethod());
         QVariantList qtList;
+        qtList.reserve(size);
         for (jint i = 0; i < size; ++i) {
-            const auto element = JNIObject<JavaList>::callMethod<jobject>(javaObject, "get", i);
+            const auto element =
+                JNIMethodInvoker::invokeMethod<jobject>(env, javaObject, JNICache::javaListGetMethod(), i);
             qtList.append(convertObjectToQVariant(element));
+            if (element)
+                env->DeleteLocalRef(element);
         }
         return qtList;
     }
 
     QStringList Converter::convertJavaListToQStringList(const jobject &javaObject)
     {
-        const auto size = JNIObject<JavaList>::callMethod<jint>(javaObject, "size");
+        JNIEnv *env = JniContext::getEnv();
+        const auto size =
+            JNIMethodInvoker::invokeMethod<jint>(env, javaObject, JNICache::javaListSizeMethod());
         QStringList qtList;
+        qtList.reserve(size);
         for (jint i = 0; i < size; ++i) {
-            const auto element = JNIObject<JavaList>::callMethod<jobject>(javaObject, "get", i);
+            const auto element =
+                JNIMethodInvoker::invokeMethod<jobject>(env, javaObject, JNICache::javaListGetMethod(), i);
             qtList.append(toQString(static_cast<jstring>(element)));
+            if (element)
+                env->DeleteLocalRef(element);
         }
         return qtList;
     }

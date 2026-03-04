@@ -81,6 +81,9 @@ public:
     static jmethodID qtPropertyGetFloatValueMethod();
     static jmethodID qtPropertyGetDoubleValueMethod();
 
+    static jmethodID javaListSizeMethod();
+    static jmethodID javaListGetMethod();
+
     static jmethodID javaMapSizeMethod();
     static jmethodID javaMapEntrySetMethod();
     static jmethodID javaSetIteratorMethod();
