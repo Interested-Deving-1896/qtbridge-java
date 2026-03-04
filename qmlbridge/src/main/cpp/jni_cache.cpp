@@ -214,6 +214,13 @@ JNICache::JMethodEntry JNICache::getGlobalMethod(const QByteArray &className,
     return methodIt.value();
 }
 
+jmethodID JNICache::getGlobalConstructor(const QByteArray &className, const QByteArray &signature)
+{
+    static constexpr auto constructorName = "<init>";
+    const auto entry = getGlobalMethod(className, constructorName, signature, false, true);
+    return entry.method;
+}
+
 static jmethodID resolveCachedGlobalMethod(const QByteArray &className,
                                            const QByteArray &methodName,
                                            const QByteArray &signature)

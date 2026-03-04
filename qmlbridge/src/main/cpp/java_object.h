@@ -21,12 +21,11 @@ namespace Utility::JNI {
     {
     public:
         template<typename... Args>
-        static jobject newInstanceWithSignature(JNIEnv *env, const jclass clazz,
-                                                const char *signature, Args... args)
+        static jobject newInstanceWithMethodId(JNIEnv *env, const jclass clazz,
+                                               const jmethodID ctor, Args... args)
         {
-            const auto ctor = env->GetMethodID(clazz, "<init>", signature);
             if (!ctor) {
-                qCWarning(QT_BRIDGE) << "Constructor for class with signature" << signature << "not found";
+                qCCritical(QT_BRIDGE) << "Constructor methodId missing";
                 return {};
             }
 
@@ -36,6 +35,19 @@ namespace Utility::JNI {
                 const jvalue jniArgs[] = {wrapJValue(env, args)...};
                 return env->NewObjectA(clazz, ctor, jniArgs);
             }
+        }
+
+        template<typename... Args>
+        static jobject newInstanceWithSignature(JNIEnv *env, const char *className,
+                                                const jclass clazz, const char *signature, Args... args)
+        {
+            const auto ctor = JNICache::getGlobalConstructor(className, signature);
+            if (!ctor) {
+                qCWarning(QT_BRIDGE) << "Constructor for class" << className
+                                     << "with signature" << signature << "not found";
+                return {};
+            }
+            return newInstanceWithMethodId(env, clazz, ctor, args...);
         }
 
         template<typename ReturnType, typename... Args>

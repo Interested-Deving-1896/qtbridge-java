@@ -58,6 +58,7 @@ public:
     static JMethodEntry getGlobalMethod(const QByteArray &className, const QByteArray &methodName,
                                         const QByteArray &signature, bool isStatic = false,
                                         bool autoRegister = true);
+    static jmethodID getGlobalConstructor(const QByteArray &className, const QByteArray &signature);
 
     static jmethodID qtPropertyGetValueMethod();
     static jmethodID qtPropertySetValueMethod();

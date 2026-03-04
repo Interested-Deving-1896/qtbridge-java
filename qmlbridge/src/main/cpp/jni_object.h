@@ -28,6 +28,14 @@ class JNIObject
         return true;
     }
 
+    static jmethodID constructorMethodId()
+    {
+        Q_ASSERT(Tag::constructorSignature() != nullptr);
+        static const jmethodID methodId =
+                JNICache::getGlobalConstructor(Tag::className(), Tag::constructorSignature());
+        return methodId;
+    }
+
 public:
     static void registerClass(JNIEnv *env)
     {
@@ -53,14 +61,15 @@ public:
     {
         Q_ASSERT(checkClassRegistered());
         return Utility::JNI::JavaObject::newInstanceWithSignature(
-                JniContext::getEnv(), get(), signature, std::forward<Args>(args)...);
+                JniContext::getEnv(), Tag::className(), get(), signature, std::forward<Args>(args)...);
     }
 
     template<typename... Args>
     static jobject makeObject(Args &&...args)
     {
-        Q_ASSERT(Tag::constructorSignature() != nullptr);
-        return newInstanceWithSignature(Tag::constructorSignature(), std::forward<Args>(args)...);
+        Q_ASSERT(checkClassRegistered());
+        return Utility::JNI::JavaObject::newInstanceWithMethodId(
+                JniContext::getEnv(), get(), constructorMethodId(), std::forward<Args>(args)...);
     }
 
     template<typename ReturnType, typename... Args>
