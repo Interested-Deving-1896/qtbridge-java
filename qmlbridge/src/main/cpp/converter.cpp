@@ -328,46 +328,48 @@ namespace Utility::JNI {
 
     QVariant Converter::convertObjectToQVariant(const jobject &javaObject)
     {
+        JNIEnv *env = JniContext::getEnv();
+
         if (javaObject == nullptr) {
             // If the object is null, set a proper Javascript null value (instead of undefined)
             return QVariant::fromValue(QJSValue(QJSValue::NullValue));
         }
-        if (JNIObject<JavaLangInteger>::isInstanceOf(javaObject))
-            return int(JNIObject<JavaLangInteger>::callMethod<jint>(javaObject, "intValue"));
-        if (JNIObject<JavaLangBoolean>::isInstanceOf(javaObject))
-            return bool(JNIObject<JavaLangBoolean>::callMethod<jboolean>(javaObject, "booleanValue"));
-        if (JNIObject<JavaLangDouble>::isInstanceOf(javaObject))
-            return double(JNIObject<JavaLangDouble>::callMethod<jdouble>(javaObject, "doubleValue"));
-        if (JNIObject<JavaLangFloat>::isInstanceOf(javaObject))
-            return float(JNIObject<JavaLangFloat>::callMethod<jfloat>(javaObject, "floatValue"));
-        if (JNIObject<JavaLangLong>::isInstanceOf(javaObject))
-            return qint64(JNIObject<JavaLangLong>::callMethod<jlong>(javaObject, "longValue"));
-        if (JNIObject<JavaLangByte>::isInstanceOf(javaObject))
-            return qint8(JNIObject<JavaLangByte>::callMethod<jbyte>(javaObject, "byteValue"));
-        if (JNIObject<JavaLangShort>::isInstanceOf(javaObject))
-           return short(JNIObject<JavaLangShort>::callMethod<jshort>(javaObject, "shortValue"));
-        if (JNIObject<JavaLangCharacter>::isInstanceOf(javaObject))
-           return QChar(JNIObject<JavaLangCharacter>::callMethod<jchar>(javaObject, "charValue"));
 
-        if (JNIObject<JavaLangString>::isInstanceOf(javaObject))
-            return Utility::JNI::toQString(jstring(javaObject));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangString>::get()))
+            return Utility::JNI::toQString(static_cast<jstring>(javaObject));
 
-        if (JNIObject<JavaLangEnum>::isInstanceOf(javaObject))
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangInteger>::get()))
+            return int(JNIMethodInvoker::invokeMethod<jint>(env, javaObject, JNICache::javaIntValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangBoolean>::get()))
+            return bool(JNIMethodInvoker::invokeMethod<jboolean>(env, javaObject, JNICache::javaBooleanValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangDouble>::get()))
+            return double(JNIMethodInvoker::invokeMethod<jdouble>(env, javaObject, JNICache::javaDoubleValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangFloat>::get()))
+            return float(JNIMethodInvoker::invokeMethod<jfloat>(env, javaObject, JNICache::javaFloatValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangLong>::get()))
+            return qint64(JNIMethodInvoker::invokeMethod<jlong>(env, javaObject, JNICache::javaLongValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangByte>::get()))
+            return qint8(JNIMethodInvoker::invokeMethod<jbyte>(env, javaObject, JNICache::javaByteValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangShort>::get()))
+            return short(JNIMethodInvoker::invokeMethod<jshort>(env, javaObject, JNICache::javaShortValueMethod()));
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangCharacter>::get()))
+            return QChar(JNIMethodInvoker::invokeMethod<jchar>(env, javaObject, JNICache::javaCharValueMethod()));
+
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangEnum>::get()))
             return convertEnumToQVariantMap(javaObject);
 
-        if (JNIObject<JavaList>::isInstanceOf(javaObject))
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaList>::get()))
            return convertJavaListToQVariantList(javaObject);
 
-        if (JNIObject<JavaMap>::isInstanceOf(javaObject))
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaMap>::get()))
             return convertJavaMapToQVariantMap(javaObject);
 
-        if (JNIObject<JavaNetURI>::isInstanceOf(javaObject)) {
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaNetURI>::get())) {
             const auto s = JNIObject<JavaNetURI>::callMethod<QString>(javaObject, "toString");
             return QUrl{s};
         }
         // Keep Object check last, as it's the most generic one
-        if (JNIObject<JavaLangObject>::isInstanceOf(javaObject)) {
-            auto env = JniContext::getEnv();
+        if (env->IsInstanceOf(javaObject, JNIObject<JavaLangObject>::get())) {
             QObject *proxy = JNIProxyUserObjectMap::ensureProxy(env, javaObject, false);
             return QVariant::fromValue(proxy);
         }
@@ -397,7 +399,13 @@ namespace Utility::JNI {
                 JNIMethodInvoker::invokeMethod<jobject>(env, entry, JNICache::javaMapEntryGetKeyMethod());
             const auto value =
                 JNIMethodInvoker::invokeMethod<jobject>(env, entry, JNICache::javaMapEntryGetValueMethod());
-            const auto qtKey = convertObjectToQVariant(key).toString();
+
+            QString qtKey;
+            if (key && env->IsInstanceOf(key, JNIObject<JavaLangString>::get()))
+                qtKey = Utility::JNI::toQString(static_cast<jstring>(key));
+            else
+                qtKey = convertObjectToQVariant(key).toString();
+
             const auto qtValue = convertObjectToQVariant(value);
             qtMap.insert(qtKey, qtValue);
             env->DeleteLocalRef(value);
