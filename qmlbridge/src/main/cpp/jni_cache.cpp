@@ -360,6 +360,48 @@ jmethodID JNICache::javaCharValueMethod()
     return methodId;
 }
 
+jmethodID JNICache::javaMapSizeMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaMap::className(), "size", "()I");
+    return methodId;
+}
+
+jmethodID JNICache::javaMapEntrySetMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaMap::className(), "entrySet", "()Ljava/util/Set;");
+    return methodId;
+}
+
+jmethodID JNICache::javaSetIteratorMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaSet::className(), "iterator", "()Ljava/util/Iterator;");
+    return methodId;
+}
+
+jmethodID JNICache::javaIteratorNextMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaIterator::className(), "next", "()Ljava/lang/Object;");
+    return methodId;
+}
+
+jmethodID JNICache::javaMapEntryGetKeyMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaMapEntry::className(), "getKey", "()Ljava/lang/Object;");
+    return methodId;
+}
+
+jmethodID JNICache::javaMapEntryGetValueMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaMapEntry::className(), "getValue", "()Ljava/lang/Object;");
+    return methodId;
+}
+
 qint64 JNICache::ensureProxyClass(jclass userProxyClass)
 {
     Q_ASSERT(userProxyClass != nullptr);

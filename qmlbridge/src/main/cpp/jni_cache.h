@@ -81,6 +81,13 @@ public:
     static jmethodID qtPropertyGetFloatValueMethod();
     static jmethodID qtPropertyGetDoubleValueMethod();
 
+    static jmethodID javaMapSizeMethod();
+    static jmethodID javaMapEntrySetMethod();
+    static jmethodID javaSetIteratorMethod();
+    static jmethodID javaIteratorNextMethod();
+    static jmethodID javaMapEntryGetKeyMethod();
+    static jmethodID javaMapEntryGetValueMethod();
+
     /*** KEY-BASED API (for dynamically registered proxy classes) ***/
     static qint64 ensureProxyClass(jclass userProxyClass);
     static void registerProxyMethod(const qint64 proxyKey, const int methodKey,

@@ -378,20 +378,34 @@ namespace Utility::JNI {
 
     QVariantMap Converter::convertJavaMapToQVariantMap(const jobject &jmap)
     {
-        const auto mapSize = JNIObject<JavaMap>::callMethod<jint>(jmap, "size");
+        JNIEnv *env = JniContext::getEnv();
+        const auto mapSize =
+            JNIMethodInvoker::invokeMethod<jint>(env, jmap, JNICache::javaMapSizeMethod());
         if (mapSize == 0)
             return {};
-        const auto entrySet = JNIObject<JavaMap>::callMethod<JavaSet>(jmap, "entrySet");
-        const auto iterator = JNIObject<JavaSet>::callMethod<JavaIterator>(entrySet, "iterator");
+
+        const auto entrySet =
+            JNIMethodInvoker::invokeMethod<jobject>(env, jmap, JNICache::javaMapEntrySetMethod());
+        const auto iterator =
+            JNIMethodInvoker::invokeMethod<jobject>(env, entrySet, JNICache::javaSetIteratorMethod());
+
         QVariantMap qtMap;
         for (jint i = 0; i < mapSize; ++i) {
-            const auto entry = JNIObject<JavaIterator>::callMethod<jobject>(iterator, "next");
-            const auto key = JNIObject<JavaMapEntry>::callMethod<jobject>(entry, "getKey");
-            const auto value = JNIObject<JavaMapEntry>::callMethod<jobject>(entry, "getValue");
+            const auto entry =
+                JNIMethodInvoker::invokeMethod<jobject>(env, iterator, JNICache::javaIteratorNextMethod());
+            const auto key =
+                JNIMethodInvoker::invokeMethod<jobject>(env, entry, JNICache::javaMapEntryGetKeyMethod());
+            const auto value =
+                JNIMethodInvoker::invokeMethod<jobject>(env, entry, JNICache::javaMapEntryGetValueMethod());
             const auto qtKey = convertObjectToQVariant(key).toString();
             const auto qtValue = convertObjectToQVariant(value);
             qtMap.insert(qtKey, qtValue);
+            env->DeleteLocalRef(value);
+            env->DeleteLocalRef(key);
+            env->DeleteLocalRef(entry);
         }
+        env->DeleteLocalRef(iterator);
+        env->DeleteLocalRef(entrySet);
         return qtMap;
     }
 
