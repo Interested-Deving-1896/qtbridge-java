@@ -203,7 +203,8 @@ namespace Utility::JNI {
                 return true;
             }
         case QMetaType::LongLong: {
-            const auto value = JNIObject<JavaLangLong>::callMethod<jlong>(valueObj, "longValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jlong>(
+                env, valueObj, JNICache::javaLongValueMethod());
             *static_cast<long long *>(outPtr) = value;
             return true;
         }
@@ -212,39 +213,39 @@ namespace Utility::JNI {
             return true;
         }
         case QMetaType::Float: {
-            const auto value = JNIObject<JavaLangFloat>::callMethod<jfloat>(valueObj, "floatValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jfloat>(env, valueObj, JNICache::javaFloatValueMethod());
             *static_cast<float *>(outPtr) = value;
             return true;
         }
         case QMetaType::Bool: {
-            const auto value = JNIObject<JavaLangBoolean>::callMethod<jboolean>(valueObj, "booleanValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jboolean>(env, valueObj, JNICache::javaBooleanValueMethod());
             *static_cast<bool *>(outPtr) = value;
             return true;
         }
         case QMetaType::QChar: {
-            const auto value = JNIObject<JavaLangCharacter>::callMethod<jchar>(valueObj, "charValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jchar>(env, valueObj, JNICache::javaCharValueMethod());
             QChar qc(value);
             *static_cast<QChar *>(outPtr) = qc;
             return true;
         }
         case QMetaType::SChar: {
             // QMetaType::SChar == signed char == qint8 == jbyte
-            const auto value = JNIObject<JavaLangByte>::callMethod<jbyte>(valueObj, "byteValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jbyte>(env, valueObj, JNICache::javaByteValueMethod());
             *static_cast<signed char *>(outPtr) = value;
             return true;
         }
         case QMetaType::Short: {
-            const auto value = JNIObject<JavaLangShort>::callMethod<jshort>(valueObj, "shortValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jshort>(env, valueObj, JNICache::javaShortValueMethod());
             *static_cast<short *>(outPtr) = value;
             return true;
         }
         case QMetaType::Int: {
-            const auto value = JNIObject<JavaLangInteger>::callMethod<jint>(valueObj, "intValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jint>(env, valueObj, JNICache::javaIntValueMethod());
             *static_cast<int *>(outPtr) = value;
             return true;
         }
         case QMetaType::Double: {
-            const auto value = JNIObject<JavaLangDouble>::callMethod<jdouble>(valueObj, "doubleValue");
+            const auto value = JNIMethodInvoker::invokeMethod<jdouble>(env, valueObj, JNICache::javaDoubleValueMethod());
             *static_cast<double *>(outPtr) = value;
             return true;
         }
@@ -473,7 +474,8 @@ namespace Utility::JNI {
                         continue;
                     }
                     result.append(bool(
-                        JNIObject<JavaLangBoolean>::callMethod<jboolean>(value, "booleanValue")));
+                        JNIMethodInvoker::invokeMethod<jboolean>(
+                            env, value, JNICache::javaBooleanValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -497,7 +499,8 @@ namespace Utility::JNI {
                         result.append(QVariant{});
                         continue;
                     }
-                    result.append(qint8(JNIObject<JavaLangByte>::callMethod<jbyte>(value, "byteValue")));
+                    result.append(qint8(JNIMethodInvoker::invokeMethod<jbyte>(
+                        env, value, JNICache::javaByteValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -522,7 +525,8 @@ namespace Utility::JNI {
                         continue;
                     }
                     result.append(
-                        QChar(JNIObject<JavaLangCharacter>::callMethod<jchar>(value, "charValue")));
+                        QChar(JNIMethodInvoker::invokeMethod<jchar>(
+                            env, value, JNICache::javaCharValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -546,7 +550,8 @@ namespace Utility::JNI {
                         result.append(QVariant{});
                         continue;
                     }
-                    result.append(int(JNIObject<JavaLangShort>::callMethod<jshort>(value, "shortValue")));
+                    result.append(int(JNIMethodInvoker::invokeMethod<jshort>(
+                        env, value, JNICache::javaShortValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -570,7 +575,8 @@ namespace Utility::JNI {
                         result.append(QVariant{});
                         continue;
                     }
-                    result.append(int(JNIObject<JavaLangInteger>::callMethod<jint>(value, "intValue")));
+                    result.append(int(JNIMethodInvoker::invokeMethod<jint>(
+                        env, value, JNICache::javaIntValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -595,7 +601,8 @@ namespace Utility::JNI {
                         continue;
                     }
                     result.append(
-                        qint64(JNIObject<JavaLangLong>::callMethod<jlong>(value, "longValue")));
+                        qint64(JNIMethodInvoker::invokeMethod<jlong>(
+                            env, value, JNICache::javaLongValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -620,7 +627,8 @@ namespace Utility::JNI {
                         continue;
                     }
                     result.append(
-                        float(JNIObject<JavaLangFloat>::callMethod<jfloat>(value, "floatValue")));
+                        float(JNIMethodInvoker::invokeMethod<jfloat>(
+                            env, value, JNICache::javaFloatValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
@@ -645,7 +653,8 @@ namespace Utility::JNI {
                         continue;
                     }
                     result.append(
-                        double(JNIObject<JavaLangDouble>::callMethod<jdouble>(value, "doubleValue")));
+                        double(JNIMethodInvoker::invokeMethod<jdouble>(
+                            env, value, JNICache::javaDoubleValueMethod())));
                     env->DeleteLocalRef(value);
                 }
             }
