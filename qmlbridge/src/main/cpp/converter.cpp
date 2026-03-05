@@ -746,30 +746,11 @@ namespace Utility::JNI {
                 }
                 return proxy->userObjectLocalRef();
             }
-
             default:
-                // Check QJSValue separately because it's metaId is in the 'user category'
-                if (var.userType() == qMetaTypeId<QJSValue>()) {
-                    const auto val = var.value<QJSValue>();
-                    if (val.isNull() || val.isUndefined()) {
-                        return nullptr;
-                    } else if (val.isArray()) {
-                        return convertQVariantListToObject(val.toVariant(QJSValue::ConvertJSObjects).toList());
-                    } else if (val.isObject()) {
-                        const auto var = val.toVariant(QJSValue::ConvertJSObjects);
-                        const auto map = var.toMap();
-                        const auto javaMap = JNIObject<JavaHashMap>::makeObject();
-                        for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
-                            const auto jKey = JNIObject<JavaLangString>::makeObject(it.key());
-                            const auto jVal = convertQVariantToObject(it.value());
-                            JNIObject<JavaMap>::callMethod<jobject>(javaMap, "put", jKey, jVal);
-                        }
-                        return javaMap;
-                    }
-                }
                 qCWarning(QT_BRIDGE) << "Unsupported QVariant type:" << var.typeName();
-                return {};
+                break;
         }
+        return nullptr;
     }
     jobject Converter::convertQVariantListToObject(const QVariantList &list)
     {
