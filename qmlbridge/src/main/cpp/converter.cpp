@@ -754,10 +754,14 @@ namespace Utility::JNI {
     }
     jobject Converter::convertQVariantListToObject(const QVariantList &list)
     {
+        const auto env = JniContext::getEnv();
         const auto arrayListObj = JNIObject<JavaArrayList>::makeObject();
         for (const QVariant &elem : list) {
             const auto jResult = Converter::convertQVariantToObject(elem);
-            JNIObject<JavaList>::callMethod<jboolean>(arrayListObj,"add",jResult);
+            JNIMethodInvoker::invokeMethod<jboolean>(
+                env, arrayListObj, JNICache::javaListAddMethod(), jResult);
+            if (jResult)
+                env->DeleteLocalRef(jResult);
         }
         return arrayListObj;
     }
@@ -1056,8 +1060,10 @@ namespace Utility::JNI {
             }
 
             // Put the (key, value) in the map
-            JNIObject<JavaMap>::callMethod<jobject>(jMap, "put", jKey, jVal);
-            checkAndClearException(env);
+            const auto previous = JNIMethodInvoker::invokeMethod<jobject>(
+                env, jMap, JNICache::javaMapPutMethod(), jKey, jVal);
+            if (previous)
+                env->DeleteLocalRef(previous);
 
             // Release local handles created in this loop iteration
             if (jKey) env->DeleteLocalRef(jKey);
@@ -1068,10 +1074,14 @@ namespace Utility::JNI {
     }
     jobject Converter::convertQStringListToObject(const QStringList &list)
     {
+        const auto env = JniContext::getEnv();
         const auto arrayListObj = JNIObject<JavaArrayList>::makeObject();
         for (const QString &elem : list) {
             const auto jResult = JNIObject<JavaLangString>::makeObject(elem);
-            JNIObject<JavaList>::callMethod<jboolean>(arrayListObj,"add",jResult);
+            JNIMethodInvoker::invokeMethod<jboolean>(
+                env, arrayListObj, JNICache::javaListAddMethod(), jResult);
+            if (jResult)
+                env->DeleteLocalRef(jResult);
         }
         return arrayListObj;
     }

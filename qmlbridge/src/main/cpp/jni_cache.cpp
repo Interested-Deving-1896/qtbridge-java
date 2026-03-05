@@ -374,10 +374,24 @@ jmethodID JNICache::javaListGetMethod()
     return methodId;
 }
 
+jmethodID JNICache::javaListAddMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaList::className(), "add", "(Ljava/lang/Object;)Z");
+    return methodId;
+}
+
 jmethodID JNICache::javaMapSizeMethod()
 {
     static const jmethodID methodId = resolveCachedGlobalMethod(
         JavaMap::className(), "size", "()I");
+    return methodId;
+}
+
+jmethodID JNICache::javaMapPutMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaMap::className(), "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     return methodId;
 }
 

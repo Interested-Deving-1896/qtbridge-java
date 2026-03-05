@@ -83,8 +83,10 @@ public:
 
     static jmethodID javaListSizeMethod();
     static jmethodID javaListGetMethod();
+    static jmethodID javaListAddMethod();
 
     static jmethodID javaMapSizeMethod();
+    static jmethodID javaMapPutMethod();
     static jmethodID javaMapEntrySetMethod();
     static jmethodID javaSetIteratorMethod();
     static jmethodID javaIteratorNextMethod();
