@@ -90,6 +90,7 @@ public:
     static jmethodID javaIteratorNextMethod();
     static jmethodID javaMapEntryGetKeyMethod();
     static jmethodID javaMapEntryGetValueMethod();
+    static jmethodID javaUriToStringMethod();
 
     /*** KEY-BASED API (for dynamically registered proxy classes) ***/
     static qint64 ensureProxyClass(jclass userProxyClass);

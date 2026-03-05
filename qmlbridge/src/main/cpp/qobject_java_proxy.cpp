@@ -234,8 +234,9 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
         break;
     }
     case QMetaType::QUrl: {
-        const auto value = JNIObject<JavaNetURI>::callMethod<jstring>(valueLocal, "toString");
-        *static_cast<QUrl *>(args[0]) = QUrl(Utility::JNI::toQString(value));
+        const auto value = JNIMethodInvoker::invokeMethod<QString>(
+            env, valueLocal, JNICache::javaUriToStringMethod());
+        *static_cast<QUrl *>(args[0]) = QUrl(value);
         break;
     }
     case QMetaType::QObjectStar:
@@ -422,7 +423,9 @@ void QObjectJavaProxy::qtMethodMetacall(const jobject javaObject, const int meth
     case QMetaType::QUrl: {
         const auto ret = JNIMethodInvoker::invokeMethodWithJValues<jobject>(
             env, javaObject, methodCacheEntry->method, parameters.data());
-        const QUrl value(JNIObject<JavaNetURI>::callMethod<QString>(ret, "toString"));
+        const auto valueString = JNIMethodInvoker::invokeMethod<QString>(
+            env, ret, JNICache::javaUriToStringMethod());
+        const QUrl value(valueString);
         *static_cast<QUrl *>(args[0]) = value;
         break;
     }

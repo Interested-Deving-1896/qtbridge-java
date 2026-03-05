@@ -416,6 +416,13 @@ jmethodID JNICache::javaMapEntryGetValueMethod()
     return methodId;
 }
 
+jmethodID JNICache::javaUriToStringMethod()
+{
+    static const jmethodID methodId = resolveCachedGlobalMethod(
+        JavaNetURI::className(), "toString", "()Ljava/lang/String;");
+    return methodId;
+}
+
 qint64 JNICache::ensureProxyClass(jclass userProxyClass)
 {
     Q_ASSERT(userProxyClass != nullptr);

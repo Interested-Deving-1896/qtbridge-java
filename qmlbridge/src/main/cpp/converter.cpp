@@ -250,7 +250,8 @@ namespace Utility::JNI {
             return true;
         }
         case QMetaType::QUrl: {
-            const auto value = JNIObject<JavaNetURI>::callMethod<QString>(valueObj, "toString");
+            const auto value = JNIMethodInvoker::invokeMethod<QString>(
+                env, valueObj, JNICache::javaUriToStringMethod());
             *static_cast<QUrl *>(outPtr) = QUrl(value);
             return true;
         }
@@ -358,7 +359,8 @@ namespace Utility::JNI {
             return convertJavaMapToQVariantMap(javaObject);
 
         if (env->IsInstanceOf(javaObject, JNIObject<JavaNetURI>::get())) {
-            const auto s = JNIObject<JavaNetURI>::callMethod<QString>(javaObject, "toString");
+            const auto s = JNIMethodInvoker::invokeMethod<QString>(
+                env, javaObject, JNICache::javaUriToStringMethod());
             return QUrl{s};
         }
         // Keep Object check last, as it's the most generic one
