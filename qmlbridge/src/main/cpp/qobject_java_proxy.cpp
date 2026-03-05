@@ -137,19 +137,19 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
     }
     const auto metaId = mp.metaType().id();
 
-    jobject holderLocal = nullptr; // the field (QtProperty<T>)
+    jobject qtProperty = nullptr; // the field (QtProperty<T>)
     jobject valueLocal  = nullptr; // the actual value (boxed T, String, Map, Enum, etc.)
     JNIEnv *env = JniContext::getEnv();
 
     auto guard = qScopeGuard([&]{
-        if (valueLocal && valueLocal != holderLocal)
+        if (valueLocal)
             env->DeleteLocalRef(valueLocal);
-        if (holderLocal)
-            env->DeleteLocalRef(holderLocal);
+        if (qtProperty)
+            env->DeleteLocalRef(qtProperty);
     });
 
-    holderLocal = env->GetObjectField(javaObject, entry.field);
-    if (!holderLocal) {
+    qtProperty = env->GetObjectField(javaObject, entry.field);
+    if (!qtProperty) {
         qCWarning(QT_BRIDGE, "Property read failed, field %s is null", mp.name());
         setPropertyDefaultValue(args, mp.metaType());
         return;
@@ -161,37 +161,37 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
     switch (metaId) {
     case QMetaType::Int:
         *static_cast<int *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jint>(env, holderLocal, JNICache::qtPropertyGetIntValueMethod());
+            JNIMethodInvoker::invokeMethod<jint>(env, qtProperty, JNICache::qtPropertyGetIntValueMethod());
         return;
     case QMetaType::SChar:
         // QMetaType::SChar == signed char == qint8 == jbyte
         *static_cast<signed char *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jbyte>(env, holderLocal, JNICache::qtPropertyGetByteValueMethod());
+            JNIMethodInvoker::invokeMethod<jbyte>(env, qtProperty, JNICache::qtPropertyGetByteValueMethod());
         return;
     case QMetaType::QChar:
         // Java Character and QChar are both UTF-16 characters
         *static_cast<QChar *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jchar>(env, holderLocal, JNICache::qtPropertyGetCharValueMethod());
+            JNIMethodInvoker::invokeMethod<jchar>(env, qtProperty, JNICache::qtPropertyGetCharValueMethod());
         return;
     case QMetaType::Bool:
         *static_cast<bool *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jboolean>(env, holderLocal, JNICache::qtPropertyGetBooleanValueMethod());
+            JNIMethodInvoker::invokeMethod<jboolean>(env, qtProperty, JNICache::qtPropertyGetBooleanValueMethod());
         return;
     case QMetaType::Float:
         *static_cast<float *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jfloat>(env, holderLocal, JNICache::qtPropertyGetFloatValueMethod());
+            JNIMethodInvoker::invokeMethod<jfloat>(env, qtProperty, JNICache::qtPropertyGetFloatValueMethod());
         return;
     case QMetaType::Double:
         *static_cast<double *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jdouble>(env, holderLocal, JNICache::qtPropertyGetDoubleValueMethod());
+            JNIMethodInvoker::invokeMethod<jdouble>(env, qtProperty, JNICache::qtPropertyGetDoubleValueMethod());
         return;
     case QMetaType::LongLong:
         *static_cast<long long *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jlong>(env, holderLocal, JNICache::qtPropertyGetLongValueMethod());
+            JNIMethodInvoker::invokeMethod<jlong>(env, qtProperty, JNICache::qtPropertyGetLongValueMethod());
         return;
     case QMetaType::Short:
         *static_cast<short *>(args[0]) =
-            JNIMethodInvoker::invokeMethod<jshort>(env, holderLocal, JNICache::qtPropertyGetShortValueMethod());
+            JNIMethodInvoker::invokeMethod<jshort>(env, qtProperty, JNICache::qtPropertyGetShortValueMethod());
         return;
     default:
         break;
@@ -199,7 +199,7 @@ void QObjectJavaProxy::qtReadPropertyMetacall(const jobject javaObject,
 
     // QtProperty<T> – getValue()
     valueLocal = JNIMethodInvoker::invokeMethod<jobject>(
-        env, holderLocal, JNICache::qtPropertyGetValueMethod());
+        env, qtProperty, JNICache::qtPropertyGetValueMethod());
     if (!valueLocal) {
         setPropertyDefaultValue(args, mp.metaType());
         return;
@@ -587,23 +587,23 @@ void QObjectJavaProxy::readQmlRegistrableProperty(const jobject javaObject,
     }
 
     // Get holder object (QtProperty<T>)
-    jobject holderLocal = env->GetObjectField(javaObject, entry.field);
-    if (!holderLocal) {
+    jobject qtProperty = env->GetObjectField(javaObject, entry.field);
+    if (!qtProperty) {
         qCWarning(QT_BRIDGE, "Unable to find holding field for property %s", mp.name());
         return;
     }
 
     jobject userLocal = nullptr;
     auto guard = qScopeGuard([&](){
-        if (userLocal && userLocal != holderLocal)
+        if (userLocal)
             env->DeleteLocalRef(userLocal);
-        if (holderLocal)
-            env->DeleteLocalRef(holderLocal);
+        if (qtProperty)
+            env->DeleteLocalRef(qtProperty);
     });
 
     // Extract actual user object
     userLocal = JNIMethodInvoker::invokeMethod<jobject>(
-        env, holderLocal, JNICache::qtPropertyGetValueMethod());
+        env, qtProperty, JNICache::qtPropertyGetValueMethod());
     if (!userLocal)
         return; // Valid use-case: null userObject => return null proxy
 
