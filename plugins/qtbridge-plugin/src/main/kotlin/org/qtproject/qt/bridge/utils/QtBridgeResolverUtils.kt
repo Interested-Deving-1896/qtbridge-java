@@ -23,4 +23,8 @@ internal object QtBridgeResolverUtils {
             .take(2)
             .joinToString(".")
     }
+
+    fun fullVersion(): String {
+        return PluginVersion.VERSION
+    }
 }

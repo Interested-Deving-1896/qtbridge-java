@@ -9,7 +9,7 @@ plugins {
     id("qtbridge.dev-publish")
 }
 group = "org.qtproject.qt.bridge"
-version = "0.1"
+version = "0.1.2"
 
 val generateVersionFile by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/version")
@@ -46,6 +46,7 @@ val generateVersionFile by tasks.registering {
                 const val GROUP = "${groupValue.get()}"
                 const val NAME = "${nameValue.get()}"
             }
+
         """.trimIndent()
         )
 
