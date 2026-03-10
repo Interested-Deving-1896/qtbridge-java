@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "org.qtproject.qt.bridge"
-version = "0.1"
+version = "0.1.2"
 
 java {
 }

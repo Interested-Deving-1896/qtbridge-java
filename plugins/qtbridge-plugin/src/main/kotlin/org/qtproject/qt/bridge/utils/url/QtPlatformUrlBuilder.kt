@@ -9,20 +9,45 @@ import org.qtproject.qt.bridge.utility.Platform
 import org.qtproject.qt.bridge.utils.QtBridgeResolverUtils
 
 internal class QtPlatformUrlBuilder private constructor(private val baseUrl: String) {
-    private val suffix = Platform.getLibraryDirectory()
     private val version = QtBridgeResolverUtils.fullVersion()
     val qtLibsFile: String
-        get() = buildFileName(QT_MINIMAL_NAME)
+        get() = buildQtLibsFileName()
 
     val qtBridgeNativeFile: String
-        get() = buildFileName(QT_BRIDGE_NATIVE_NAME)
+        get() = buildQtBridgeNativeFileName()
 
-    private fun buildFileName(prefix: String): String {
+    private fun buildQtLibsFileName(): String {
+        return "${QT_LIBRARY_ARCHIVE_PREFIX}_${qtLibsPlatformSuffix()}_${version}.${qtLibsArchiveExtension()}"
+    }
+
+    private fun buildQtBridgeNativeFileName(): String {
+        return "${QT_BRIDGE_ARCHIVE_PREFIX}_${qtBridgeNativePlatformSuffix()}_${version}.tar.gz"
+    }
+
+    private fun qtLibsPlatformSuffix(): String {
         return when {
-            Platform.isMacOS() || Platform.isLinux() ->
-                "${prefix}_${suffix}_${version}.tar.gz"
-            else -> error("Platform not supported at the moment!")
+            Platform.isMacOS() -> "macos_universal"
+            Platform.isLinux() && Platform.isAarch64() -> "linux_aarch64"
+            Platform.isLinux() && Platform.isX86_64() -> "linux_x86_64"
+            Platform.isWindows() && Platform.isAarch64() -> "win_arm64"
+            Platform.isWindows() && Platform.isX86_64() -> "win_x86_64"
+            else -> error("Qt library packages are not available for ${Platform.getDescription()}")
         }
+    }
+
+    private fun qtBridgeNativePlatformSuffix(): String {
+        return when {
+            Platform.isMacOS() -> "macos_universal"
+            Platform.isLinux() && Platform.isAarch64() -> "linux_aarch64"
+            Platform.isLinux() && Platform.isX86_64() -> "linux_x86_64"
+            Platform.isWindows() && Platform.isAarch64() -> "win_arm64"
+            Platform.isWindows() && Platform.isX86_64() -> "win_amd64"
+            else -> error("Qt Bridge native packages are not available for ${Platform.getDescription()}")
+        }
+    }
+
+    private fun qtLibsArchiveExtension(): String {
+        return if (Platform.isWindows()) "zip" else "tar.gz"
     }
 
     fun build(): QtPlatformUrls {
@@ -37,8 +62,8 @@ internal class QtPlatformUrlBuilder private constructor(private val baseUrl: Str
 
     companion object {
         private const val DEFAULT_BASE_URL = "https://download.qt.io/snapshots/ci/qt"
-        private const val QT_MINIMAL_NAME= "qt_minimal"
-        private const val QT_BRIDGE_NATIVE_NAME = "java_qtBridge"
+        private const val QT_LIBRARY_ARCHIVE_PREFIX= "qt_minimal"
+        private const val QT_BRIDGE_ARCHIVE_PREFIX = "java_qtBridge"
         fun default(): QtPlatformUrlBuilder = QtPlatformUrlBuilder(DEFAULT_BASE_URL)
     }
 }
