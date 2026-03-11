@@ -141,9 +141,10 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
             try {
                 val qtResolverFactory = qtBridgeContext.qtResolverFactory
                 val qtLibsDir = qtResolverFactory.libsLocationResolver.resolve()?.absolutePath.orEmpty()
+                val qtBinDir = qtResolverFactory.qtBinDirResolver.resolve()?.absolutePath.orEmpty()
                 val qtBridgeNativeDir = qtResolverFactory.bridgeNativeLocationResolver.resolve()?.absolutePath.orEmpty()
 
-                configureTaskEnvironments(project, qtLibsDir, qtBridgeNativeDir)
+                configureTaskEnvironments(project, qtLibsDir, qtBinDir, qtBridgeNativeDir)
             } catch (e: Exception) {
                 errorHandler.handle(e)
             }
@@ -265,8 +266,18 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
         }
     }
 
-    private fun configureTaskEnvironments(project: Project, qtLibsDirPath: String, qtBridgeLibraryPath: String) {
-        val environmentConfig = EnvironmentConfigurator(project.logger, qtLibsDirPath, qtBridgeLibraryPath)
+    private fun configureTaskEnvironments(
+        project: Project,
+        qtLibsDirPath: String,
+        qtBinDirPath: String,
+        qtBridgeLibraryPath: String
+    ) {
+        val environmentConfig = EnvironmentConfigurator(
+            project.logger,
+            qtLibsDirPath,
+            qtBinDirPath,
+            qtBridgeLibraryPath
+        )
         project.tasks.withType(JavaExec::class.java).configureEach {
             environmentConfig.configure(this)
         }

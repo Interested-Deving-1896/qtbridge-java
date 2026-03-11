@@ -44,6 +44,8 @@ internal class QtResolverFactory(
 
     val qmlTypeRegistrarResolver by lazy { QmlToolResolver(QmlTool.QMLTYPEREGISTRAR, qtRootResolver, logger) }
 
+    val qtBinDirResolver by lazy { QtSubdirResolver(qtRootResolver, "bin") }
+
     val qtDocDirResolver by lazy { QtSubdirResolver(qtRootResolver, "doc")}
 
     val qmlImportDirResolver by lazy { QtSubdirResolver(qtRootResolver, "qml") }

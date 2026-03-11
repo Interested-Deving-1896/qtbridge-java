@@ -14,6 +14,7 @@ import java.io.File
 internal class EnvironmentConfigurator(
     private val logger: Logger,
     private val qtLibsDirPath: String,
+    private val qtBinDirPath: String,
     private val qtBridgeLibraryPath: String
 ) {
     fun configure(task: JavaExec) {
@@ -33,7 +34,12 @@ internal class EnvironmentConfigurator(
 
     private fun configurePath(task: JavaExec) {
         val currentPath = System.getenv("PATH") ?: ""
-        val newPath = buildPathString(qtLibsDirPath, currentPath)
+        val newPath = if (Platform.isWindows()) {
+            // On Windows the libraries are typically in bin folder, not lib
+            buildPathString(qtBinDirPath, qtLibsDirPath, currentPath)
+        } else {
+            buildPathString(qtLibsDirPath, currentPath)
+        }
         task.environment("PATH", newPath)
     }
 
