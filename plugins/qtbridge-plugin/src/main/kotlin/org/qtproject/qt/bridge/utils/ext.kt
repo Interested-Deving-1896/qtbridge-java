@@ -55,11 +55,36 @@ internal fun File.toqmllsSectionName(): String {
     }
 }
 
-internal fun File.isValidQtRoot(): Boolean{
-    if (!exists() && !isDirectory){
+internal fun File.isValidQtRoot(): Boolean {
+    if (!exists())
         return false
-    }
-    val hasBin = resolve("bin").exists()
-    val hasLibs = listOf("lib", "libs", "include").any { resolve(it).exists() }
-    return hasBin && hasLibs
+    if (!isDirectory)
+        return false
+
+    val binDir = resolve("bin")
+    if (!binDir.isDirectory)
+        return false
+
+    val libDir = resolve("lib")
+    val libExecDir = resolve("libExec")
+    if (!libDir.isDirectory && !libExecDir.isDirectory)
+        return false
+
+    if (!hasQtInstallationMarkers())
+        return false
+
+    return true
+}
+
+internal fun File.hasQtInstallationMarkers(): Boolean {
+    val binDir = resolve("bin")
+    if (!listOf("qmake", "qmake6")
+        .any { tool -> binDir.resolve(tool).exists() || binDir.resolve("$tool.exe").exists() })
+        return false;
+
+    if (!listOf("qmllint", "qmlls")
+        .any() { tool -> binDir.resolve(tool).exists() || binDir.resolve("$tool.exe").exists() })
+        return false;
+
+    return true
 }
