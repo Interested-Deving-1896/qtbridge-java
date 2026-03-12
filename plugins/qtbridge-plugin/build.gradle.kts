@@ -3,22 +3,48 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
+import java.util.Properties
+
 plugins {
     `kotlin-dsl`
     id("qtbridge.dev-embed")
     id("qtbridge.dev-publish")
 }
+
+fun loadQtBridgeVersions(): Properties {
+    val versionsFile = generateSequence(rootDir) { it.parentFile }
+        .map { it.resolve("qtbridge-versions.properties") }
+        .firstOrNull { it.isFile }
+        ?: error("Unable to locate qtbridge-versions.properties from ${rootDir.absolutePath}")
+
+    return Properties().apply {
+        versionsFile.inputStream().use { input -> load(input) }
+    }
+}
+
+// Returns version string for 'key' entry in qtbridge-versions.properties
+fun qtBridgeVersion(key: String): String {
+    return loadQtBridgeVersions().getProperty(key)
+        ?: error("Missing '$key' in qtbridge-versions.properties")
+}
+
 group = "org.qtproject.qt.bridge"
-version = "0.1.2"
+version = qtBridgeVersion("qt.bridge.application.plugin.version")
 
 val generateVersionFile by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/sources/version")
-    val versionValue = providers.provider { project.version }
+    val qtLibrariesVersionValue = providers.provider { qtBridgeVersion("qt.libraries.version") }
+    val applicationPluginVersionValue = providers.provider { qtBridgeVersion("qt.bridge.application.plugin.version") }
+    val bridgeNativeVersionValue = providers.provider { qtBridgeVersion("qt.bridge.native.version") }
+    val bridgeJvmVersionValue = providers.provider { qtBridgeVersion("qt.bridge.jvm.version") }
     val groupValue = providers.provider { project.group }
     val nameValue = providers.provider { project.name }
     val packageName = "org.qtproject.qtbridge"
 
-    inputs.property("version", versionValue)
+    inputs.property("qtLibrariesVersion", qtLibrariesVersionValue)
+    inputs.property("applicationPluginVersion", applicationPluginVersionValue)
+    inputs.property("bridgeNativeVersion", bridgeNativeVersionValue)
+    inputs.property("bridgeJvmVersion", bridgeJvmVersionValue)
     inputs.property("group", groupValue)
     inputs.property("name", nameValue)
     inputs.property("packageName", packageName)
@@ -42,7 +68,10 @@ val generateVersionFile by tasks.registering {
              * Do not edit manually.
              */
             internal object PluginVersion {
-                const val VERSION = "${versionValue.get()}"
+                const val QT_LIBRARIES_VERSION = "${qtLibrariesVersionValue.get()}"
+                const val QT_BRIDGE_APPLICATION_PLUGIN_VERSION = "${applicationPluginVersionValue.get()}"
+                const val QT_BRIDGE_NATIVE_VERSION = "${bridgeNativeVersionValue.get()}"
+                const val QT_BRIDGE_JVM_VERSION = "${bridgeJvmVersionValue.get()}"
                 const val GROUP = "${groupValue.get()}"
                 const val NAME = "${nameValue.get()}"
             }
@@ -50,7 +79,12 @@ val generateVersionFile by tasks.registering {
         """.trimIndent()
         )
 
-        logger.lifecycle("Generated PluginVersion.kt with version: ${versionValue.get()}")
+        logger.lifecycle(
+            "Generated PluginVersion.kt with\n" +
+            "    Application plugin version: ${applicationPluginVersionValue.get()}\n" +
+            "    Qt libraries version: ${qtLibrariesVersionValue.get()}\n" +
+            "    Qt Bridge native lib version: ${bridgeNativeVersionValue.get()}\n" +
+            "    Qt Bridge JVM lib version: ${bridgeJvmVersionValue.get()}")
     }
 }
 

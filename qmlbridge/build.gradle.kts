@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
+import java.util.Properties
+
 plugins {
     id("java-library")
     kotlin("jvm") version "2.1.20"
@@ -12,8 +14,25 @@ plugins {
     id("qtbridge.dev-publish")
 }
 
+fun loadQtBridgeVersions(): Properties {
+    val versionsFile = generateSequence(rootDir) { it.parentFile }
+        .map { it.resolve("qtbridge-versions.properties") }
+        .firstOrNull { it.isFile }
+        ?: error("Unable to locate qtbridge-versions.properties from ${rootDir.absolutePath}")
+
+    return Properties().apply {
+        versionsFile.inputStream().use { input -> load(input) }
+    }
+}
+
+// Returns version string for 'key' entry in qtbridge-versions.properties
+fun qtBridgeVersion(key: String): String {
+    return loadQtBridgeVersions().getProperty(key)
+        ?: error("Missing '$key' in qtbridge-versions.properties")
+}
+
 group = "org.qtproject.qt.bridge"
-version = "0.1.2"
+version = qtBridgeVersion("qt.bridge.jvm.version")
 
 java {
 }

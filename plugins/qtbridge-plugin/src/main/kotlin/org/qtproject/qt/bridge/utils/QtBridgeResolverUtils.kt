@@ -17,14 +17,19 @@ internal object QtBridgeResolverUtils {
         return "${prefix}${QtBridgeConstants.NATIVE_LIB_NAME}$suffix"
     }
 
-    fun majorMinorVersion(): String {
-        return PluginVersion.VERSION
-            .split('.')
-            .take(2)
-            .joinToString(".")
+    fun qtLibrariesVersion(): String {
+        return PluginVersion.QT_LIBRARIES_VERSION
     }
 
-    fun fullVersion(): String {
-        return PluginVersion.VERSION
+    fun qtBridgeApplicationPluginVersion(): String {
+        return PluginVersion.QT_BRIDGE_APPLICATION_PLUGIN_VERSION
+    }
+
+    fun qtBridgeNativeVersion(): String {
+        return PluginVersion.QT_BRIDGE_NATIVE_VERSION
+    }
+
+    fun qtBridgeJvmLibraryVersion(): String {
+        return PluginVersion.QT_BRIDGE_JVM_VERSION
     }
 }

@@ -9,7 +9,8 @@ import org.qtproject.qt.bridge.utility.Platform
 import org.qtproject.qt.bridge.utils.QtBridgeResolverUtils
 
 internal class QtPlatformUrlBuilder private constructor(private val baseUrl: String) {
-    private val version = QtBridgeResolverUtils.fullVersion()
+    private val qtLibrariesVersion = QtBridgeResolverUtils.qtLibrariesVersion()
+    private val qtBridgeNativeVersion = QtBridgeResolverUtils.qtBridgeNativeVersion()
     val qtLibsFile: String
         get() = buildQtLibsFileName()
 
@@ -17,11 +18,11 @@ internal class QtPlatformUrlBuilder private constructor(private val baseUrl: Str
         get() = buildQtBridgeNativeFileName()
 
     private fun buildQtLibsFileName(): String {
-        return "${QT_LIBRARY_ARCHIVE_PREFIX}_${qtLibsPlatformSuffix()}_${version}.${qtLibsArchiveExtension()}"
+        return "${QT_LIBRARY_ARCHIVE_PREFIX}_${qtLibsPlatformSuffix()}_${qtLibrariesVersion}.${qtLibsArchiveExtension()}"
     }
 
     private fun buildQtBridgeNativeFileName(): String {
-        return "${QT_BRIDGE_ARCHIVE_PREFIX}_${qtBridgeNativePlatformSuffix()}_${version}.tar.gz"
+        return "${QT_BRIDGE_ARCHIVE_PREFIX}_${qtBridgeNativePlatformSuffix()}_${qtBridgeNativeVersion}.tar.gz"
     }
 
     private fun qtLibsPlatformSuffix(): String {

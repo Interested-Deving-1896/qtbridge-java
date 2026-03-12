@@ -284,7 +284,7 @@ abstract class QtBridgePlugin @Inject constructor(private val execOps: ExecOpera
     }
 
     private fun configureDependencies(project: Project) {
-        val dependency = "org.qtproject.qt.bridge:qmlbridge:${QtBridgeResolverUtils.fullVersion()}"
+        val dependency = "org.qtproject.qt.bridge:qmlbridge:${QtBridgeResolverUtils.qtBridgeJvmLibraryVersion()}"
         if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")) {
             project.pluginManager.apply("org.jetbrains.kotlin.jvm")
         }
