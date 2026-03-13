@@ -67,3 +67,8 @@ Once your project (e.g., `MyAwesomeApp`) has been generated, navigate into the f
 cd MyAwesomeApp
 gradle MyAwesomeApp
 ```
+
+### Notes
+
+Generated projects pin Java and Kotlin to toolchain 21 so they do not inherit
+potentially incompatible newer JVM daemon JDK targets.
