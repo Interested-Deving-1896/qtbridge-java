@@ -30,7 +30,11 @@
 ## Introduction
 
 This documentation outlines the process required to set up the
-development environment for Java/Kotlin Bridge. The Bridge allows applications
+development environment for Java/Kotlin Bridge. **If you are looking at just
+using the Bridge**, please see [the Project Quickstart](examples/starter/README.md)
+instead (since 0.2 milestone).
+
+The Bridge allows applications
 to bridge Java and Kotlin code to QML. The bridging is based on two main mechanisms:
 - Java JNI (C++) native code to do the actual bridging. JNI allows the bridge to translate data and function calls between QML and Java
 - KSP (Kotlin Symbol Processing) for processing the user's classes and annotations at build-time. KSP allows the bridge to introspect user-code and generate all needed bridging code
@@ -45,11 +49,7 @@ The main parts of the solution are:
 ## Status
 
 Bridge for Java/Kotlin is currently in early preview, and in active development.
-It can be compiled, run, and tested out on the major desktop platforms. Notable limitations include:
-- You need to set up Bridge development environment to use it, instead
-  of relying the Bridge Gradle plugin to download necessary components. See
-  [Early Preview Quick Start](#early-preview-quick-start) for setting up the
-  environment
+It can be compiled, run, and tested out on the major desktop platforms. Limitations include:
 - APIs may change or even be removed
 - There are many known issues and [missing features](https://qt-project.atlassian.net/browse/QTBUG-134776)
 
@@ -59,10 +59,10 @@ You can reach us in the Qt Forum, specifically in the [Qt Bridges
 category](https://forum.qt.io/category/78/qt-bridges).
 For Qt bug tracker users there's also the [JavaQt Bridge task](https://qt-project.atlassian.net/browse/QTBUG-134776).
 
-## Early Preview Quick Start
+## Building the Bridge
 This chapter provides hands-on instructions for setting up the development environment.
-**This setup is needed only for the time being** - in future the needed components will be
-downloaded automatically by the Qt Bridge Gradle plugin.
+These instructions are for developing and experimentally changing the Bridge itself -
+this setup is not required for using the Bridge.
 
 Supported platforms:
 - macOS (`arm64`, `x86_64`),
@@ -84,8 +84,7 @@ cd qtbridge-java
 ```
 ii) To get Qt please see [Qt Download Page](https://www.qt.io/development/download), or
 [compile it from sources](https://doc.qt.io/qt-6/build-sources.html). Qt 6.10 is the
-required minimum and tested version, but for early experimentation purposes
-Qt 6.8 and Qt 6.5 should work too
+required minimum and actively tested version, although Qt 6.8 and Qt 6.5 should work too.
 
 Following are example command line instructions for different platforms, adjust as needed.
 It is also possible to use an IDE for development. For this purpose we've tested [VS Code](https://code.visualstudio.com/download) and [Intellij IDEA](https://www.jetbrains.com/idea/).

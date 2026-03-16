@@ -2,12 +2,17 @@
 
 How to use an init script to create a new QtBridge application with all the necessary files and structure.
 
+Supported platforms:
+- macOS (tested: 15 Sequoia) (`arm64`, `x86_64`),
+- Linux (tested: Ubuntu 24.04) (`arm64`, `x86_64`),
+- Windows (tested: 11) (`arm64`, `x64`)
+
 ### Initialization Script
 Get the starter script to your local machine:
 <!-- TODO QTBUG-142220: Replace CURL url with actual release URL when available -->
 ```
 # Download the init script alongside the settings.gradle
-curl -O 'https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/qtbridge.starter.gradle.kts?h=dev' -O 'https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/settings.gradle.kts?h=dev'
+curl -O "https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/qtbridge.starter.gradle.kts?h=dev" -O "https://code.qt.io/cgit/qt/qtbridge-java.git/plain/examples/starter/settings.gradle.kts?h=dev"
 ```
 ### Check usage or help
 ```
@@ -45,7 +50,7 @@ You can customize the project generation using the following Gradle properties (
 The starter script creates a fully configured QtBridge project:
 
 ```
-MyAwesomeApp/
+MyApp/
 ├── src/
 │   └── main/
 │       ├── kotlin/           (or java/)
@@ -62,10 +67,10 @@ MyAwesomeApp/
 
 ### Running your project
 
-Once your project (e.g., `MyAwesomeApp`) has been generated, navigate into the folder and run it:
+Once your project (e.g., `MyApp`) has been generated, navigate into the folder and run it:
 ```
-cd MyAwesomeApp
-gradle MyAwesomeApp
+cd MyApp
+gradle MyApp
 ```
 
 ### Notes
