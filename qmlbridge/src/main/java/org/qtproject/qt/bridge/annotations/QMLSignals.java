@@ -24,6 +24,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *           lang = java}
  *
  * @see QMLRegistrable
+ * @see QMLSignal
  */
 @Documented
 @Retention(RUNTIME)
