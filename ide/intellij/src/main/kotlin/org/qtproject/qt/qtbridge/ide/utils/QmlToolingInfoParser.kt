@@ -7,7 +7,6 @@ package org.qtproject.qt.qtbridge.ide.utils
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import java.io.File

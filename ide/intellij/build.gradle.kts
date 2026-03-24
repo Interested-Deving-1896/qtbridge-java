@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
  */
 
-import java.net.URI
-
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.3.0"

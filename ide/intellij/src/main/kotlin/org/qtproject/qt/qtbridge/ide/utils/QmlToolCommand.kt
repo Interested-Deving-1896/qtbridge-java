@@ -7,7 +7,6 @@ package org.qtproject.qt.qtbridge.ide.utils
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.logger
-import java.io.File
 
 internal sealed interface QmlToolCommand<T> {
     fun buildCommandLine(config: T): GeneralCommandLine?

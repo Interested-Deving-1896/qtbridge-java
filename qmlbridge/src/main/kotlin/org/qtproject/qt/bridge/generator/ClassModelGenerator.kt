@@ -15,8 +15,6 @@ import com.google.devtools.ksp.symbol.*
 import org.qtproject.qt.bridge.annotations.QMLComplete
 import org.qtproject.qt.bridge.annotations.QMLRegistrable
 import org.qtproject.qt.bridge.annotations.QMLSignals
-import org.qtproject.qt.bridge.annotations.QMLIgnore
-import org.qtproject.qt.bridge.generator.*
 import org.qtproject.qt.bridge.utils.*
 
 internal class ClassModelGenerator(

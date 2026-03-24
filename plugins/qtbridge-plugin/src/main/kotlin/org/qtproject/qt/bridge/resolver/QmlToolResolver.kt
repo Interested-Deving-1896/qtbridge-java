@@ -6,7 +6,6 @@
 package org.qtproject.qt.bridge.resolver
 
 import org.gradle.api.logging.Logger
-import org.qtproject.qt.bridge.utility.Platform
 import org.qtproject.qt.bridge.resolver.factory.QmlTool
 import java.io.File
 

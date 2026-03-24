@@ -8,10 +8,7 @@ package org.qtproject.qt.qtbridge.ide.lsp.lsp4ij
 import com.intellij.openapi.project.Project
 import com.redhat.devtools.lsp4ij.server.OSProcessStreamConnectionProvider
 import com.redhat.devtools.lsp4ij.server.StreamConnectionProvider
-import org.qtproject.qt.qtbridge.ide.utils.QmlToolCommand
-import org.qtproject.qt.qtbridge.ide.utils.QmlToolingInfoParser
 import org.qtproject.qt.qtbridge.ide.utils.resolveQmlLsCommandLine
-import org.qtproject.qt.qtbridge.ide.utils.toQmlLSConfig
 import java.io.InputStream
 import java.io.OutputStream
 
