@@ -10,6 +10,8 @@ import com.google.devtools.ksp.processing.Dependencies
 
 internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
 
+    val corePackage: String = "org.qtproject.qt.bridge.core"
+
     fun emitClassFromModel(model: RegistrableClass) {
         val packageName = model.packageName
         val className = model.simpleName
@@ -22,46 +24,49 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
         )
 
         file.bufferedWriter().use { w ->
-            w.appendLine("package org.qtproject.qt.bridge.core")
+            w.appendLine("package ${corePackage}")
             w.appendLine()
 
             if (packageName.isNotBlank())
                 w.appendLine("import $packageName.$className")
             else
                 w.appendLine("import $className")
+
+            if (model.signalMethods.isNotEmpty() && packageName.isNotBlank())
+                w.appendLine("import $packageName.${className}_QtImpl")
             w.appendLine()
 
             w.appendLine("internal class $qtMetaName {")
             w.appendLine("    companion object {")
             w.appendLine("        @JvmStatic")
-            w.appendLine("        // Registers both properties' change signals and @QMLSignals callback signals")
+            w.appendLine("        // Registers all property change signals,")
+            w.appendLine("        // @QMLSignals field signals, and individual @QMLSignal methods")
             w.appendLine("        fun registerSignals(qtObject : QtObject) {")
-            if (model.signalField?.signals != null) {
-                model.signalField.signals.forEach { sig ->
-                    val cppParamTypes = sig.cppParams.map { it.second }
-                    val cppParamTypesArray =
-                        if (cppParamTypes.isEmpty()) "emptyArray<String>()"
-                        else "arrayOf(" + cppParamTypes.joinToString(", ") { "\"$it\"" } + ")"
+            val allSignals = (model.signalField?.signals.orEmpty()) + model.signalMethods
+            allSignals.forEach { sig ->
+                val cppParamTypes = sig.cppParams.map { it.second }
+                val cppParamTypesArray =
+                    if (cppParamTypes.isEmpty()) "emptyArray<String>()"
+                    else "arrayOf(" + cppParamTypes.joinToString(", ") { "\"$it\"" } + ")"
 
-                    // Array, List, Map, ..
-                    val paramShape = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
-                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") { it.shape.code.toString() } + ")"
+                // Array, List, Map, ..
+                val paramShape = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
+                    "byteArrayOf(" + sig.paramListInfo.joinToString(", ") { it.shape.code.toString() } + ")"
 
-                    // Integer, String, ... and value primitiveness bit
-                    val paramType = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
-                        "byteArrayOf(" + sig.paramListInfo.joinToString(", ") {
-                            it.type.packedCode(it.isPrimitive).toString()
-                        } + ")"
+                // Integer, String, ... and value primitiveness bit
+                val paramType = if (sig.paramListInfo.isEmpty()) "byteArrayOf()" else
+                    "byteArrayOf(" + sig.paramListInfo.joinToString(", ") {
+                        it.type.packedCode(it.isPrimitive).toString()
+                    } + ")"
 
-                    w.appendLine(
-                        "            qtObject.addSignal(\n" +
-                        "                \"${sig.javaSignature}\",\n" +
-                        "                \"${sig.cppSignature}\",\n" +
-                        "                $cppParamTypesArray,\n" +
-                        "                $paramShape,\n" +
-                        "                $paramType)"
-                    )
-                }
+                w.appendLine(
+                    "            qtObject.addSignal(\n" +
+                    "                \"${sig.javaSignature}\",\n" +
+                    "                \"${sig.cppSignature}\",\n" +
+                    "                $cppParamTypesArray,\n" +
+                    "                $paramShape,\n" +
+                    "                $paramType)"
+                )
             }
             // Add change signals to QtProperties (currently always no-arg)
             model.properties.forEach { p ->
@@ -141,6 +146,11 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
                 w.appendLine("            }")
             }
 
+            if (model.signalMethods.isNotEmpty()) {
+                w.appendLine("            // Inject signal emitter so that the @QMLSignal overrides can emit signals")
+                w.appendLine("            (userObject as? ${className}_QtImpl)?._qtSignalEmitter = qtObject")
+            }
+
             w.appendLine("        }")
             w.appendLine()
 
@@ -155,8 +165,11 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
 
             w.appendLine("        @JvmStatic")
             w.appendLine("        fun registerAsQmlType() {")
-            w.appendLine("            val userObject = $className()")
-            w.appendLine("            val userClass = $className::class.java")
+            // When @QMLSignal methods exist, instantiate and register _QtImpl (the generated
+            // concrete subclass) — the user's class may be abstract and cannot be instantiated directly.
+            val implClassName = if (model.signalMethods.isNotEmpty()) "${className}_QtImpl" else className
+            w.appendLine("            val userObject = $implClassName()")
+            w.appendLine("            val userClass = $implClassName::class.java")
 
             val reg = model.registrableInfo
             val qmlTypeName = reg?.typeName ?: className
@@ -175,11 +188,77 @@ internal class ClassCreationEmitter(private val codeGenerator: CodeGenerator) {
             w.appendLine("    }")
             w.appendLine("}")
         }
+
+        if (model.signalMethods.isNotEmpty())
+            emitQtImplClass(model)
+    }
+
+    // Emits a generated internal override ('_QtImpl') of the user class for
+    // overriding signal methods marked with @QMLSignal. The class is generated
+    // in the user class's package, and uses signal emitter from core package
+    private fun emitQtImplClass(model: RegistrableClass) {
+        val userPackageName = model.packageName
+        val className = model.simpleName
+        val implName = "${className}_QtImpl"
+        val file = codeGenerator.createNewFile(
+            Dependencies.ALL_FILES,
+            packageName = userPackageName,
+            fileName = implName
+        )
+
+        file.bufferedWriter().use { w ->
+            w.appendLine("package $userPackageName")
+            w.appendLine()
+            w.appendLine("import ${corePackage}.QtSignalEmitter")
+            w.appendLine()
+            w.appendLine("internal class $implName : $className() {")
+            w.appendLine("    internal var _qtSignalEmitter: QtSignalEmitter? = null")
+            // Emit overrides for each signal method (@QMLSignal)
+            model.signalMethods.forEach { sig ->
+                val methodName = sig.javaSignature.substringBefore("(")
+                val overrideParams = sig.methodOverrideParams!!
+                val paramList = overrideParams.joinToString(", ") {
+                    (name, type) -> "$name: $type"
+                }
+                val argList = overrideParams.joinToString(", ") {
+                    (name, _) -> name
+                }
+                val emitArgs = if (argList.isEmpty()) "" else ", $argList"
+                w.appendLine()
+                w.appendLine("    override fun $methodName($paramList) {")
+                w.appendLine("        _qtSignalEmitter?.emitSignal(\"${sig.javaSignature}\"$emitArgs)")
+                w.appendLine("    }")
+            }
+            w.appendLine("}")
+        }
+
+        // QtObject.initializeMeta() looks up "*_QtMeta". When userClass is *_QtImpl,
+        // it, too, needs a *_QtMeta file. Generate that as a thin delegating class that
+        // forwards the registerMeta() to the actual base class's _QtMeta (which then
+        // registers the actual user signals, properties, and invokables).
+        val implMetaName = "${implName}_QtMeta"
+        val implMetaFile = codeGenerator.createNewFile(
+            Dependencies.ALL_FILES,
+            packageName = "$corePackage",
+            fileName = implMetaName
+        )
+        implMetaFile.bufferedWriter().use { w ->
+            w.appendLine("package $corePackage")
+            w.appendLine()
+            w.appendLine("internal class $implMetaName {")
+            w.appendLine("    companion object {")
+            w.appendLine("        @JvmStatic")
+            w.appendLine("        fun registerMeta(qtObject: QtObject, userObject: Any) {")
+            w.appendLine("            ${className}_QtMeta.registerMeta(qtObject, userObject)")
+            w.appendLine("        }")
+            w.appendLine("    }")
+            w.appendLine("}")
+        }
     }
 
     // Generates the bootstrap function to initiate QML type registration
     fun emitQmlTypeRegistrationEntryPoint(qmlRegistrables: List<RegistrableClass>) {
-        val packageName = "org.qtproject.qt.bridge.core"
+        val packageName = "$corePackage"
         val fileName = "QtQmlRegistration_QtMeta"
         val file = codeGenerator.createNewFile(
             Dependencies.ALL_FILES,

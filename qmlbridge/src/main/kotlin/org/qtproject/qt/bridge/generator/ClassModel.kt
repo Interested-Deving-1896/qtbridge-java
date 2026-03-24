@@ -87,6 +87,8 @@ internal data class RegistrableClass(
     val properties: List<Property> = emptyList(),
     // @QMLSignals field
     val signalField: SignalField? = null,
+    // @QMLSignal method list
+    val signalMethods: List<Signal> = emptyList(),
     // @QMLComplete handler (just name, signature is known)
     val qmlCompleteHandlerName: String? = null,
 )
@@ -111,6 +113,8 @@ internal data class Signal(
     val cppParams: List<Pair<String, String>>, // 'name, type' pairs
     val paramListInfo: List<VariableInfo>,
     val sourceLocation: SourceLocation? = null,
+    // For @QMLSignal methods: "param name, kotlin type" pairs for generating overrides
+    val methodOverrideParams: List<Pair<String, String>>? = null,
 )
 
 // @QMLSignals field

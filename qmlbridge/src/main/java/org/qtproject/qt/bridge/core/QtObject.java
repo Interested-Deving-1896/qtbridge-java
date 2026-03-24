@@ -10,7 +10,7 @@ import org.qtproject.qt.bridge.utils.loader.NativeLibraryLoader;
 import java.lang.ref.Cleaner;
 import java.lang.reflect.Method;
 
-class QtObject {
+class QtObject implements QtSignalEmitter {
     static {
         NativeLibraryLoader.loadLibrary();
     }
@@ -50,7 +50,8 @@ class QtObject {
         }
     }
 
-    void emitSignal(String signature, Object... args) {
+    @Override
+    public void emitSignal(String signature, Object... args) {
         nativeEmitSignal(nativeHandle, signature, args);
     }
 

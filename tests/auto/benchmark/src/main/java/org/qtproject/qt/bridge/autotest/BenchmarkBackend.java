@@ -7,6 +7,7 @@ package org.qtproject.qt.bridge.autotest;
 
 import org.qtproject.qt.bridge.annotations.QMLRegistrable;
 import org.qtproject.qt.bridge.annotations.QMLSignals;
+import org.qtproject.qt.bridge.annotations.QMLSignal;
 import org.qtproject.qt.bridge.core.QtListModel;
 import org.qtproject.qt.bridge.core.QtProperty;
 import java.util.List;
@@ -22,6 +23,11 @@ public class BenchmarkBackend {
     }
     @QMLSignals
     QMLCallback qmlCallback;
+
+    @QMLSignal
+    public void signalWithoutParameters() {};
+    @QMLSignal
+    public void signalWithParameters(int a, int b) {};
 
     public final QtListModel<String> numbers = new QtListModel<>();
     List<String> items = IntStream.range(0, 20)
@@ -55,12 +61,20 @@ public class BenchmarkBackend {
     public String returningFunction() {
         return "theReturnValue";
     }
-    public void emitingFunction() {
+    public void emitingQMLSignalsFunction() {
         // Loop for a few times so that signal emission trumps
         // execution time over the calling cost of this function
         for (int i = 0; i < 20; ++i) {
             qmlCallback.withoutParameters();
             qmlCallback.withParameters(1, 2);
+        }
+    }
+    public void emitingQMLSignalFunction() {
+        // Loop for a few times so that signal emission trumps
+        // execution time over the calling cost of this function
+        for (int i = 0; i < 20; ++i) {
+            signalWithoutParameters();
+            signalWithParameters(1, 2);
         }
     }
 }

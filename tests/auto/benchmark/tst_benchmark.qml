@@ -43,8 +43,11 @@ Item {
         function benchmark_function_call_returnValue() {
             let returnValue = BenchmarkBackend.returningFunction();
         }
-        function benchmark_function_emiting_function() {
-            BenchmarkBackend.emitingFunction();
+        function benchmark_function_emiting_QMLSignals_function() {
+            BenchmarkBackend.emitingQMLSignalsFunction();
+        }
+        function benchmark_function_emiting_QMLSignal_function() {
+            BenchmarkBackend.emitingQMLSignalFunction();
         }
         function benchmark_property_readwrite() {
             BenchmarkBackend.stringProperty = "Hi"
