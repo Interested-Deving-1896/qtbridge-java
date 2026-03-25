@@ -8,6 +8,7 @@ package org.qtproject.qt.bridge;
 import org.qtproject.qt.bridge.core.QtListModel;
 import org.qtproject.qt.bridge.annotations.QMLRegistrable;
 import org.qtproject.qt.bridge.annotations.QMLSignals;
+import org.qtproject.qt.bridge.annotations.QMLSignal;
 
 // Registers this Java class as a QML singleton with the name "FruitBasket".
 // Allows QML to create and interact with this class as if it were a native QML object.
@@ -15,16 +16,16 @@ import org.qtproject.qt.bridge.annotations.QMLSignals;
 @QMLRegistrable(singleton = true)
 public class FruitBasket {
     // @end
-    // @start region="qmlsignals-usage"
-    public interface QmlCallback {
-        void duplicateFound(String fruit);
-        void erased();
-        void blankFound();
-    }
-    // Establishes a binding to a callback interface that is used to emit signals or notifications
-    // from Java to QML. This allows QML to react to specific events like validation failures or updates.
-    @QMLSignals
-    QmlCallback qmlCallback;
+
+    // @start region="qmlsignal-usage"
+    // Notification functions (signals) from Java to QML.
+    // This allows QML to react to specific events like validation failures or updates.
+    @QMLSignal
+    void duplicateFound(String fruit) {}
+    @QMLSignal
+    void erased() {}
+    @QMLSignal
+    void blankFound() {}
     // @end
 
     // Repository class responsible for managing data operations.
@@ -48,11 +49,11 @@ public class FruitBasket {
     // - Otherwise, it adds the item to the list.
     public void addString(String item) {
         if (item.isBlank()) {
-            qmlCallback.blankFound();
+            blankFound();
             return;
         }
         if (fruitList.contains(item)) {
-            qmlCallback.duplicateFound(item);
+            duplicateFound(item);
             return;
         }
         fruitList.appendItem(item);
@@ -64,7 +65,7 @@ public class FruitBasket {
     // - Otherwise, it updates the list at the given index.
     public void update(int index, String updatedValue) {
         if (fruitList.contains(updatedValue)) {
-            qmlCallback.duplicateFound(updatedValue);
+            duplicateFound(updatedValue);
             return;
         }
         fruitList.updateItemAt(index, updatedValue);
@@ -74,6 +75,6 @@ public class FruitBasket {
     // After successful removal, it emits an 'erased' signal to notify QML of the change.
     public void remove(int index) {
         fruitList.removeItemAt(index);
-        qmlCallback.erased();
+        erased();
     }
 }

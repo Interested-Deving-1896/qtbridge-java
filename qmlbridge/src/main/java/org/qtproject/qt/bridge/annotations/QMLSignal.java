@@ -17,6 +17,10 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 *
 * <p>The method must be {@code abstract} or {@code open} (non-final), and must
 * return {@code void}.</p>
+* <h2>Example</h2>
+* {@snippet file = "minimalapp/src/main/java/org/qtproject/qt/bridge/FruitBasket.java"
+*           region = "qmlsignal-usage"
+*           lang = java}
 *
 * @see QMLRegistrable
 * @see QMLSignals

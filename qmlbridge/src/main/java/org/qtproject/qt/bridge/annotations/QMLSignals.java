@@ -19,7 +19,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * signal endpoints to QML, and to enable emitting those signals from Java/Kotlin.</p>
  *
  * <h2>Example</h2>
- * {@snippet file = "minimalapp/src/main/java/org/qtproject/qt/bridge/FruitBasket.java"
+ * {@snippet file = "snippets/src/main/java/org/qtproject/qt/bridge/MyType.java"
  *           region = "qmlsignals-usage"
  *           lang = java}
  *

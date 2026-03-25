@@ -20,12 +20,14 @@ import java.util.List;
 // Default QMLRegistrable values register a creatable type 'MyType' 'QtBridge' module
 @QMLRegistrable
 public class MyType {
-    // Callbacks ('signals' in Qt jargon) that are used to call QML from Java
+    // @start region="qmlsignals-usage"
+    // Callbacks (signals) that are used to invoke QML from Java
     public interface QmlCallback {
         void somethingHappened();
     }
     @QMLSignals
     QmlCallback qmlCallback;
+    // @end
 
     // String exposed to QML, can be edited both Java- and QML side
     public final QtProperty<String> greeting = new QtProperty<>("Hello");
