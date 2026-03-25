@@ -50,22 +50,31 @@ object TemplateProvider {
                 package $packageName;
 
                 import org.qtproject.qt.bridge.annotations.QMLRegistrable;
+                import org.qtproject.qt.bridge.annotations.QMLSignal;
                 import org.qtproject.qt.bridge.core.QtProperty;
 
                 @QMLRegistrable(singleton = true)
                 public class Controller {
 
+                    private int clickCount = 0;
+
                     public final QtProperty<String> text = new QtProperty<>("Hello QtBridge!");
                     public final QtProperty<String> color = new QtProperty<>("#2196F3");
+
+                    @QMLSignal
+                    public void buttonClicked(int count) {}
 
                     public void clickMe() {
                         text.setValue("Button clicked!");
                         color.setValue("#4CAF50");
+                        buttonClicked(++clickCount);
                     }
 
                     public void reset() {
                         text.setValue("Hello QtBridge!");
                         color.setValue("#2196F3");
+                        clickCount = 0;
+                        buttonClicked(clickCount);
                     }
                 }
             """.trimIndent()
@@ -74,22 +83,31 @@ object TemplateProvider {
                 package $packageName
 
                 import org.qtproject.qt.bridge.annotations.QMLRegistrable
+                import org.qtproject.qt.bridge.annotations.QMLSignal
                 import org.qtproject.qt.bridge.core.QtProperty
 
                 @QMLRegistrable(singleton = true)
-                class Controller {
+                open class Controller {
+
+                    private var clickCount = 0
 
                     val text = QtProperty("Hello QtBridge!")
                     val color = QtProperty("#2196F3")
 
+                    @QMLSignal
+                    open fun buttonClicked(count: Int) {}
+
                     fun clickMe() {
                         text.value = "Button clicked!"
                         color.value = "#4CAF50"
+                        buttonClicked(++clickCount)
                     }
 
                     fun reset() {
                         text.value = "Hello QtBridge!"
                         color.value = "#2196F3"
+                        clickCount = 0
+                        buttonClicked(clickCount)
                     }
                 }
             """.trimIndent()
@@ -218,6 +236,22 @@ object TemplateProvider {
                         }
 
                         onClicked: Controller.reset()
+                    }
+
+                    Text {
+                        id: clickCountLabel
+                        text: qsTr("Clicked 0 times")
+                        font.pixelSize: 14
+                        color: "#757575"
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                }
+
+                Connections {
+                    target: Controller
+                    function onButtonClicked(count) {
+                        clickCountLabel.text = qsTr("Clicked %1 time(s)").arg(count)
                     }
                 }
             }
