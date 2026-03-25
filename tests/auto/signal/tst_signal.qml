@@ -281,6 +281,78 @@ Item {
         signalName: "onSignalWithEnum"
     }
 
+    SignalSpy {
+        id: javaAbstractPublicSpy;
+        target: JavaAbstractSignalBackend;
+        signalName: "onPublicSignal"
+    }
+
+    SignalSpy {
+        id: javaAbstractProtectedSpy;
+        target: JavaAbstractSignalBackend;
+        signalName: "onProtectedSignal"
+    }
+
+    SignalSpy {
+        id: javaAbstractPackagePrivateSpy;
+        target: JavaAbstractSignalBackend;
+        signalName: "onPackagePrivateSignal"
+    }
+
+    SignalSpy {
+        id: javaConcretePublicSpy;
+        target: JavaConcreteSignalBackend;
+        signalName: "onPublicSignal"
+    }
+
+    SignalSpy {
+        id: javaConcreteProtectedSpy;
+        target: JavaConcreteSignalBackend;
+        signalName: "onProtectedSignal"
+    }
+
+    SignalSpy {
+        id: javaConcretePackagePrivateSpy;
+        target: JavaConcreteSignalBackend;
+        signalName: "onPackagePrivateSignal"
+    }
+
+    SignalSpy {
+        id: kotlinAbstractPublicSpy;
+        target: KotlinAbstractSignalBackend;
+        signalName: "onPublicSignal"
+    }
+
+    SignalSpy {
+        id: kotlinAbstractProtectedSpy;
+        target: KotlinAbstractSignalBackend;
+        signalName: "onProtectedSignal"
+    }
+
+    SignalSpy {
+        id: kotlinAbstractInternalSpy;
+        target: KotlinAbstractSignalBackend;
+        signalName: "onInternalSignal"
+    }
+
+    SignalSpy {
+        id: kotlinConcretePublicSpy;
+        target: KotlinConcreteSignalBackend;
+        signalName: "onPublicSignal"
+    }
+
+    SignalSpy {
+        id: kotlinConcreteProtectedSpy;
+        target: KotlinConcreteSignalBackend;
+        signalName: "onProtectedSignal"
+    }
+
+    SignalSpy {
+        id: kotlinConcreteInternalSpy;
+        target: KotlinConcreteSignalBackend;
+        signalName: "onInternalSignal"
+    }
+
     TestCase {
         name: "Signals"
         when: windowShown
@@ -657,6 +729,90 @@ Item {
             root.targetBackend = data.target
             let string = root.targetBackend.callbackProxyToString()
             verify(string.length > 0)
+        }
+
+        function test_javaAbstractSignalVisibility() {
+            javaAbstractPublicSpy.clear()
+            javaAbstractProtectedSpy.clear()
+            javaAbstractPackagePrivateSpy.clear()
+
+            JavaAbstractSignalBackend.triggerPublicSignal(1)
+            wait(1)
+            compare(javaAbstractPublicSpy.count, 1)
+            compare(javaAbstractPublicSpy.signalArguments[0][0], 1)
+
+            JavaAbstractSignalBackend.triggerProtectedSignal(2)
+            wait(1)
+            compare(javaAbstractProtectedSpy.count, 1)
+            compare(javaAbstractProtectedSpy.signalArguments[0][0], 2)
+
+            JavaAbstractSignalBackend.triggerPackagePrivateSignal(3)
+            wait(1)
+            compare(javaAbstractPackagePrivateSpy.count, 1)
+            compare(javaAbstractPackagePrivateSpy.signalArguments[0][0], 3)
+        }
+
+        function test_javaConcreteSignalVisibility() {
+            javaConcretePublicSpy.clear()
+            javaConcreteProtectedSpy.clear()
+            javaConcretePackagePrivateSpy.clear()
+
+            JavaConcreteSignalBackend.triggerPublicSignal(4)
+            wait(1)
+            compare(javaConcretePublicSpy.count, 1)
+            compare(javaConcretePublicSpy.signalArguments[0][0], 4)
+
+            JavaConcreteSignalBackend.triggerProtectedSignal(5)
+            wait(1)
+            compare(javaConcreteProtectedSpy.count, 1)
+            compare(javaConcreteProtectedSpy.signalArguments[0][0], 5)
+
+            JavaConcreteSignalBackend.triggerPackagePrivateSignal(6)
+            wait(1)
+            compare(javaConcretePackagePrivateSpy.count, 1)
+            compare(javaConcretePackagePrivateSpy.signalArguments[0][0], 6)
+        }
+
+        function test_kotlinAbstractSignalVisibility() {
+            kotlinAbstractPublicSpy.clear()
+            kotlinAbstractProtectedSpy.clear()
+            kotlinAbstractInternalSpy.clear()
+
+            KotlinAbstractSignalBackend.triggerPublicSignal(7)
+            wait(1)
+            compare(kotlinAbstractPublicSpy.count, 1)
+            compare(kotlinAbstractPublicSpy.signalArguments[0][0], 7)
+
+            KotlinAbstractSignalBackend.triggerProtectedSignal(8)
+            wait(1)
+            compare(kotlinAbstractProtectedSpy.count, 1)
+            compare(kotlinAbstractProtectedSpy.signalArguments[0][0], 8)
+
+            KotlinAbstractSignalBackend.triggerInternalSignal(9)
+            wait(1)
+            compare(kotlinAbstractInternalSpy.count, 1)
+            compare(kotlinAbstractInternalSpy.signalArguments[0][0], 9)
+        }
+
+        function test_kotlinConcreteSignalVisibility() {
+            kotlinConcretePublicSpy.clear()
+            kotlinConcreteProtectedSpy.clear()
+            kotlinConcreteInternalSpy.clear()
+
+            KotlinConcreteSignalBackend.triggerPublicSignal(10)
+            wait(1)
+            compare(kotlinConcretePublicSpy.count, 1)
+            compare(kotlinConcretePublicSpy.signalArguments[0][0], 10)
+
+            KotlinConcreteSignalBackend.triggerProtectedSignal(11)
+            wait(1)
+            compare(kotlinConcreteProtectedSpy.count, 1)
+            compare(kotlinConcreteProtectedSpy.signalArguments[0][0], 11)
+
+            KotlinConcreteSignalBackend.triggerInternalSignal(12)
+            wait(1)
+            compare(kotlinConcreteInternalSpy.count, 1)
+            compare(kotlinConcreteInternalSpy.signalArguments[0][0], 12)
         }
     }
 }
