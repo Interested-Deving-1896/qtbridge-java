@@ -293,8 +293,8 @@ internal class ClassMocJsonEmitter(private val codeGenerator: CodeGenerator) {
             signalsArray.put(signalObj)
         }
 
-        // @QMLSignals signals, which can have also arguments
-        model.signalField?.signals?.forEach { signal ->
+        // @QMLSignals field signals and @QMLSignal method signals
+        (model.signalField?.signals.orEmpty() + model.signalMethods).forEach { signal ->
             val signalArgumentsArray = JSONArray()
             signal.cppParams.forEach { (name, type) ->
                 signalArgumentsArray.put(JSONObject().put("name", name).put("type", type))
