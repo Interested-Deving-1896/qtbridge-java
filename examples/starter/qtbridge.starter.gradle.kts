@@ -53,7 +53,7 @@ object TemplateProvider {
                 import org.qtproject.qt.bridge.annotations.QMLSignal;
                 import org.qtproject.qt.bridge.core.QtProperty;
 
-                @QMLRegistrable(singleton = true)
+                @QMLRegistrable
                 public class Controller {
 
                     private int clickCount = 0;
@@ -86,7 +86,7 @@ object TemplateProvider {
                 import org.qtproject.qt.bridge.annotations.QMLSignal
                 import org.qtproject.qt.bridge.core.QtProperty
 
-                @QMLRegistrable(singleton = true)
+                @QMLRegistrable
                 open class Controller {
 
                     private var clickCount = 0
@@ -175,15 +175,22 @@ object TemplateProvider {
                 title: qsTr("QtBridge App")
                 color: "#f5f5f5"
 
+                Controller {
+                    id: controller
+                    onButtonClicked: (count) => {
+                        clickCountLabel.text = qsTr("Clicked %1 time(s)").arg(count)
+                    }
+                }
+
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 20
 
                     Text {
-                        text: Controller.text
+                        text: controller.text
                         font.pixelSize: 32
                         font.bold: true
-                        color: Controller.color
+                        color: controller.color
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter
                     }
@@ -210,7 +217,7 @@ object TemplateProvider {
                             verticalAlignment: Text.AlignVCenter
                         }
 
-                        onClicked: Controller.clickMe()
+                        onClicked: controller.clickMe()
                     }
 
                     Button {
@@ -235,7 +242,7 @@ object TemplateProvider {
                             verticalAlignment: Text.AlignVCenter
                         }
 
-                        onClicked: Controller.reset()
+                        onClicked: controller.reset()
                     }
 
                     Text {
@@ -245,13 +252,6 @@ object TemplateProvider {
                         color: "#757575"
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter
-                    }
-                }
-
-                Connections {
-                    target: Controller
-                    function onButtonClicked(count) {
-                        clickCountLabel.text = qsTr("Clicked %1 time(s)").arg(count)
                     }
                 }
             }
