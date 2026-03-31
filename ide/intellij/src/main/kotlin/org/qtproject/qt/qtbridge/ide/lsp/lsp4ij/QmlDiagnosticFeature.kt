@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.Diagnostic
 import org.qtproject.qt.qtbridge.ide.utils.highlightSeverity
 import org.qtproject.qt.qtbridge.ide.utils.toolTip
 
+@Suppress("UnstableApiUsage")
 internal class QmlDiagnosticFeature : LSPDiagnosticFeature() {
 
     override fun getTooltip(diagnostic: Diagnostic): String {

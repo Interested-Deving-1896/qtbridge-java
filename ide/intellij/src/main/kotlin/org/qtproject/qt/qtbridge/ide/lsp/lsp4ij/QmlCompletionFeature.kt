@@ -12,6 +12,7 @@ import org.qtproject.qt.qtbridge.ide.utils.completeWithParentheses
 import org.qtproject.qt.qtbridge.ide.utils.isCallable
 import org.qtproject.qt.qtbridge.ide.utils.isHidden
 
+@Suppress("UnstableApiUsage")
 internal class QmlCompletionFeature : LSPCompletionFeature() {
     override fun createLookupElement(item: CompletionItem, context: LSPCompletionContext): LookupElement? {
         if (item.isHidden)

@@ -16,6 +16,7 @@ import org.eclipse.lsp4j.MarkupContent
 import org.qtproject.qt.qtbridge.ide.lsp.LspRuntimeDetector
 import org.qtproject.qt.qtbridge.ide.utils.hoverContent
 
+@Suppress("UnstableApiUsage")
 internal class QmlLspServerFactory : LanguageServerFactory {
     private val logger = logger<QmlLspServerFactory>()
     override fun createConnectionProvider(project: Project): StreamConnectionProvider {
