@@ -17,18 +17,19 @@
         <listener class="org.qtproject.qt.qtbridge.ide.utils.QmlToolingFilesGenerationOnSave"
                   topic="com.intellij.openapi.fileEditor.FileDocumentManagerListener"/>
     </applicationListeners>
-
     <extensions defaultExtensionNs="com.intellij">
         <fileType
-            name="QML File"
-            implementationClass="org.qtproject.qt.qtbridge.ide.lang.QmlFileType"
-            fieldName="INSTANCE"
-            language="QML"
-            extensions="qml"
+                name="QML File"
+                implementationClass="org.qtproject.qt.qtbridge.ide.lang.QmlFileType"
+                fieldName="INSTANCE"
+                language="QML"
+                extensions="qml"
         />
+        <additionalTextAttributes scheme="Default" file="colorSchemes/QmlDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/QmlDefault.xml"/>
 
         <!--        <platform.backend.documentation.targetProvider-->
-<!--                implementation="org.qtproject.qt.qtbridge.ide.documentation.QmlDocumentationTargetProvider"/>-->
+        <!--                implementation="org.qtproject.qt.qtbridge.ide.documentation.QmlDocumentationTargetProvider"/>-->
 
         <!-- Old API: quick navigate tooltip (Ctrl+hover) -->
         <lang.documentationProvider
