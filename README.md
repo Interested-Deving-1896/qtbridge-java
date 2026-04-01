@@ -4,28 +4,29 @@
 > SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 - Contents:
-    1. Introduction
-    2. Get in touch
-    3. Status
-    4. Early Preview Quick Start
-       1. macOS
-       2. Linux
-       3. Windows
-       4. Troubleshooting
-    5. End-user workflow
-       1. Description
-       2. Quick start
-       3. Gradle Plugin and Maven Artifacts
-    6. Bridge Building and Development
-       1. Java Environment
-       2. C++ Environment
-       3. Qt dependencies
-       4. Building and running the Project
-    7. Java Bridge API Overview
-       1. Classes and Annotations
-       2. Example Code
-    8. Terms and Conditions
-       1. Additional Terms and Conditions
+    1. [Introduction](#introduction)
+    2. [Get in touch](#get-in-touch)
+    3. [Status](#status)
+    4. [Early Preview Quick Start](#building-the-bridge)
+        1. [macOS](#macos)
+        2. [Linux](#linux)
+        3. [Windows](#windows)
+        4. [Troubleshooting](#troubleshooting)
+    5. [End-user workflow](#end-user-workflow)
+        1. [Description](#description)
+        2. [Quick start](#quick-start)
+        3. [Gradle Plugin and Maven Artifacts](#gradle-plugin-and-maven-artifacts)
+        4. [IDE support](#ide-support)
+    6. [Bridge Building and Development](#bridge-building-and-development)
+        1. [Java Environment](#1-java-environment)
+        2. [C++ Environment](#2-c-environment)
+        3. [Qt dependencies](#3-qt-dependencies)
+        4. [Building and running the Project](#4-building-and-running-the-project)
+    7. [Java Bridge API Overview](#java-bridge-api-overview)
+        1. [Classes and Annotations](#classes-and-annotations)
+        2. [Example Code](#example-code)
+    8. [Terms and Conditions](#terms-and-conditions)
+        1. [Additional Terms and Conditions](#additional-terms-and-conditions)
 
 ## Introduction
 
@@ -321,6 +322,10 @@ the Bridge native library (currently **Qt 6.10.0**). However, if you manually sp
     - **macOS:** Apple Silicon (arm64)
     - **Linux:** x86_64 (Tested on Ubuntu 24.04)
     - **Windows:** Support coming soon.
+
+### IDE support
+
+For IDE integration with QML language features (code completion, diagnostics, syntax highlighting, hover, and go-to-definition), see the [QML LSP Support plugin for IntelliJ](ide/intellij/README.md).
 
 ## Bridge Building and Development
 
