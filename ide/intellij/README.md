@@ -23,6 +23,10 @@ The plugin integrates both **native IntelliJ LSP** and **LSP4IJ** to deliver mod
 ### Navigation
 - Go to Definition
 
+### Syntax Highlighting
+- Token-based highlighting via LSP4IJ semantic tokens
+- Support for QML-specific constructs (types, properties, methods, imports)
+
 ---
 
 ## Architecture
