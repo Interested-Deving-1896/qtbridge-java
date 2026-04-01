@@ -25,8 +25,8 @@
                 language="QML"
                 extensions="qml"
         />
-        <additionalTextAttributes scheme="Default" file="colorSchemes/QmlDefault.xml"/>
-        <additionalTextAttributes scheme="Darcula" file="colorSchemes/QmlDefault.xml"/>
+        <additionalTextAttributes scheme="Default" file="colorSchemes/qml_colors_light.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/qml_colors_dark.xml"/>
 
         <!--        <platform.backend.documentation.targetProvider-->
         <!--                implementation="org.qtproject.qt.qtbridge.ide.documentation.QmlDocumentationTargetProvider"/>-->

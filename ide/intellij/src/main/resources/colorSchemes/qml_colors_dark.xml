@@ -3,40 +3,43 @@
   ~ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   -->
 
-<scheme name="QmlDefault" parent_scheme="Default">
+<scheme name="qml_dark" parent_scheme="Default">
     <attributes>
         <option name="QML_KEYWORD">
             <value>
                 <option name="FOREGROUND" value="FF7B72"/>
-                <option name="FONT_TYPE" value="1"/>
             </value>
         </option>
         <option name="QML_TYPE_NAME">
             <value>
                 <option name="FOREGROUND" value="D2A8FF"/>
-                <option name="FONT_TYPE" value="1"/>
             </value>
         </option>
+
         <option name="QML_JS_KEYWORD">
             <value>
                 <option name="FOREGROUND" value="79C0FF"/>
             </value>
         </option>
+
         <option name="QML_IDENTIFIER">
             <value>
                 <option name="FOREGROUND" value="7EE787"/>
             </value>
         </option>
+
         <option name="QML_ID">
             <value>
-                <option name="FOREGROUND" value="A5D6FF"/>
+                <option name="FOREGROUND" value="ECEEF1"/>
             </value>
         </option>
+
         <option name="QML_SIGNAL_HANDLER">
             <value>
-                <option name="FOREGROUND" value="F2CC60"/>
+                <option name="FOREGROUND" value="E3B341"/>
             </value>
         </option>
+
         <option name="QML_STRING">
             <value>
                 <option name="FOREGROUND" value="A5D6FF"/>
@@ -49,9 +52,10 @@
         </option>
         <option name="QML_ENUM_VALUE">
             <value>
-                <option name="FOREGROUND" value="D2A8FF"/>
+                <option name="FOREGROUND" value="C690E9"/>
             </value>
         </option>
+
         <option name="QML_OPERATOR">
             <value>
                 <option name="FOREGROUND" value="FF7B72"/>

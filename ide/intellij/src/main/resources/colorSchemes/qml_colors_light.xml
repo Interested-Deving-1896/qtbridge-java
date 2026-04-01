@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright (C) 2026 The Qt Company Ltd.
+  ~ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+  -->
+
+<scheme name="qml_light" parent_scheme="Default">
+    <attributes>
+        <option name="QML_KEYWORD">
+            <value>
+                <option name="FOREGROUND" value="CF222E"/>
+            </value>
+        </option>
+        <option name="QML_TYPE_NAME">
+            <value>
+                <option name="FOREGROUND" value="8250DF"/>
+            </value>
+        </option>
+
+        <option name="QML_JS_KEYWORD">
+            <value>
+                <option name="FOREGROUND" value="0550AE"/>
+            </value>
+        </option>
+
+        <option name="QML_IDENTIFIER">
+            <value>
+                <option name="FOREGROUND" value="116329"/>
+            </value>
+        </option>
+
+        <option name="QML_ID">
+            <value>
+                <option name="FOREGROUND" value="24292F"/>
+            </value>
+        </option>
+
+        <option name="QML_SIGNAL_HANDLER">
+            <value>
+                <option name="FOREGROUND" value="953800"/>
+            </value>
+        </option>
+
+        <option name="QML_STRING">
+            <value>
+                <option name="FOREGROUND" value="0A3069"/>
+            </value>
+        </option>
+        <option name="QML_NUMBER">
+            <value>
+                <option name="FOREGROUND" value="0550AE"/>
+            </value>
+        </option>
+        <option name="QML_ENUM_VALUE">
+            <value>
+                <option name="FOREGROUND" value="8250DF"/>
+            </value>
+        </option>
+
+        <option name="QML_OPERATOR">
+            <value>
+                <option name="FOREGROUND" value="CF222E"/>
+            </value>
+        </option>
+    </attributes>
+</scheme>
