@@ -469,7 +469,7 @@ Following shows the possible composition of such class:
  ├── QtProperty<type> (usually many)
  ├── QtListModel<type> (usually one or none)
  ├── All public Methods are registered as invokable functions (usually many)
- ├── @QMLSignals (signal interface) (one interface with many signals)
+ ├── @QMLSignals (signal interface) or @QMLSignal (on individual methods)
  └── @QMLComplete (optional, on completion handler annotation)
 ```
 
@@ -496,8 +496,16 @@ Following shows the possible composition of such class:
   can be called from QML.
 
 #### Signals (Using `@QMLSignals`)
-  Instead of manually writing and managing signal methods inside your class, you define
-  a separate Java interface representing your signals.
+
+  Signals can be defined in two ways:
+
+  **1. Interface approach (`@QMLSignals`)**
+  Define a separate Java/Kotlin interface representing your signals and annotate the field with
+  `@QMLSignals`. All methods in the interface are registered as QML signals.
+
+  **2. Inline approach (`@QMLSignal`)**
+  Annotate individual methods directly in your `@QMLRegistrable` class with `@QMLSignal`.
+  The method must be `abstract` or `open` (non-final), and must return `void`.
 
 #### Completion Handler (Using @QMLComplete)
 `@QMLComplete` marks a method to run after the QML engine finishes creating a @QMLRegistrable instance. The handler is
@@ -523,6 +531,10 @@ public class FruitBasket {
     }
     @QMLSignals
     QmlCallback qmlCallback;
+
+    // Signal defined directly on the class
+    @QMLSignal
+    void fruitExpired(String fruit) {}
 
     // A QtListModel of strings, bridged to QML as a QAbstractListModel.
     // This allows it to be used in model-driven QML components
